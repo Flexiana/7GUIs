@@ -7,5 +7,4 @@ target/
 .shadow-cljs/
 package-lock.json
 node_modules/
-resources/js/*
-resources/js/workspaces/*
+resources/js/
