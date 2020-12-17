@@ -8,6 +8,7 @@
   npx shadow-cljs
  #+END_SRC
 ** start shadow/watch to begin the project
+- on shadow clj repl do:
 #+BEGIN_SRC clojure
 (shadow/watch :workspaces)
 ;; and when finished the building
