@@ -1,4 +1,5 @@
 .cpcache/
+.clj-kondo/
 .nrepl-port
 .idea
 target/
