@@ -1,0 +1,17 @@
+* 7GUI's project
+** install npm dependencies
+ #+BEGIN_SRC shell
+  npm install
+ #+END_SRC
+** start by jacking-in some repl onto your preferred editor :D
+ #+BEGIN_SRC shell
+  npx shadow-cljs
+ #+END_SRC
+** start shadow/watch to begin the project
+#+BEGIN_SRC clojure
+(shadow/watch :workspaces)
+;; and when finished the building
+;; if you want some repl,
+(shadow/repl :workspaces)
+#+END_SRC
+- The entrypoint of the web application is on [[http://localhost:8080][entrypoint]]
