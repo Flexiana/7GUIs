@@ -1,5 +1,6 @@
 (ns sguis.workspaces.temperature
   (:require [reagent.core :as r]
+            [clojure.string :as str]
             [cljs.pprint :as pp]))
 
 (def temperature-state
@@ -32,10 +33,15 @@
            :err nil
            :fahrenheit (c->f data))
     (assoc current-state
-           :err "Invalid Celsius")))
+           :err "Invalid Celsius") ))
 
 (defn add-celsius! [temperature-state field]
-  (swap! temperature-state add-celsius (-> field .-target .-valueAsNumber)))
+  (let [target (-> field .-target)]
+    (if (str/blank? (.-value target))
+      (swap! temperature-state assoc
+             :celsius ""
+             :fahrenheit "")
+      (swap! temperature-state add-celsius (.-valueAsNumber target)))))
 
 (defn add-fahrenheit [current-state data]
   (if (numeric? data)
@@ -47,7 +53,12 @@
            :err "Invalid Fahrenheit")))
 
 (defn add-fahrenheit! [temperature-state field]
-  (swap! temperature-state add-fahrenheit (-> field .-target .-valueAsNumber)))
+  (let [target (-> field .-target)]
+    (if (str/blank? (.-value target))
+      (swap! temperature-state assoc
+             :fahrenheit ""
+             :celsius "")
+      (swap! temperature-state add-fahrenheit (.-valueAsNumber target)))))
 
 (defn temperature-ui [temperature-state]
   (let [{:keys [celsius
@@ -64,8 +75,6 @@
                       :valueAsNumber fahrenheit
                       :value         (str fahrenheit)}]
       "Fahrenheit"]
-     [:button {:on-click #(reset! temperature-state {})}
-      "Reset"]
      [:label [:input {:type     "text"
                       :disabled true
                       :value    (str err)}]]
