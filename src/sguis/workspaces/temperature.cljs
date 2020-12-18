@@ -25,9 +25,9 @@
 #_(false? (numeric? (js/parseFloat "a")))
 
 (defn add-celsius [state field-data]
-  (let [value (-> field-data .-target .-value)]
-    (when (numeric? value)
-      (js/console.log (js/parseFloat value))))
+  (let [field-value (-> field-data .-target .-value)]
+    (when (numeric? (js/parseFloat field-value))
+      (js/console.log (js/parseFloat field-value))))
   #_(swap! state assoc :celsius ))
 
 (defn temperature-ui [temperature-state]
