@@ -55,4 +55,6 @@
                                  fahrenheit)}] "Fahrenheit"]
      [:button {:on-click #(reset! temperature-state {})}
       "Reset"]
+     #_[:input {:type      "number"
+                :on-change #(-> % .-target .-value str/blank? js/console.log)}]
      [:pre (with-out-str (pp/pprint @temperature-state))]]))
