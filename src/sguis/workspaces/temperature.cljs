@@ -1,5 +1,6 @@
 (ns sguis.workspaces.temperature
   (:require [reagent.core :as r]
+            [clojure.string :as str]
             [cljs.pprint :as pp]))
 
 (def temperature-state
@@ -26,33 +27,36 @@
 #_(true? (numeric? (js/parseFloat "1")))
 
 (defn add-celsius [current-state data]
-  (if (numeric? data)
+  (when (numeric? data)
     (assoc current-state
            :celsius data
-           :err nil
-           :fahrenheit (c->f data))
-    (assoc current-state
-           :err "Invalid Celsius")))
+           :fahrenheit (c->f data))))
 
 (defn add-celsius! [temperature-state field]
-  (swap! temperature-state add-celsius (-> field .-target .-valueAsNumber)))
+  (let [target (-> field .-target)]
+    (if (str/blank? (.-value target))
+      (swap! temperature-state assoc
+             :celsius ""
+             :fahrenheit "")
+      (swap! temperature-state add-celsius (.-valueAsNumber target)))))
 
 (defn add-fahrenheit [current-state data]
-  (if (numeric? data)
+  (when (numeric? data)
     (assoc current-state
            :celsius (f->c data)
-           :err nil
-           :fahrenheit data)
-    (assoc current-state
-           :err "Invalid Fahrenheit")))
+           :fahrenheit data)))
 
 (defn add-fahrenheit! [temperature-state field]
-  (swap! temperature-state add-fahrenheit (-> field .-target .-valueAsNumber)))
+  (let [target (-> field .-target)]
+    (if (str/blank? (.-value target))
+      (swap! temperature-state assoc
+             :fahrenheit ""
+             :celsius "")
+      (swap! temperature-state add-fahrenheit (.-valueAsNumber target)))))
 
 (defn temperature-ui [temperature-state]
   (let [{:keys [celsius
-                fahrenheit
-                err]} @temperature-state]
+                fahrenheit]} @temperature-state]
     [:div {:style {:padding "1em"}}
      [:label [:input {:type          "number"
                       :on-change     (partial add-celsius! temperature-state)
@@ -64,9 +68,4 @@
                       :valueAsNumber fahrenheit
                       :value         (str fahrenheit)}]
       "Fahrenheit"]
-     [:button {:on-click #(reset! temperature-state {})}
-      "Reset"]
-     [:label [:input {:type     "text"
-                      :disabled true
-                      :value    (str err)}]]
      [:pre (with-out-str (pp/pprint @temperature-state))]]))
