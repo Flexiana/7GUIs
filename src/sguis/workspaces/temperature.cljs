@@ -23,19 +23,30 @@
   (and (number? x) (not (js/Number.isNaN x))))
 
 #_(false? (numeric? (js/parseFloat "a")))
+#_(true? (numeric? (js/parseFloat "1")))
 
-(defn add-celsius [state field-data]
-  (let [field-value (-> field-data .-target .-value)]
-    (when (numeric? (js/parseFloat field-value))
-      (js/console.log (js/parseFloat field-value))))
-  #_(swap! state assoc :celsius ))
+(defn add-celsius! [state field-data]
+  (let [field-value  (-> field-data .-target .-value)
+        parsed-value (js/parseFloat field-value)]
+    (when (numeric? parsed-value)
+      (swap! state assoc
+             :celsius parsed-value
+             :converter (c->f parsed-value))
+      #_(swap! state assoc :converter 0))))
 
 (defn temperature-ui [temperature-state]
   (let [{:keys [celsius
-                fahrenheit]} @temperature-state]
+                fahrenheit
+                converter]} @temperature-state]
     [:div {:style {:padding "1em"}}
      [:div [:input {:type      "number"
-                    :on-change (partial add-celsius temperature-state)}] "Celsius"]
+                    :on-change (partial add-celsius! temperature-state)
+                    :value     (if celsius
+                                 celsius
+                                 converter)}] "Celsius"]
+     [:div [:input {:type      "number"
+                    :on-change (partial add-celsius! temperature-state)
+                    :value     converter}] "Fahrenheit"]
      #_[:button {:on-click #(swap! counter-state update :click-count inc)}
         "Increase"]
      #_[:button {:on-click #(swap! counter-state assoc :click-count 0)}
