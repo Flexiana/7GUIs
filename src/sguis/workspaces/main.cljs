@@ -2,11 +2,12 @@
   (:require [reagent.core :as r]
             [nubank.workspaces.card-types.react :as ct.react]
             [nubank.workspaces.core :as ws]
-            [sguis.workspaces.counter :as counter]))
+            [sguis.workspaces.counter :refer [counter-state
+                                              counter-ui]]))
 
 (defonce init (ws/mount))
 
-(ws/defcard counter-example-card
+(ws/defcard counter-card
   (ct.react/react-card
-   counter/counter-state
-   (r/as-element [counter/counter-ui counter/counter-state])))
+   counter-state
+   (r/as-element [counter-ui counter-state])))
