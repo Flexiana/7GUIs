@@ -6,9 +6,11 @@
 
 (defn counter-ui [counter-state]
   [:<>
-   [:div "I have been clicked " (-> counter-state
-                                    deref
-                                    :click-count) " times."]
+   [:div [:fieldset {:type     "text"
+                     :disabled true}
+          (-> counter-state
+              deref
+              :click-count)]]
    [:button  {:on-click #(swap! counter-state update :click-count inc)}
     "Increase"]
    [:button {:on-click #(swap! counter-state assoc :click-count 0)}
