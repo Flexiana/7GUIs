@@ -31,24 +31,28 @@
     (when (numeric? parsed-value)
       (swap! state assoc
              :celsius parsed-value
-             :converter (c->f parsed-value))
-      #_(swap! state assoc :converter 0))))
+             :fahrenheit (c->f parsed-value)))))
+
+(defn add-fahrenheit! [state field-data]
+  (let [field-value  (-> field-data .-target .-value)
+        parsed-value (js/parseFloat field-value)]
+    (when (numeric? parsed-value)
+      (swap! state assoc
+             :celsius (f->c parsed-value)
+             :fahrenheit parsed-value))))
 
 (defn temperature-ui [temperature-state]
   (let [{:keys [celsius
-                fahrenheit
-                converter]} @temperature-state]
+                fahrenheit]} @temperature-state]
     [:div {:style {:padding "1em"}}
      [:div [:input {:type      "number"
                     :on-change (partial add-celsius! temperature-state)
-                    :value     (if celsius
-                                 celsius
-                                 converter)}] "Celsius"]
+                    :value     (when celsius
+                                 celsius)}] "Celsius"]
      [:div [:input {:type      "number"
-                    :on-change (partial add-celsius! temperature-state)
-                    :value     converter}] "Fahrenheit"]
-     #_[:button {:on-click #(swap! counter-state update :click-count inc)}
-        "Increase"]
-     #_[:button {:on-click #(swap! counter-state assoc :click-count 0)}
-        "Reset"]
+                    :on-change (partial add-fahrenheit! temperature-state)
+                    :value     (when fahrenheit
+                                 fahrenheit)}] "Fahrenheit"]
+     [:button {:on-click #(reset! temperature-state {})}
+      "Reset"]
      [:pre (with-out-str (pp/pprint @temperature-state))]]))
