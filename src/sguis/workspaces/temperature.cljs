@@ -60,12 +60,10 @@
     [:div {:style {:padding "1em"}}
      [:label [:input {:type          "number"
                       :on-change     (partial add-celsius! temperature-state)
-                      :valueAsNumber celsius
-                      :defaultValue (str celsius)}]
+                      :value (str celsius)}]
       "Celsius"]
      [:label [:input {:type          "number"
                       :on-change     (partial add-fahrenheit! temperature-state)
-                      :valueAsNumber fahrenheit
-                      :defaultValue (str fahrenheit)}]
+                      :value (str fahrenheit)}]
       "Fahrenheit"]
      #_[:pre (with-out-str (pp/pprint @temperature-state))]]))
