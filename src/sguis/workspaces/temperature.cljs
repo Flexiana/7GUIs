@@ -25,36 +25,48 @@
 #_(false? (numeric? (js/parseFloat "a")))
 #_(true? (numeric? (js/parseFloat "1")))
 
-(defn add-celsius! [state field-data]
-  (let [field-value  (-> field-data .-target .-value)
-        parsed-value (js/parseFloat field-value)]
-    (when (numeric? parsed-value)
-      (swap! state assoc
-             :celsius parsed-value
-             :fahrenheit (c->f parsed-value)))))
+(defn add-celsius [current-state data]
+  (if (numeric? data)
+    (assoc current-state
+           :celsius data
+           :err nil
+           :fahrenheit (c->f data))
+    (assoc current-state
+           :err "Invalid Celsius")))
 
-(defn add-fahrenheit! [state field-data]
-  (let [field-value  (-> field-data .-target .-value)
-        parsed-value (js/parseFloat field-value)]
-    (when (numeric? parsed-value)
-      (swap! state assoc
-             :celsius (f->c parsed-value)
-             :fahrenheit parsed-value))))
+(defn add-celsius! [temperature-state field]
+  (swap! temperature-state add-celsius (-> field .-target .-valueAsNumber)))
+
+(defn add-fahrenheit [current-state data]
+  (if (numeric? data)
+    (assoc current-state
+           :celsius (f->c data)
+           :err nil
+           :fahrenheit data)
+    (assoc current-state
+           :err "Invalid Fahrenheit")))
+
+(defn add-fahrenheit! [temperature-state field]
+  (swap! temperature-state add-fahrenheit (-> field .-target .-valueAsNumber)))
 
 (defn temperature-ui [temperature-state]
   (let [{:keys [celsius
-                fahrenheit]} @temperature-state]
+                fahrenheit
+                err]} @temperature-state]
     [:div {:style {:padding "1em"}}
-     [:div [:input {:type      "number"
-                    :on-change (partial add-celsius! temperature-state)
-                    :value     (when celsius
-                                 celsius)}] "Celsius"]
-     [:div [:input {:type      "number"
-                    :on-change (partial add-fahrenheit! temperature-state)
-                    :value     (when fahrenheit
-                                 fahrenheit)}] "Fahrenheit"]
+     [:label [:input {:type          "number"
+                      :on-change     (partial add-celsius! temperature-state)
+                      :valueAsNumber celsius
+                      :value         (str celsius)}]
+      "Celsius"]
+     [:label [:input {:type          "number"
+                      :on-change     (partial add-fahrenheit! temperature-state)
+                      :valueAsNumber fahrenheit
+                      :value         (str fahrenheit)}]
+      "Fahrenheit"]
      [:button {:on-click #(reset! temperature-state {})}
       "Reset"]
-     #_[:input {:type      "number"
-                :on-change #(-> % .-target .-value str/blank? js/console.log)}]
+     [:label [:input {:type     "text"
+                      :disabled true
+                      :value    (str err)}]]
      [:pre (with-out-str (pp/pprint @temperature-state))]]))
