@@ -19,15 +19,23 @@
 
 #_(== 5 (f->c (c->f 5)))
 
-(defn add-celsius [state data]
-  (js/console.log (-> data .-target .-value js/parseFloat))
+(defn numeric? [x]
+  (and (number? x) (not (js/Number.isNaN x))))
+
+#_(false? (numeric? (js/parseFloat "a")))
+
+(defn add-celsius [state field-data]
+  (let [value (-> field-data .-target .-value)]
+    (when (numeric? value)
+      (js/console.log (js/parseFloat value))))
   #_(swap! state assoc :celsius ))
 
 (defn temperature-ui [temperature-state]
   (let [{:keys [celsius
                 fahrenheit]} @temperature-state]
     [:div {:style {:padding "1em"}}
-     [:div [:input {:on-change (partial add-celsius temperature-state)}] "Celsius"]
+     [:div [:input {:type      "number"
+                    :on-change (partial add-celsius temperature-state)}] "Celsius"]
      #_[:button {:on-click #(swap! counter-state update :click-count inc)}
         "Increase"]
      #_[:button {:on-click #(swap! counter-state assoc :click-count 0)}
