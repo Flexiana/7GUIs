@@ -68,4 +68,4 @@
                       :valueAsNumber fahrenheit
                       :value         (str fahrenheit)}]
       "Fahrenheit"]
-     [:pre (with-out-str (pp/pprint @temperature-state))]]))
+     #_[:pre (with-out-str (pp/pprint @temperature-state))]]))
