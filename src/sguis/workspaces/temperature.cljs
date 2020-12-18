@@ -68,10 +68,4 @@
                       :valueAsNumber fahrenheit
                       :value         (str fahrenheit)}]
       "Fahrenheit"]
-<<<<<<< HEAD
-=======
-     [:label [:input {:type     "text"
-                      :disabled true
-                      :value    (str err)}]]
->>>>>>> d178438d0c8ef989b87692948ed9d64e42642833
      [:pre (with-out-str (pp/pprint @temperature-state))]]))
