@@ -9,7 +9,7 @@
   [:div {:style {:padding "1em"}}
    [:div "Book a flight ✈️"]
    [:label {:for "book-flight"}
-    [:select {:on-change #(swap! booker-state assoc :book-flight (.. % -target -value))
+    [:select {:on-change #(swap! booker-state assoc :book-flight (keyword (.. % -target -value)))
               :id        "book"}
      [:option {:value "one-way-flight"} "one-way flight"]
      [:option {:value "return-flight"} "return"]]]
