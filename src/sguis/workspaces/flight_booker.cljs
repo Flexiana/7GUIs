@@ -1,5 +1,5 @@
 (ns sguis.workspaces.flight-booker
-  (:require ["date-fns" :refer [parse
+  (:require ["date-fns" :refer [parseISO
                                 isAfter
                                 isMatch
                                 isSameDay
@@ -11,13 +11,25 @@
 (def booker-state
   (r/atom {:book-flight :one-way-flight}))
 
-(defn can-book? [book-flight go-flight return-flight]
-  false)
+(defn dateformat-coerce [date]
+  (when (isMatch date "yyyy.MM.dd")
+    (-> date
+        (str/replace #"\." "-")
+        parseISO)))
+
+(defn can-book? [{:keys [book-flight go-flight return-flight]}]
+  (let [today (js/Date.)]
+    (cond (= :one-way-flight book-flight) (let [go-flight-parsed (dateformat-coerce go-flight)]
+                                            (or (isSameDay go-flight-parsed today)
+                                                (isAfter go-flight-parsed today)))
+          (= :return-flight book-flight)  (let [go-flight-parsed     (dateformat-coerce go-flight)
+                                                return-flight-parsed (dateformat-coerce return-flight)]
+                                            (isAfter return-flight-parsed go-flight-parsed)))))
 
 (defn valid-date-style [form-value style]
   (merge style
          (when-not (or (str/blank? form-value)
-                       (isMatch form-value "yyyy.mm.dd"))
+                       (isMatch form-value "yyyy.MM.dd"))
            {:background-color "red"})))
 
 (defn flight-selector [booker-state]
@@ -43,14 +55,11 @@
       [:input {:type      "text"
                :style     (valid-date-style return-flight {})
                :on-change #(swap! booker-state assoc :return-flight  (.. % -target -value))
-               :disabled  (false? (= :one-way-flight book-flight))}]]]))
+               :disabled  (false? (= :return-flight book-flight))}]]]))
 
 (defn book-button [booker-state]
-  (let [{:keys [book-flight
-                go-flight
-                return-flight]} @booker-state]
-    [:button {:disabled (not (can-book? book-flight go-flight return-flight))}
-     "Book!"]))
+  [:button {:disabled (not (can-book? @booker-state))}
+   "Book!"])
 
 (defn booker-ui [booker-state]
   [:div {:style {:padding "1em"}}
@@ -59,4 +68,4 @@
    [go-flight-input booker-state]
    [return-flight-input booker-state]
    [book-button booker-state]
-   [:pre (with-out-str (pp/pprint @booker-state))]])
+   #_[:pre (with-out-str (pp/pprint @booker-state))]])
