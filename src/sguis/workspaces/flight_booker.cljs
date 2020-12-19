@@ -5,6 +5,9 @@
 (def booker-state
   (r/atom {:book-flight :one-way-flight}))
 
+(defn forms-valid? [booker-state]
+  false)
+
 (defn flight-selector [booker-state]
   [:label {:id "book-flight"}
    [:select {:id        "book-selector"
@@ -26,11 +29,15 @@
                :on-change #(swap! booker-state assoc :return-flight  (.. % -target -value))
                :disabled  (false? (= :one-way-flight book-flight))}]]]))
 
+(defn book-button [booker-state]
+  [:button {:disabled (not (forms-valid? booker-state))}
+   "Book!"])
+
 (defn booker-ui [booker-state]
   [:div {:style {:padding "1em"}}
    [:div "Book a flight ✈️"]
    [flight-selector booker-state]
    [go-flight-input booker-state]
    [return-flight-input booker-state]
-   [:button "Book"]
+   [book-button booker-state]
    [:pre (with-out-str (pp/pprint @booker-state))]])
