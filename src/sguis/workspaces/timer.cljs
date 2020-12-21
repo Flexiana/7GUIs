@@ -4,7 +4,7 @@
             [cljs.pprint :as pp]))
 
 
-(def timer-state
+(def *timer
   (r/atom {}))
 
 (def progress-bar-style

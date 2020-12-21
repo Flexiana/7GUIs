@@ -1,18 +1,17 @@
 (ns sguis.workspaces.temperature
   (:require [reagent.core :as r]
-            [clojure.string :as str]
-            [cljs.pprint :as pp]))
+            [clojure.string :as str]))
 
 (def temperature-state
   (r/atom {}))
 
-(defn c->f [c]
+(defn celsius->fahrenheit [c]
   (-> c
       (* 9.0)
       (/ 5.0)
       (+ 32.0)))
 
-(defn f->c [f]
+(defn fahrenheit->celsius [f]
   (-> f
       (- 32.0)
       (* 5.0)
@@ -30,7 +29,7 @@
   (when (numeric? data)
     (assoc current-state
            :celsius data
-           :fahrenheit (c->f data))))
+           :fahrenheit (celsius->fahrenheit data))))
 
 (defn add-celsius! [temperature-state field]
   (let [target (-> field .-target)]
@@ -43,7 +42,7 @@
 (defn add-fahrenheit [current-state data]
   (when (numeric? data)
     (assoc current-state
-           :celsius (f->c data)
+           :celsius (fahrenheit->celsius data)
            :fahrenheit data)))
 
 (defn add-fahrenheit! [temperature-state field]
@@ -58,12 +57,11 @@
   (let [{:keys [celsius
                 fahrenheit]} @temperature-state]
     [:div {:style {:padding "1em"}}
-     [:label [:input {:type          "number"
-                      :on-change     (partial add-celsius! temperature-state)
-                      :value (str celsius)}]
+     [:label [:input {:type      "number"
+                      :on-change (partial add-celsius! temperature-state)
+                      :value     (str celsius)}]
       "Celsius"]
-     [:label [:input {:type          "number"
-                      :on-change     (partial add-fahrenheit! temperature-state)
-                      :value (str fahrenheit)}]
-      "Fahrenheit"]
-     #_[:pre (with-out-str (pp/pprint @temperature-state))]]))
+     [:label [:input {:type      "number"
+                      :on-change (partial add-fahrenheit! temperature-state)
+                      :value     (str fahrenheit)}]
+      "Fahrenheit"]]))
