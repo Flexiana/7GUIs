@@ -32,7 +32,8 @@
 
 (defn timer-ui [timer-state]
   [:div {:style {:padding "1em"}}
-   [:div "Timer ⏲️"]
+   [:div {:style {:padding "0.5em"}}
+    "Timer ⏲️"]
    [progress-bar @*timer]
    [:div {:class "timer-slider"}
     [:input {:type "range"
