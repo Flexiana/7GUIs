@@ -17,13 +17,23 @@
         (str/replace #"\." "-")
         parseISO)))
 
-(defn can-book? [{:keys [book-flight go-flight return-flight today]}]
-  (cond (= :one-way-flight book-flight) (let [go-flight-parsed (parse-date go-flight)]
-                                          (or (isSameDay go-flight-parsed today)
-                                              (isAfter go-flight-parsed today)))
-        (= :return-flight book-flight)  (let [go-flight-parsed     (parse-date go-flight)
-                                              return-flight-parsed (parse-date return-flight)]
-                                          (isAfter return-flight-parsed go-flight-parsed))))
+(defn can-book-one-way-flight? [{:keys [go-flight]} today]
+  (let [go-flight-parsed (parse-date go-flight)]
+    (or (isSameDay go-flight-parsed today)
+        (isAfter go-flight-parsed today))))
+
+(defn can-book-return-flight?
+  [booker]
+  (apply isAfter
+         ((juxt :return-flight :go-flight)
+          (-> booker
+              (update :go-flight parse-date)
+              (update :return-flight parse-date)))))
+
+(defn can-book? [{:keys [book-flight] :as booker} today]
+  (case book-flight
+    :one-way-flight (can-book-one-way-flight? booker today)
+    :return-flight  (can-book-return-flight? booker)))
 
 (defn valid-date-style [form-value style]
   (merge style
@@ -31,40 +41,40 @@
                        (isMatch form-value "yyyy.MM.dd"))
            {:background-color "red"})))
 
-(defn flight-selector [booker-state]
+(defn flight-selector [booker]
   [:label {:id "book-flight"}
    [:select {:id        "book-selector"
-             :on-change #(swap! booker-state assoc :book-flight (keyword (.. % -target -value)))}
+             :on-change #(swap! booker assoc :book-flight (keyword (.. % -target -value)))}
     [:option {:value "one-way-flight"} "one-way flight"]
     [:option {:value "return-flight"} "return flight"]]])
 
-(defn go-flight-input [booker-state]
-  (let [{:keys [go-flight]} @booker-state]
+(defn go-flight-input [booker]
+  (let [{:keys [go-flight]} @booker]
     [:div
      [:label {:id "go-flight"}
       [:input {:type      "text"
                :style     (valid-date-style go-flight {})
-               :on-change #(swap! booker-state assoc :go-flight  (.. % -target -value))}]]]))
+               :on-change #(swap! booker assoc :go-flight  (.. % -target -value))}]]]))
 
-(defn return-flight-input [booker-state]
+(defn return-flight-input [booker]
   (let [{:keys [book-flight
-                return-flight]} @booker-state]
+                return-flight]} @booker]
     [:div
      [:label {:id "return-flight"}
       [:input {:type      "text"
                :style     (valid-date-style return-flight {})
-               :on-change #(swap! booker-state assoc :return-flight  (.. % -target -value))
+               :on-change #(swap! booker assoc :return-flight  (.. % -target -value))
                :disabled  (false? (= :return-flight book-flight))}]]]))
 
-(defn book-button [booker-state]
-  [:button {:disabled (not (can-book? @booker-state))}
+(defn book-button [booker today]
+  [:button {:disabled (not (can-book? @booker today))}
    "Book!"])
 
-(defn booker-ui [booker-state]
+(defn booker-ui [booker today]
   [:div {:style {:padding "1em"}}
    [:div "Book a flight ✈️"]
-   [flight-selector booker-state]
-   [go-flight-input booker-state]
-   [return-flight-input booker-state]
-   [book-button booker-state]
-   #_[:pre (with-out-str (pp/pprint @booker-state))]])
+   [flight-selector booker]
+   [go-flight-input booker]
+   [return-flight-input booker]
+   [book-button booker today]
+   [:pre (with-out-str (pp/pprint @booker))]])

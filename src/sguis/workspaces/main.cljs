@@ -24,4 +24,4 @@
 (ws/defcard flight-booker
   (ct.react/react-card
    *booker
-   (r/as-element [booker-ui *booker])))
+   (r/as-element [booker-ui *booker (js/Date.)])))
