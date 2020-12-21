@@ -2,24 +2,24 @@
   (:require [reagent.core :as r]
             [nubank.workspaces.card-types.react :as ct.react]
             [nubank.workspaces.core :as ws]
-            [sguis.workspaces.counter :refer [counter-state
-                                              counter-ui]]
-            [sguis.workspaces.temperature :refer [temperature-state
-                                                  temperature-ui]]
+            [sguis.workspaces.counter :refer [counter-ui
+                                              *counter]]
+            [sguis.workspaces.temperature :refer [temperature-ui
+                                                  *temperature]]
             [sguis.workspaces.flight-booker :refer [booker-ui
                                                     *booker]]))
 (defonce init (ws/mount))
 
 (ws/defcard counter-card
   (ct.react/react-card
-   counter-state
-   (r/as-element [counter-ui counter-state])))
+   *counter
+   (r/as-element [counter-ui *counter])))
 
 
 (ws/defcard temperature-card
   (ct.react/react-card
-   temperature-state
-   (r/as-element [temperature-ui temperature-state])))
+   *temperature
+   (r/as-element [temperature-ui *temperature])))
 
 (ws/defcard flight-booker
   (ct.react/react-card

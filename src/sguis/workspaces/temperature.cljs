@@ -2,7 +2,7 @@
   (:require [reagent.core :as r]
             [clojure.string :as str]))
 
-(def temperature-state
+(def *temperature
   (r/atom {}))
 
 (defn celsius->fahrenheit [c]
