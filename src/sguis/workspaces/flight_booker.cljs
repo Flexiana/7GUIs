@@ -44,7 +44,7 @@
            {:background-color "red"})))
 
 (defn flight-selector [booker]
-  [:label {:id "book-flight"}
+  [:label {:id "book-selector"}
    [:select {:id        "book-selector"
              :on-change #(swap! booker assoc :book-flight (keyword (.. % -target -value)))}
     [:option {:value "one-way-flight"} "one-way flight"]
