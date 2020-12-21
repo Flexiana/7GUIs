@@ -79,4 +79,4 @@
    [go-flight-input booker]
    [return-flight-input booker]
    [book-button @booker today]
-   [:pre (with-out-str (pp/pprint @booker))]])
+   #_[:pre (with-out-str (pp/pprint @booker))]])
