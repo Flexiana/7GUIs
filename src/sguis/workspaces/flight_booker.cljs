@@ -4,8 +4,7 @@
                                 isMatch
                                 isSameDay]]
             [clojure.string :as str]
-            [reagent.core :as r]
-            [cljs.pprint :as pp]))
+            [reagent.core :as r]))
 
 (def parse-date-format
   "yyyy.MM.dd")
@@ -78,5 +77,4 @@
    [flight-selector booker]
    [go-flight-input booker]
    [return-flight-input booker]
-   [book-button @booker today]
-   #_[:pre (with-out-str (pp/pprint @booker))]])
+   [book-button @booker today]])
