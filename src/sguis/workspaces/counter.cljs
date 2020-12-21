@@ -1,7 +1,7 @@
 (ns sguis.workspaces.counter
   (:require [reagent.core :as r]))
 
-(def counter-state
+(def *counter
   (r/atom {:click-count 0}))
 
 (defn counter-ui
