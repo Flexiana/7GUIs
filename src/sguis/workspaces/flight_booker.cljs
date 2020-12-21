@@ -8,7 +8,8 @@
             [cljs.pprint :as pp]))
 
 (def *booker
-  (r/atom {:book-flight :one-way-flight}))
+  (r/atom {:book-flight :one-way-flight
+           :today       (js/Date.)}))
 
 (defn parse-date [date]
   (when (isMatch date "yyyy.MM.dd")
@@ -16,14 +17,13 @@
         (str/replace #"\." "-")
         parseISO)))
 
-(defn can-book? [{:keys [book-flight go-flight return-flight]}]
-  (let [today (js/Date.)]
-    (cond (= :one-way-flight book-flight) (let [go-flight-parsed (parse-date go-flight)]
-                                            (or (isSameDay go-flight-parsed today)
-                                                (isAfter go-flight-parsed today)))
-          (= :return-flight book-flight)  (let [go-flight-parsed     (parse-date go-flight)
-                                                return-flight-parsed (parse-date return-flight)]
-                                            (isAfter return-flight-parsed go-flight-parsed)))))
+(defn can-book? [{:keys [book-flight go-flight return-flight today]}]
+  (cond (= :one-way-flight book-flight) (let [go-flight-parsed (parse-date go-flight)]
+                                          (or (isSameDay go-flight-parsed today)
+                                              (isAfter go-flight-parsed today)))
+        (= :return-flight book-flight)  (let [go-flight-parsed     (parse-date go-flight)
+                                              return-flight-parsed (parse-date return-flight)]
+                                          (isAfter return-flight-parsed go-flight-parsed))))
 
 (defn valid-date-style [form-value style]
   (merge style
