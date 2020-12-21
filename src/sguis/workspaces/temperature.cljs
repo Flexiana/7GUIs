@@ -1,7 +1,6 @@
 (ns sguis.workspaces.temperature
   (:require [reagent.core :as r]
-            [clojure.string :as str]
-            [cljs.pprint :as pp]))
+            [clojure.string :as str]))
 
 (def temperature-state
   (r/atom {}))
@@ -58,12 +57,11 @@
   (let [{:keys [celsius
                 fahrenheit]} @temperature-state]
     [:div {:style {:padding "1em"}}
-     [:label [:input {:type          "number"
-                      :on-change     (partial add-celsius! temperature-state)
-                      :value (str celsius)}]
+     [:label [:input {:type      "number"
+                      :on-change (partial add-celsius! temperature-state)
+                      :value     (str celsius)}]
       "Celsius"]
-     [:label [:input {:type          "number"
-                      :on-change     (partial add-fahrenheit! temperature-state)
-                      :value (str fahrenheit)}]
-      "Fahrenheit"]
-     #_[:pre (with-out-str (pp/pprint @temperature-state))]]))
+     [:label [:input {:type      "number"
+                      :on-change (partial add-fahrenheit! temperature-state)
+                      :value     (str fahrenheit)}]
+      "Fahrenheit"]]))
