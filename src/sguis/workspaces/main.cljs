@@ -10,13 +10,13 @@
                                                     *booker]]))
 (defonce init (ws/mount))
 
-(ws/defcard counter-card
+(ws/defcard counter
   (ct.react/react-card
    *counter
    (r/as-element [counter-ui *counter])))
 
 
-(ws/defcard temperature-card
+(ws/defcard temperature
   (ct.react/react-card
    *temperature
    (r/as-element [temperature-ui *temperature])))
