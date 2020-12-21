@@ -2,13 +2,12 @@
   (:require ["date-fns" :refer [parseISO
                                 isAfter
                                 isMatch
-                                isSameDay
-                                isValid]]
+                                isSameDay]]
             [clojure.string :as str]
             [reagent.core :as r]
             [cljs.pprint :as pp]))
 
-(def booker-state
+(def *booker
   (r/atom {:book-flight :one-way-flight}))
 
 (defn dateformat-coerce [date]

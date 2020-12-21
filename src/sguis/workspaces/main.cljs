@@ -7,7 +7,7 @@
             [sguis.workspaces.temperature :refer [temperature-state
                                                   temperature-ui]]
             [sguis.workspaces.flight-booker :refer [booker-ui
-                                                    booker-state]]))
+                                                    *booker]]))
 (defonce init (ws/mount))
 
 (ws/defcard counter-card
@@ -23,5 +23,5 @@
 
 (ws/defcard flight-booker
   (ct.react/react-card
-   booker-state
-   (r/as-element [booker-ui booker-state])))
+   *booker
+   (r/as-element [booker-ui *booker])))
