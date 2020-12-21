@@ -7,12 +7,14 @@
             [reagent.core :as r]
             [cljs.pprint :as pp]))
 
+(def parse-date-format
+  "yyyy.MM.dd")
+
 (def *booker
-  (r/atom {:book-flight :one-way-flight
-           :today       (js/Date.)}))
+  (r/atom {:book-flight :one-way-flight}))
 
 (defn parse-date [date]
-  (when (isMatch date "yyyy.MM.dd")
+  (when (isMatch date parse-date-format)
     (-> date
         (str/replace #"\." "-")
         parseISO)))
@@ -38,7 +40,7 @@
 (defn valid-date-style [form-value style]
   (merge style
          (when-not (or (str/blank? form-value)
-                       (isMatch form-value "yyyy.MM.dd"))
+                       (isMatch form-value parse-date-format))
            {:background-color "red"})))
 
 (defn flight-selector [booker]
