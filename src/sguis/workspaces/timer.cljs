@@ -1,11 +1,11 @@
 (ns sguis.workspaces.timer
-  (:require [clojure.string :as str]
-            [reagent.core :as r]
+  (:require [reagent.core :as r]
+            [clojure.core.async :refer [<! go timeout]]
             [cljs.pprint :as pp]))
 
 
 (def *timer
-  (r/atom {:timer-slider "50"}))
+  (r/atom {:timer 50}))
 
 (def container-style
   {:position      "relative"
@@ -25,19 +25,33 @@
    :background-color "rgb(178, 34, 34)"})
 
 (defn progress-bar
-  [{:keys [timer-slider]}]
-  [:div {:style container-style}
-   [:div {:style (merge filler-style {:width (-> timer-slider
-                                                 (str "%"))})}]])
+  [timer-state]
+  (let [{:keys [timer]} @timer-state]
+    [:div {:style container-style}
+     [:div {:style (merge filler-style {:width (-> timer
+                                                   (str "%"))})}]]))
+
+(defn countdown-component [timer-state]
+  (r/with-let [seconds-left (get @timer-state :timer)
+               timer-fn     (js/setInterval #(swap! timer-state update :timer dec) 1000)]
+    [:div.timer
+     [:div (str (:timer @timer-state) "s")]]
+    (finally (js/clearInterval timer-fn))))
 
 (defn timer-ui [timer-state]
   [:div {:style {:padding "1em"}}
    [:div {:style {:padding "0.5em"}}
     "Timer ⏲️"]
-   [progress-bar @*timer]
+   (when-not (zero? (get @timer-state :timer))
+     [countdown-component timer-state])
+   [progress-bar *timer]
    [:div {:class "timer-slider"}
     [:input {:type "range"
              :min "1"
              :max "100"
-             :on-input #(swap! *timer assoc :timer-slider (.. % -target -value))}]]
-   [:pre (with-out-str (pp/pprint @*timer))]])
+             :on-input #(swap! timer-state assoc :timer (-> %
+                                                            .-target
+                                                            .-valueAsNumber))}]]
+   [:button {:class "reset-timer"
+             :on-click #(swap! timer-state assoc :timer 50)}
+    "Reset!"]])
