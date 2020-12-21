@@ -10,7 +10,7 @@
 (def *booker
   (r/atom {:book-flight :one-way-flight}))
 
-(defn dateformat-coerce [date]
+(defn parse-date [date]
   (when (isMatch date "yyyy.MM.dd")
     (-> date
         (str/replace #"\." "-")
@@ -18,11 +18,11 @@
 
 (defn can-book? [{:keys [book-flight go-flight return-flight]}]
   (let [today (js/Date.)]
-    (cond (= :one-way-flight book-flight) (let [go-flight-parsed (dateformat-coerce go-flight)]
+    (cond (= :one-way-flight book-flight) (let [go-flight-parsed (parse-date go-flight)]
                                             (or (isSameDay go-flight-parsed today)
                                                 (isAfter go-flight-parsed today)))
-          (= :return-flight book-flight)  (let [go-flight-parsed     (dateformat-coerce go-flight)
-                                                return-flight-parsed (dateformat-coerce return-flight)]
+          (= :return-flight book-flight)  (let [go-flight-parsed     (parse-date go-flight)
+                                                return-flight-parsed (parse-date return-flight)]
                                             (isAfter return-flight-parsed go-flight-parsed)))))
 
 (defn valid-date-style [form-value style]
