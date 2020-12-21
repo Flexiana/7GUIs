@@ -32,19 +32,19 @@
                                                    (str "%"))})}]]))
 
 (defn countdown-component [timer-state]
-  (r/with-let [seconds-left (get @timer-state :timer)
-               timer-fn     (js/setInterval #(swap! timer-state update :timer dec) 1000)]
-    [:div.timer
-     [:div (str (:timer @timer-state) "s")]]
-    (finally (js/clearInterval timer-fn))))
+  (when-not (zero? (get @timer-state :timer))
+    (r/with-let [seconds-left (get @timer-state :timer)
+                 timer-fn     (js/setInterval #(swap! timer-state update :timer dec) 1000)]
+      [:div.timer
+       [:div (str (:timer @timer-state) "s")]]
+      (finally (js/clearInterval timer-fn)))))
 
 (defn timer-ui [timer-state]
   [:div {:style {:padding "1em"}}
    [:div {:style {:padding "0.5em"}}
     "Timer ⏲️"]
-   (when-not (zero? (get @timer-state :timer))
-     [countdown-component timer-state])
-   [progress-bar *timer]
+   [countdown-component timer-state]
+   [progress-bar timer-state]
    [:div {:class "timer-slider"}
     [:input {:type "range"
              :min "1"
