@@ -69,7 +69,7 @@
                :disabled  (false? (= :return-flight book-flight))}]]]))
 
 (defn book-button [booker today]
-  [:button {:disabled (not (can-book? @booker today))}
+  [:button {:disabled (not (can-book? booker today))}
    "Book!"])
 
 (defn booker-ui [booker today]
@@ -78,5 +78,5 @@
    [flight-selector booker]
    [go-flight-input booker]
    [return-flight-input booker]
-   [book-button booker today]
+   [book-button @booker today]
    [:pre (with-out-str (pp/pprint @booker))]])
