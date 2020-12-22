@@ -4,55 +4,61 @@
 (def *crud
   (r/atom {}))
 
-(defn read-component [crud-state]
-  [:span
-   [:label "Name:"]
-   [:input {:type "text"}]]
-  [:span
-   [:label "Lastname:"]
-   [:input {:type "text"}]])
+(def button-style
+  {:margin-right  "20px"
+   :cursor        "pointer"
+   :border-radius "50px"})
 
 (defn filter-prefix [crud-state]
-  [:div {:style {:margin-bottom "50px"}}
-   [:label "Filter prefix"]
+  [:div {:padding "1em"}
+   [:label "Filter prefix: "]
    [:input {:type "text"}]])
 
-(defn create-person [crud-state]
-  [:button {:style {:margin-right "20px"
-                    :cursor       "pointer"}}
-   "create"])
+(defn insert-ui [crud-state]
+  [:div {:padding "1em"}
+   [:label "Name: "
+    [:input {:type "text"}]]
+   [:label "Surname: "
+    [:input {:type "text"}]]])
 
-(defn update-person [crud-state]
-  [:button {:style {:margin-right "20px"
-                    :cursor       "pointer"}}
-   "update"])
-
-(defn delete-person [crud-state]
-  [:button{:style {:margin-right "20px"
-                   :cursor       "pointer"}}
-   "delete"])
+(defn read-ui [crud-state]
+  [:div
+   [:span "Surname"]
+   [:span ", "]
+   [:span "Name"]])
 
 (defn people-ui [crud-state]
   [:div {:style {:display         "flex"
-                 :justify-content "space-between"
-                 :width           "600px"
-                 :margin-bottom   "50px"}}
-   [:div {:style {:width  "45%"
-                  :height "200px"
+                 :justify-content "space-between"}}
+   [:div {:style {:width  "100%"
+                  :height "100%"
                   :border "1px solid gray"}}
-    "name lastname"]
+    [read-ui crud-state]]
    [:div {:style {:display        "flex"
-                  :flex-direction "column"
-                  :width          "45%"}}
-    [read-component crud-state]]])
+                  :padding        "1em"
+                  :flex-direction "column"}}
+    [insert-ui crud-state]]])
+
+(defn create-person [crud-state]
+  [:button {:style button-style}
+   "create"])
+(defn update-person [crud-state]
+  [:button {:style button-style}
+   "update"])
+
+(defn delete-person [crud-state]
+  [:button {:style button-style}
+   "delete"])
 
 (defn crud-ui [crud-state]
   [:div {:style {:display         "flex"
                  :flex-direction  "column"
                  :justify-content "space-between"}}
-   [filter-prefix crud-state]
-   [people-ui]
-   [:div {:style {:display "flex"}}
+   [:div {:padding "1em"}
+    [filter-prefix crud-state]
+    [people-ui]]
+   [:div {:style {:display "flex"
+                  :padding "1em"}}
     [create-person crud-state]
     [update-person crud-state]
     [delete-person crud-state]]])
