@@ -7,7 +7,7 @@
 
 (def container-style
   {:position      "relative"
-   :width         "130px"
+   :width         "100%"
    :height        "0.5em"
    :border-radius "50px"
    :padding       0
@@ -44,18 +44,17 @@
 
 (defn duration-change [timer-state]
   (let [{:keys [elapsed-time]} @timer-state]
-    [:div {:class "timer-slider"}
-     [:input {:type         "range"
-              :min          "1"
-              :max          "100"
-              :width        "100%"
-              :defaultValue "1"
-              :on-input     #(let [duration (-> %
-                                                .-target
-                                                .-valueAsNumber)]
-                           (swap! timer-state assoc :duration duration)
-                           (swap! timer-state :remaining-time update (- %
-                                                                        elapsed-time)))}]]))
+    [:input {:style        {:width "100%"}
+             :type         "range"
+             :min          "1"
+             :max          "100"
+             :defaultValue "1"
+             :on-input     #(let [duration (-> %
+                                               .-target
+                                               .-valueAsNumber)]
+                              (swap! timer-state assoc :duration duration)
+                              (swap! timer-state :remaining-time update (- %
+                                                                           elapsed-time)))}]))
 
 (defn timer-ui [timer-state]
   (r/create-class
@@ -63,7 +62,8 @@
                                 :elapsed-time 0
                                 :duration 1)
     :reagent-render (fn []
-                      [:div {:style {:padding "1em"}}
+                      [:div {:style {:padding "1em"
+                                     :width "10vw"}}
                        [:div {:style {:padding "0.5em"}}
                         "Timer ⏲️"]
                        [countdown-component timer-state]
