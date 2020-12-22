@@ -26,14 +26,18 @@
   [timer-state]
   (let [{:keys [elapsed-time]} @timer-state]
     [:div {:style container-style}
-     [:div {:style (merge filler-style {:width (-> elapsed-time
-                                                   (* -1.0)
-                                                   (+ 100.0)
-                                                   (str "%"))})}]]))
+     [:div {:style (merge filler-style {:width (do (-> elapsed-time
+                                                       (* -1.0)
+                                                       (+ 100.0)
+                                                       js/console.log)
+                                                   (-> elapsed-time
+                                                       (* -1.0)
+                                                       (+ 100.0)
+                                                       (str "%")))})}]]))
 
 (defn countdown-component [timer-state]
   (when-not (>= 0.0 (:elapsed-time @timer-state))
-    (r/with-let [timer-fn     (js/setInterval #(swap! timer-state update :elapsed-time dec) 1000)]
+    (r/with-let [timer-fn (js/setInterval #(swap! timer-state update :elapsed-time dec) 1000)]
       [:div.timer
        [:div (str (:elapsed-time @timer-state) "s")]]
       (finally (js/clearInterval timer-fn)))))
@@ -44,12 +48,17 @@
             :min      "1"
             :max      "100"
             :step     "0.1"
-            :on-input (fn [this]
-                        (swap! timer-state update :elapsed-time (fn [elapsed-time]
-                                                                  (+ elapsed-time (-> this
-                                                                                      .-target
-                                                                                      .-valueAsNumber
-                                                                                      (- 50))))))}]])
+            :on-input (fn [input-duration]
+                        (swap! timer-state
+                               update
+                               :elapsed-time
+                               (fn [elapsed-time]
+                                 (let [duration (-> input-duration
+                                                    .-target
+                                                    .-valueAsNumber
+                                                    (- 50))]
+                                   (+ elapsed-time
+                                      duration)))))}]])
 
 (defn timer-ui [timer-state]
   (r/create-class
