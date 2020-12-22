@@ -36,11 +36,13 @@
 (defn countdown-component [timer-state]
   (let [{:keys [elapsed-time
                 duration]} @timer-state]
-    (when (< elapsed-time duration)
+    (if (< elapsed-time duration)
       (r/with-let [timer-fn (js/setInterval #(swap! timer-state update :elapsed-time inc) 1000)]
         [:div.timer
          [:div (str (:elapsed-time @timer-state) "s")]]
-        (finally (js/clearInterval timer-fn))))))
+        (finally (js/clearInterval timer-fn)))
+      [:div.timer
+       [:div (str (:elapsed-time @timer-state) "s")]])))
 
 (defn duration-change [timer-state]
   (let [{:keys [elapsed-time]} @timer-state]
@@ -52,9 +54,7 @@
              :on-input     #(let [duration (-> %
                                                .-target
                                                .-valueAsNumber)]
-                              (swap! timer-state assoc :duration duration)
-                              (swap! timer-state :remaining-time update (- %
-                                                                           elapsed-time)))}]))
+                              (swap! timer-state assoc :duration duration))}]))
 
 (defn timer-ui [timer-state]
   (r/create-class
@@ -71,5 +71,4 @@
                        [duration-change timer-state]
                        [:button {:class "reset-timer"
                                  :on-click #(swap! timer-state assoc :elapsed-time 0)}
-                        "Reset!"]
-                       [:pre (with-out-str (pp/pprint @timer-state))]])}))
+                        "Reset!"]])}))
