@@ -1,6 +1,5 @@
 (ns sguis.workspaces.timer
-  (:require [reagent.core :as r]
-            [cljs.pprint :as pp]))
+  (:require [reagent.core :as r]))
 
 (def *timer
   (r/atom {}))
@@ -34,12 +33,14 @@
   (let [{:keys [elapsed-time
                 duration]} @timer-state]
     [:div {:style container-style}
-     [:div {:style (merge filler-style {:width (fill-bar elapsed-time duration)})}]]))
+     [:div {:style (merge filler-style
+                          {:width (fill-bar elapsed-time duration)})}]]))
 
 (defn countdown-component [timer-state]
   (let [{:keys [elapsed-time
-                duration]} @timer-state]
-    (if (< elapsed-time duration)
+                duration]} @timer-state
+        finished? (< elapsed-time duration)]
+    (if finished?
       (r/with-let [timer-fn (js/setInterval #(swap! timer-state update :elapsed-time inc) 1000)]
         [:div.timer
          [:div (str (:elapsed-time @timer-state) "s")]]
@@ -53,13 +54,22 @@
            :min          "1"
            :max          "100"
            :defaultValue "1"
-           :on-input     #(swap! timer-state assoc :duration (-> %
-                                                                 .-target
-                                                                 .-valueAsNumber))}])
+           :on-input     #(swap! timer-state
+                                 assoc
+                                 :duration
+                                 (-> %
+                                     .-target
+                                     .-valueAsNumber))}])
+
+(defn reset-button-ui [timer-state]
+  [:button {:class "reset-timer"
+            :on-click #(swap! timer-state assoc :elapsed-time 0)}
+   "Reset!"])
 
 (defn timer-ui [timer-state]
   (r/create-class
-   {:component-did-mount (swap! timer-state assoc
+   {:component-did-mount (swap! timer-state
+                                assoc
                                 :elapsed-time 0
                                 :duration 1)
     :reagent-render (fn []
@@ -70,6 +80,4 @@
                        [countdown-component timer-state]
                        [progress-bar timer-state]
                        [duration-change timer-state]
-                       [:button {:class "reset-timer"
-                                 :on-click #(swap! timer-state assoc :elapsed-time 0)}
-                        "Reset!"]])}))
+                       [reset-button-ui timer-state]])}))
