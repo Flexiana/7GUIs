@@ -3,7 +3,7 @@
             [cljs.pprint :as pp]))
 
 (def *timer
-  (r/atom {:elapsed-time 50}))
+  (r/atom {}))
 
 (def container-style
   {:position      "relative"
@@ -32,26 +32,18 @@
                                                    (str "%"))})}]]))
 
 (defn countdown-component [timer-state]
-  (let [timer-fn (js/setInterval #(when-not (<= (@timer-state :elapsed-time) 0)
-                                    (swap! timer-state update :elapsed-time dec)) 1000)]
-    (r/create-class
-     {:display-name "countdown-component"
-      :component-did-mount (fn [_]
-                             timer-fn)
-      :component-will-unmount (fn [_]
-                                (js/clearInterval timer-fn))
-      :reagent-render (fn []
-                        (if-not (<= (@timer-state :elapsed-time) 0)
-                          [:div.timer
-                           [:div (-> @timer-state :elapsed-time (str "s"))]]
-                          [:div ]))})))
+  (when-not (>= 0.0 (:elapsed-time @timer-state))
+    (r/with-let [timer-fn     (js/setInterval #(swap! timer-state update :elapsed-time dec) 1000)]
+      [:div.timer
+       [:div (str (:elapsed-time @timer-state) "s")]]
+      (finally (js/clearInterval timer-fn)))))
 
 (defn duration-change [timer-state]
   [:div {:class "timer-slider"}
-   [:input {:type "range"
-            :min "1"
-            :max "100"
-            :step "0.1"
+   [:input {:type     "range"
+            :min      "1"
+            :max      "100"
+            :step     "0.1"
             :on-input (fn [this]
                         (swap! timer-state update :elapsed-time (fn [elapsed-time]
                                                                   (+ elapsed-time (-> this
@@ -60,13 +52,16 @@
                                                                                       (- 50))))))}]])
 
 (defn timer-ui [timer-state]
-  [:div {:style {:padding "1em"}}
-   [:div {:style {:padding "0.5em"}}
-    "Timer ⏲️"]
-   [countdown-component timer-state]
-   [progress-bar timer-state]
-   [duration-change timer-state]
-   [:button {:class "reset-timer"
-             :on-click #(swap! timer-state assoc :elapsed-time 50)}
-    "Reset!"]
-   [:pre (with-out-str (pp/pprint @timer-state))]])
+  (r/create-class
+   {:component-did-mount (swap! timer-state assoc :elapsed-time 50)
+    :reagent-render (fn []
+                      [:div {:style {:padding "1em"}}
+                       [:div {:style {:padding "0.5em"}}
+                        "Timer ⏲️"]
+                       [countdown-component timer-state]
+                       [progress-bar timer-state]
+                       [duration-change timer-state]
+                       [:button {:class "reset-timer"
+                                 :on-click #(swap! timer-state assoc :elapsed-time 50)}
+                        "Reset!"]
+                       [:pre (with-out-str (pp/pprint @timer-state))]])}))
