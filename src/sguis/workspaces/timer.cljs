@@ -57,9 +57,9 @@
            :on-input     #(swap! timer-state
                                  assoc
                                  :duration
-                                 (-> %
-                                     .-target
-                                     .-valueAsNumber))}])
+                                 (.. %
+                                     -target
+                                     -valueAsNumber))}])
 
 (defn reset-button-ui [timer-state]
   [:button {:class "reset-timer"
