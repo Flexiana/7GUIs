@@ -22,16 +22,19 @@
    :color "rgb(178, 34, 34)"
    :background-color "rgb(178, 34, 34)"})
 
+(defn fill-bar [elapsed-time duration]
+  (when (< elapsed-time duration)
+    (-> elapsed-time
+        (/  duration)
+        (* 100)
+        (str "%"))))
+
 (defn progress-bar
   [timer-state]
   (let [{:keys [elapsed-time
                 duration]} @timer-state]
     [:div {:style container-style}
-     [:div {:style (merge filler-style {:width (when (< elapsed-time duration)
-                                                 (-> elapsed-time
-                                                     (/  duration)
-                                                     (* 100)
-                                                     (str "%")))})}]]))
+     [:div {:style (merge filler-style {:width (fill-bar elapsed-time duration)})}]]))
 
 (defn countdown-component [timer-state]
   (let [{:keys [elapsed-time
