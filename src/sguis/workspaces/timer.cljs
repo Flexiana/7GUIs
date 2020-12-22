@@ -1,11 +1,9 @@
 (ns sguis.workspaces.timer
   (:require [reagent.core :as r]
-            [clojure.core.async :refer [<! go timeout]]
             [cljs.pprint :as pp]))
 
-
 (def *timer
-  (r/atom {:timer 50}))
+  (r/atom {:elapsed-time 50}))
 
 (def container-style
   {:position      "relative"
@@ -26,18 +24,40 @@
 
 (defn progress-bar
   [timer-state]
-  (let [{:keys [timer]} @timer-state]
+  (let [{:keys [elapsed-time]} @timer-state]
     [:div {:style container-style}
-     [:div {:style (merge filler-style {:width (-> timer
+     [:div {:style (merge filler-style {:width (-> elapsed-time
+                                                   (* -1.0)
+                                                   (+ 100.0)
                                                    (str "%"))})}]]))
 
 (defn countdown-component [timer-state]
-  (when-not (zero? (get @timer-state :timer))
-    (r/with-let [seconds-left (get @timer-state :timer)
-                 timer-fn     (js/setInterval #(swap! timer-state update :timer dec) 1000)]
-      [:div.timer
-       [:div (str (:timer @timer-state) "s")]]
-      (finally (js/clearInterval timer-fn)))))
+  (let [timer-fn (js/setInterval #(when-not (<= (@timer-state :elapsed-time) 0)
+                                    (swap! timer-state update :elapsed-time dec)) 1000)]
+    (r/create-class
+     {:display-name "countdown-component"
+      :component-did-mount (fn [_]
+                             timer-fn)
+      :component-will-unmount (fn [_]
+                                (js/clearInterval timer-fn))
+      :reagent-render (fn []
+                        (if-not (<= (@timer-state :elapsed-time) 0)
+                          [:div.timer
+                           [:div (-> @timer-state :elapsed-time (str "s"))]]
+                          [:div ]))})))
+
+(defn duration-change [timer-state]
+  [:div {:class "timer-slider"}
+   [:input {:type "range"
+            :min "1"
+            :max "100"
+            :step "0.1"
+            :on-input (fn [this]
+                        (swap! timer-state update :elapsed-time (fn [elapsed-time]
+                                                                  (+ elapsed-time (-> this
+                                                                                      .-target
+                                                                                      .-valueAsNumber
+                                                                                      (- 50))))))}]])
 
 (defn timer-ui [timer-state]
   [:div {:style {:padding "1em"}}
@@ -45,13 +65,8 @@
     "Timer ⏲️"]
    [countdown-component timer-state]
    [progress-bar timer-state]
-   [:div {:class "timer-slider"}
-    [:input {:type "range"
-             :min "1"
-             :max "100"
-             :on-input #(swap! timer-state assoc :timer (-> %
-                                                            .-target
-                                                            .-valueAsNumber))}]]
+   [duration-change timer-state]
    [:button {:class "reset-timer"
-             :on-click #(swap! timer-state assoc :timer 50)}
-    "Reset!"]])
+             :on-click #(swap! timer-state assoc :elapsed-time 50)}
+    "Reset!"]
+   [:pre (with-out-str (pp/pprint @timer-state))]])
