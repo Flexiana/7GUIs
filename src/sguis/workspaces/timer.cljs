@@ -7,7 +7,7 @@
 
 (def container-style
   {:position      "relative"
-   :width         "100%"
+   :width         "130px"
    :height        "0.5em"
    :border-radius "50px"
    :padding       0
@@ -24,45 +24,44 @@
 
 (defn progress-bar
   [timer-state]
-  (let [{:keys [elapsed-time]} @timer-state]
+  (let [{:keys [elapsed-time
+                duration]} @timer-state]
     [:div {:style container-style}
-     [:div {:style (merge filler-style {:width (do (-> elapsed-time
-                                                       (* -1.0)
-                                                       (+ 100.0)
-                                                       js/console.log)
-                                                   (-> elapsed-time
-                                                       (* -1.0)
-                                                       (+ 100.0)
-                                                       (str "%")))})}]]))
+     [:div {:style (merge filler-style {:width (when (< elapsed-time duration)
+                                                 (-> elapsed-time
+                                                     (/  duration)
+                                                     (* 100)
+                                                     (str "%")))})}]]))
 
 (defn countdown-component [timer-state]
-  (when-not (>= 0.0 (:elapsed-time @timer-state))
-    (r/with-let [timer-fn (js/setInterval #(swap! timer-state update :elapsed-time dec) 1000)]
-      [:div.timer
-       [:div (str (:elapsed-time @timer-state) "s")]]
-      (finally (js/clearInterval timer-fn)))))
+  (let [{:keys [elapsed-time
+                duration]} @timer-state]
+    (when (< elapsed-time duration)
+      (r/with-let [timer-fn (js/setInterval #(swap! timer-state update :elapsed-time inc) 1000)]
+        [:div.timer
+         [:div (str (:elapsed-time @timer-state) "s")]]
+        (finally (js/clearInterval timer-fn))))))
 
 (defn duration-change [timer-state]
-  [:div {:class "timer-slider"}
-   [:input {:type     "range"
-            :min      "1"
-            :max      "100"
-            :step     "0.1"
-            :on-input (fn [input-duration]
-                        (swap! timer-state
-                               update
-                               :elapsed-time
-                               (fn [elapsed-time]
-                                 (let [duration (-> input-duration
-                                                    .-target
-                                                    .-valueAsNumber
-                                                    (- 50))]
-                                   (+ elapsed-time
-                                      duration)))))}]])
+  (let [{:keys [elapsed-time]} @timer-state]
+    [:div {:class "timer-slider"}
+     [:input {:type         "range"
+              :min          "1"
+              :max          "100"
+              :width        "100%"
+              :defaultValue "1"
+              :on-input     #(let [duration (-> %
+                                                .-target
+                                                .-valueAsNumber)]
+                           (swap! timer-state assoc :duration duration)
+                           (swap! timer-state :remaining-time update (- %
+                                                                        elapsed-time)))}]]))
 
 (defn timer-ui [timer-state]
   (r/create-class
-   {:component-did-mount (swap! timer-state assoc :elapsed-time 50)
+   {:component-did-mount (swap! timer-state assoc
+                                :elapsed-time 0
+                                :duration 1)
     :reagent-render (fn []
                       [:div {:style {:padding "1em"}}
                        [:div {:style {:padding "0.5em"}}
@@ -71,6 +70,6 @@
                        [progress-bar timer-state]
                        [duration-change timer-state]
                        [:button {:class "reset-timer"
-                                 :on-click #(swap! timer-state assoc :elapsed-time 50)}
+                                 :on-click #(swap! timer-state assoc :elapsed-time 0)}
                         "Reset!"]
                        [:pre (with-out-str (pp/pprint @timer-state))]])}))
