@@ -51,10 +51,9 @@
              :min          "1"
              :max          "100"
              :defaultValue "1"
-             :on-input     #(let [duration (-> %
-                                               .-target
-                                               .-valueAsNumber)]
-                              (swap! timer-state assoc :duration duration))}]))
+             :on-input     #(swap! timer-state assoc :duration (-> %
+                                                                   .-target
+                                                                   .-valueAsNumber))}]))
 
 (defn timer-ui [timer-state]
   (r/create-class
