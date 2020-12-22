@@ -45,15 +45,14 @@
        [:div (str (:elapsed-time @timer-state) "s")]])))
 
 (defn duration-change [timer-state]
-  (let [{:keys [elapsed-time]} @timer-state]
-    [:input {:style        {:width "100%"}
-             :type         "range"
-             :min          "1"
-             :max          "100"
-             :defaultValue "1"
-             :on-input     #(swap! timer-state assoc :duration (-> %
-                                                                   .-target
-                                                                   .-valueAsNumber))}]))
+  [:input {:style        {:width "100%"}
+           :type         "range"
+           :min          "1"
+           :max          "100"
+           :defaultValue "1"
+           :on-input     #(swap! timer-state assoc :duration (-> %
+                                                                 .-target
+                                                                 .-valueAsNumber))}])
 
 (defn timer-ui [timer-state]
   (r/create-class
