@@ -4,7 +4,7 @@
 
 (def *crud
   (r/atom {:next-id 0
-           :data    []}))
+           :data    #{}}))
 
 (def button-style
   {:margin-right  "20px"
@@ -21,30 +21,48 @@
                                (.. % -target -value))}]])
 
 (defn insert-ui [crud-state]
-  [:div {:padding "1em"}
-   [:label "Name: "
-    [:input {:type      "text"
-             :on-change #(swap! crud-state
-                                assoc
-                                :name-insertion
-                                (.. % -target -value))}]]
-   [:label "Surname: "
-    [:input {:type      "text"
-             :on-change #(swap! crud-state
-                                assoc
-                                :surname-insertion
-                                (.. % -target -value))}]]])
+  (let [{:keys [selected-person]} @crud-state]
+    [:div {:padding "1em"}
+     [:label "Name: "
+      [:input {:type      "text"
+               :on-change #(swap! crud-state
+                                  assoc
+                                  :name-insertion
+                                  (.. % -target -value))}]]
+     [:label "Surname: "
+      [:input {:type      "text"
+               :on-change #(swap! crud-state
+                                  assoc
+                                  :surname-insertion
+                                  (.. % -target -value))}]]]))
 
-;; todo, change to selector
+
+(def a-style
+  {:text-decoration "none"
+   :color           "black"})
+
+(def selection-style
+  {:background-color "blue"})
+
 (defn read-ui [crud-state]
-  (let [{:keys [data]} @crud-state]
-    [:<> (for [{:keys [name
-                       surname
-                       id]} data]
-           [:div {:id id}
-            [:span surname]
-            [:span ", "]
-            [:span name]])]))
+  (let [{:keys [data
+                selected-person]} @crud-state]
+    [:ul {:style {:list-style-type "none"
+                  :padding         0
+                  :margin          0}}
+     (for [{:keys [name
+                   surname
+                   id]}    data
+           person-selected (filter #(= id (:id %)) data)]
+       [:li {:style    (if (= id (:id selected-person))
+                         selection-style
+                         {})
+             :on-click #(swap! crud-state assoc :selected-person person-selected)}
+        [:a {:style (if (= id (:id selected-person))
+                      (assoc a-style :color "white")
+                      a-style)
+             :href  "#"}
+         (str surname ", " name)]])]))
 
 (defn people-ui [crud-state]
   [:div {:style {:display         "flex"
@@ -72,23 +90,43 @@
      "create"]))
 
 (defn update-person [crud-state]
-  [:button {:style button-style}
-   "update"])
+  (let [{:keys [selected-person]} @crud-state]
+    [:button {:style    button-style
+              :disabled (not selected-person)}
+     "update"]))
 
 (defn delete-person [crud-state]
-  [:button {:style button-style}
-   "delete"])
+  (let [{:keys [selected-person]} @crud-state]
+    [:button {:style    button-style
+              :disabled (not selected-person)}
+     "delete"]))
 
 (defn crud-ui [crud-state]
-  [:div {:style {:display         "flex"
-                 :flex-direction  "column"
-                 :justify-content "space-between"}}
-   [:div {:padding "1em"}
-    [filter-prefix crud-state]
-    [people-ui crud-state]]
-   [:div {:style {:display "flex"
-                  :padding "1em"}}
-    [create-person crud-state]
-    [update-person crud-state]
-    [delete-person crud-state]]
-   [:pre (with-out-str (pp/pprint @crud-state))]])
+  (r/create-class
+   {:component-did-mount (do (swap! crud-state
+                                    update
+                                    :data
+                                    conj
+                                    {:id      -1
+                                     :name    "a"
+                                     :surname "z"})
+                             (swap! crud-state
+                                    update
+                                    :data
+                                    conj
+                                    {:id      -2
+                                     :name    "a"
+                                     :surname "zz"}))
+    :reagent-render      (fn []
+                           [:div {:style {:display         "flex"
+                                          :flex-direction  "column"
+                                          :justify-content "space-between"}}
+                            [:div {:padding "1em"}
+                             [filter-prefix crud-state]
+                             [people-ui crud-state]]
+                            [:div {:style {:display "flex"
+                                           :padding "1em"}}
+                             [create-person crud-state]
+                             [update-person crud-state]
+                             [delete-person crud-state]]
+                            [:pre (with-out-str (pp/pprint @crud-state))]])}))
