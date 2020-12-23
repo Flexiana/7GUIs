@@ -1,6 +1,5 @@
 (ns sguis.workspaces.crud
-  (:require [reagent.core :as r]
-            [cljs.pprint :as pp]))
+  (:require [reagent.core :as r]))
 
 (def *crud
   (r/atom {:next-id      0
@@ -40,7 +39,6 @@
                                   :surname-insertion
                                   (.. % -target -value))}]]]))
 
-
 (def a-style
   {:text-decoration "none"
    :color           "black"})
@@ -50,7 +48,7 @@
 
 (defn read-ui [crud-state]
   (let [{:person/keys [by-id]
-         :keys        [selected-person]} @crud-state
+         :keys        [current-id]} @crud-state
         data                             (vals by-id)]
     [:ul {:style {:list-style-type "none"
                   :padding         0
@@ -58,14 +56,14 @@
      (for [{:keys [id
                    name
                    surname]} data]
-       [:li {:style    (if (= selected-person (get by-id id))
+       [:li {:style    (if (= current-id id)
                          selection-style
                          {})
              :on-focus #(swap! crud-state assoc
                                :name-insertion name
                                :surname-insertion surname
-                               :selected-person (get by-id id))}
-        [:a {:style (if (= selected-person (get by-id id))
+                               :current-id id)}
+        [:a {:style (if  (= current-id id)
                       (assoc a-style :color "white")
                       a-style)
              :href  "#"}
@@ -73,8 +71,7 @@
 
 (defn people-ui [crud-state]
   [:div {:style {:display         "flex"
-                 :justify-content "space-between"}
-         :on-blur #(swap! crud-state dissoc :selected-person)}
+                 :justify-content "space-between"}}
    [:div {:style {:width  "100%"
                   :height "100%"
                   :border "1px solid gray"}}
@@ -98,15 +95,25 @@
      "create"]))
 
 (defn update-person [crud-state]
-  (let [{:keys [selected-person]} @crud-state]
+  (let [{:keys [current-id
+                name-insertion
+                surname-insertion]} @crud-state]
     [:button {:style    button-style
-              :disabled (not selected-person)}
+              :disabled (not current-id)
+              :on-click (fn [_]
+                          (swap! crud-state
+                                 update-in [:person/by-id current-id]
+                                 #(assoc % :name name-insertion
+                                         :surname surname-insertion))
+                          (swap! crud-state dissoc :current-id))}
      "update"]))
 
 (defn delete-person [crud-state]
-  (let [{:keys [selected-person]} @crud-state]
+  (let [{:keys [current-id]} @crud-state]
     [:button {:style    button-style
-              :disabled (not selected-person)}
+              :disabled (not current-id)
+              :on-click #(do (swap! crud-state update :person/by-id dissoc current-id)
+                             (swap! crud-state dissoc :current-id))}
      "delete"]))
 
 (defn crud-ui [crud-state]
@@ -134,5 +141,4 @@
                                            :padding "1em"}}
                              [create-person crud-state]
                              [update-person crud-state]
-                             [delete-person crud-state]]
-                            [:pre (with-out-str (pp/pprint @crud-state))]])}))
+                             [delete-person crud-state]]])}))
