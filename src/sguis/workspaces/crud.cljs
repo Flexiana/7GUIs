@@ -49,7 +49,7 @@
 (defn read-ui [crud-state]
   (let [{:person/keys [by-id]
          :keys        [current-id]} @crud-state
-        data                             (vals by-id)]
+        data                        (vals by-id)]
     [:ul {:style {:list-style-type "none"
                   :padding         0
                   :margin          0}}
@@ -63,7 +63,7 @@
                                :name-insertion name
                                :surname-insertion surname
                                :current-id id)}
-        [:a {:style (if  (= current-id id)
+        [:a {:style (if (= current-id id)
                       (assoc a-style :color "white")
                       a-style)
              :href  "#"}
