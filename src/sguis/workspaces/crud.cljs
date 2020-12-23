@@ -21,21 +21,20 @@
                                (.. % -target -value))}]])
 
 (defn insert-ui [crud-state]
-  (let [{:keys [selected-person]} @crud-state
-        {:keys [id name surname]} selected-person]
+  (let [{:keys [name-insertion
+                surname-insertion]} @crud-state]
     [:div {:padding "1em"}
      [:label "Name: "
       [:input {:type      "text"
-               :value     name
+               :value (when name-insertion name-insertion)
                :on-change #(swap! crud-state
                                   assoc
                                   :name-insertion
-                                  (.. % -target -value)
-                                  :id-insetion
-                                  )}]]
+                                  (.. % -target -value))}]]
      [:label "Surname: "
       [:input {:type      "text"
-               :value     surname
+               :value (when surname-insertion
+                        surname-insertion)
                :on-change #(swap! crud-state
                                   assoc
                                   :surname-insertion
@@ -62,7 +61,10 @@
        [:li {:style    (if (= selected-person (get by-id id))
                          selection-style
                          {})
-             :on-click #(swap! crud-state assoc :selected-person (get by-id id))}
+             :on-focus #(swap! crud-state assoc
+                               :name-insertion name
+                               :surname-insertion surname
+                               :selected-person (get by-id id))}
         [:a {:style (if (= selected-person (get by-id id))
                       (assoc a-style :color "white")
                       a-style)
@@ -71,7 +73,8 @@
 
 (defn people-ui [crud-state]
   [:div {:style {:display         "flex"
-                 :justify-content "space-between"}}
+                 :justify-content "space-between"}
+         :on-blur #(swap! crud-state dissoc :selected-person)}
    [:div {:style {:width  "100%"
                   :height "100%"
                   :border "1px solid gray"}}
