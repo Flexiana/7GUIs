@@ -3,8 +3,8 @@
             [cljs.pprint :as pp]))
 
 (def *crud
-  (r/atom {:next-id 0
-           :data    #{}}))
+  (r/atom {:next-id      0
+           :person/by-id {}}))
 
 (def button-style
   {:margin-right  "20px"
@@ -21,16 +21,21 @@
                                (.. % -target -value))}]])
 
 (defn insert-ui [crud-state]
-  (let [{:keys [selected-person]} @crud-state]
+  (let [{:keys [selected-person]} @crud-state
+        {:keys [id name surname]} selected-person]
     [:div {:padding "1em"}
      [:label "Name: "
       [:input {:type      "text"
+               :value     name
                :on-change #(swap! crud-state
                                   assoc
                                   :name-insertion
-                                  (.. % -target -value))}]]
+                                  (.. % -target -value)
+                                  :id-insetion
+                                  )}]]
      [:label "Surname: "
       [:input {:type      "text"
+               :value     surname
                :on-change #(swap! crud-state
                                   assoc
                                   :surname-insertion
@@ -45,20 +50,20 @@
   {:background-color "blue"})
 
 (defn read-ui [crud-state]
-  (let [{:keys [data
-                selected-person]} @crud-state]
+  (let [{:person/keys [by-id]
+         :keys        [selected-person]} @crud-state
+        data                             (vals by-id)]
     [:ul {:style {:list-style-type "none"
                   :padding         0
                   :margin          0}}
-     (for [{:keys [name
-                   surname
-                   id]}    data
-           person-selected (filter #(= id (:id %)) data)]
-       [:li {:style    (if (= id (:id selected-person))
+     (for [{:keys [id
+                   name
+                   surname]} data]
+       [:li {:style    (if (= selected-person (get by-id id))
                          selection-style
                          {})
-             :on-click #(swap! crud-state assoc :selected-person person-selected)}
-        [:a {:style (if (= id (:id selected-person))
+             :on-click #(swap! crud-state assoc :selected-person (get by-id id))}
+        [:a {:style (if (= selected-person (get by-id id))
                       (assoc a-style :color "white")
                       a-style)
              :href  "#"}
@@ -83,9 +88,9 @@
     [:button {:style    button-style
               :on-click #(when-not (and (empty? name-insertion)
                                         (empty? surname-insertion))
-                           (swap! crud-state update :data conj {:id      next-id
-                                                                :name    name-insertion
-                                                                :surname surname-insertion})
+                           (swap! crud-state assoc-in [:person/by-id next-id] {:id      next-id
+                                                                               :name    name-insertion
+                                                                               :surname surname-insertion})
                            (swap! crud-state update :next-id inc))}
      "create"]))
 
@@ -104,16 +109,14 @@
 (defn crud-ui [crud-state]
   (r/create-class
    {:component-did-mount (do (swap! crud-state
-                                    update
-                                    :data
-                                    conj
+                                    assoc-in
+                                    [:person/by-id -1]
                                     {:id      -1
                                      :name    "a"
                                      :surname "z"})
                              (swap! crud-state
-                                    update
-                                    :data
-                                    conj
+                                    assoc-in
+                                    [:person/by-id -2]
                                     {:id      -2
                                      :name    "a"
                                      :surname "zz"}))
