@@ -9,7 +9,9 @@
             [sguis.workspaces.flight-booker :refer [booker-ui
                                                     *booker]]
             [sguis.workspaces.timer :refer [timer-ui
-                                            *timer]]))
+                                            *timer]]
+            [sguis.workspaces.circle-drawer :refer [circles-ui
+                                                    *circles]]))
 
 (defonce init (ws/mount))
 
@@ -32,3 +34,9 @@
   (ct.react/react-card
    *timer
    (r/as-element [timer-ui *timer])))
+
+
+(ws/defcard circle-drawer
+  (ct.react/react-card
+   *circles
+   (r/as-element [circles-ui *circles])))
