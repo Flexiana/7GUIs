@@ -26,6 +26,8 @@
      [:label "Name: "
       [:input {:type      "text"
                :value (when name-insertion name-insertion)
+               :value (when name-insertion
+                        name-insertion)
                :on-change #(swap! crud-state
                                   assoc
                                   :name-insertion
