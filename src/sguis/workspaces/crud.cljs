@@ -99,6 +99,10 @@
                                    :name    name-insertion
                                    :surname surname-insertion})
                            (swap! crud-state
+                                  dissoc
+                                  :name-insertion
+                                  :surname-insertion)
+                           (swap! crud-state
                                   update
                                   :next-id
                                   inc))}
@@ -117,6 +121,10 @@
                                  #(assoc %
                                          :name name-insertion
                                          :surname surname-insertion))
+                          (swap! crud-state
+                                 dissoc
+                                 :name-insertion
+                                 :surname-insertion)
                           (swap! crud-state
                                  dissoc
                                  :current-id))}
