@@ -51,5 +51,4 @@
   [:<>
    [:div "HI!"]
    [:dialog {:id "dialog-try"}]
-   [div-with-canvas circles-state]
-   [:pre (with-out-str (cljs.pprint/pprint @*circles))]])
+   [div-with-canvas circles-state]])
