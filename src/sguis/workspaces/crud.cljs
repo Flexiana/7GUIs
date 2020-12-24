@@ -53,25 +53,32 @@
   (let [{:person/keys [by-id]
          :keys        [current-id
                        filter-prefix]} @crud-state
-        data                        (vals by-id)]
+        data                        (vals by-id)
+        filtered-data (filter #(str/starts-with?
+                                (str (:surname %)
+                                     ","
+                                     (:name %))
+                                filter-prefix) data)]
     [:ul {:style {:list-style-type "none"
                   :padding         0
                   :margin          0}}
      (for [{:keys [id
                    name
-                   surname]} (filter #(str/starts-with? (str (:surname %) "," (:name %)) filter-prefix) data)]
-       [:li {:style    (if (= current-id id)
+                   surname]} filtered-data
+           :let [current? (= current-id id)
+                 show-name (str surname ", " name)]]
+       [:li {:style    (if current?
                          selection-style
                          {})
              :on-click #(swap! crud-state assoc
                                :name-insertion name
                                :surname-insertion surname
                                :current-id id)}
-        [:a {:style (if (= current-id id)
+        [:a {:style (if current?
                       (assoc a-style :color "white")
                       a-style)
              :href  "#"}
-         (str surname ", " name)]])]))
+         show-name]])]))
 
 (defn people-ui [crud-state]
   [:div {:style {:display         "flex"
@@ -85,64 +92,69 @@
                   :flex-direction "column"}}
     [insert-ui crud-state]]])
 
+(defn clear-input-fields! [crud-state]
+  (swap! crud-state
+         dissoc
+         :name-insertion
+         :surname-insertion
+         :current-id))
+
 (defn create-person [crud-state]
   (let [{:keys [name-insertion
                 surname-insertion
-                next-id]} @crud-state]
-    [:button {:style    button-style
-              :on-click #(when-not (and (empty? name-insertion)
-                                        (empty? surname-insertion))
-                           (swap! crud-state
-                                  assoc-in
-                                  [:person/by-id next-id]
-                                  {:id      next-id
-                                   :name    name-insertion
-                                   :surname surname-insertion})
-                           (swap! crud-state
-                                  dissoc
-                                  :name-insertion
-                                  :surname-insertion)
-                           (swap! crud-state
-                                  update
-                                  :next-id
-                                  inc))}
-     "create"]))
+                next-id]} @crud-state
+        empty-inputs? (and (empty? name-insertion)
+                           (empty? surname-insertion))]
+    (letfn [(create-person! [crud-state]
+              (swap! crud-state
+                     assoc-in
+                     [:person/by-id next-id]
+                     {:id      next-id
+                      :name    name-insertion
+                      :surname surname-insertion}))
+            (increment-id! [crud-state]
+              (swap! crud-state
+                     update
+                     :next-id
+                     inc))]
+      [:button {:style    button-style
+                :on-click #(when-not empty-inputs?
+                             (create-person! crud-state)
+                             (clear-input-fields! crud-state)
+                             (increment-id! crud-state))}
+       "create"])))
 
 (defn update-person [crud-state]
   (let [{:keys [current-id
                 name-insertion
                 surname-insertion]} @crud-state]
-    [:button {:style    button-style
-              :disabled (not current-id)
-              :on-click (fn [_]
-                          (swap! crud-state
-                                 update-in
-                                 [:person/by-id current-id]
-                                 #(assoc %
-                                         :name name-insertion
-                                         :surname surname-insertion))
-                          (swap! crud-state
-                                 dissoc
-                                 :name-insertion
-                                 :surname-insertion)
-                          (swap! crud-state
-                                 dissoc
-                                 :current-id))}
-     "update"]))
+    (letfn [(update-selection! []
+              (swap! crud-state
+                     update-in
+                     [:person/by-id current-id]
+                     #(assoc %
+                             :name name-insertion
+                             :surname surname-insertion)))]
+      [:button {:style    button-style
+                :disabled (not current-id)
+                :on-click (fn [_]
+                            (update-selection! crud-state)
+                            (clear-input-fields! crud-state))}
+       "update"])))
 
 (defn delete-person [crud-state]
   (let [{:keys [current-id]} @crud-state]
-    [:button {:style    button-style
-              :disabled (not current-id)
-              :on-click #(do (swap! crud-state
-                                    update
-                                    :person/by-id
-                                    dissoc
-                                    current-id)
-                             (swap! crud-state
-                                    dissoc
-                                    :current-id))}
-     "delete"]))
+    (letfn [(delete-selection! [crud-state]
+              (swap! crud-state
+                     update
+                     :person/by-id
+                     dissoc
+                     current-id))]
+      [:button {:style    button-style
+                :disabled (not current-id)
+                :on-click #(do (delete-selection! crud-state)
+                               (clear-input-fields! crud-state))}
+       "delete"])))
 
 (defn crud-ui [crud-state]
   [:div {:style {:display         "flex"
