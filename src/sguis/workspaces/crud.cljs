@@ -1,5 +1,6 @@
 (ns sguis.workspaces.crud
-  (:require [reagent.core :as r]))
+  (:require [clojure.string :as str]
+            [reagent.core :as r]))
 
 (def *crud
   (r/atom {:next-id      0
@@ -25,7 +26,6 @@
     [:div {:padding "1em"}
      [:label "Name: "
       [:input {:type      "text"
-               :value (when name-insertion name-insertion)
                :value (when name-insertion
                         name-insertion)
                :on-change #(swap! crud-state
@@ -50,14 +50,15 @@
 
 (defn read-ui [crud-state]
   (let [{:person/keys [by-id]
-         :keys        [current-id]} @crud-state
+         :keys        [current-id
+                       filter-prefix]} @crud-state
         data                        (vals by-id)]
     [:ul {:style {:list-style-type "none"
                   :padding         0
                   :margin          0}}
      (for [{:keys [id
                    name
-                   surname]} data]
+                   surname]} (filter #(str/starts-with? (:surname %) filter-prefix) data)]
        [:li {:style    (if (= current-id id)
                          selection-style
                          {})
