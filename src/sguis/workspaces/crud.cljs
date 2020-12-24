@@ -4,6 +4,7 @@
 
 (def *crud
   (r/atom {:next-id      0
+           :filter-prefix ""
            :person/by-id {}}))
 
 (def button-style
@@ -58,7 +59,7 @@
                   :margin          0}}
      (for [{:keys [id
                    name
-                   surname]} (filter #(str/starts-with? (:surname %) filter-prefix) data)]
+                   surname]} (filter #(str/starts-with? (str (:surname %) "," (:name %)) filter-prefix) data)]
        [:li {:style    (if (= current-id id)
                          selection-style
                          {})
@@ -120,28 +121,14 @@
      "delete"]))
 
 (defn crud-ui [crud-state]
-  (r/create-class
-   {:component-did-mount (do (swap! crud-state
-                                    assoc-in
-                                    [:person/by-id -1]
-                                    {:id      -1
-                                     :name    "a"
-                                     :surname "z"})
-                             (swap! crud-state
-                                    assoc-in
-                                    [:person/by-id -2]
-                                    {:id      -2
-                                     :name    "a"
-                                     :surname "zz"}))
-    :reagent-render      (fn []
-                           [:div {:style {:display         "flex"
-                                          :flex-direction  "column"
-                                          :justify-content "space-between"}}
-                            [:div {:padding "1em"}
-                             [filter-prefix crud-state]
-                             [people-ui crud-state]]
-                            [:div {:style {:display "flex"
-                                           :padding "1em"}}
-                             [create-person crud-state]
-                             [update-person crud-state]
-                             [delete-person crud-state]]])}))
+  [:div {:style {:display         "flex"
+                 :flex-direction  "column"
+                 :justify-content "space-between"}}
+   [:div {:padding "1em"}
+    [filter-prefix crud-state]
+    [people-ui crud-state]]
+   [:div {:style {:display "flex"
+                  :padding "1em"}}
+    [create-person crud-state]
+    [update-person crud-state]
+    [delete-person crud-state]]])
