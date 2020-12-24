@@ -19,7 +19,8 @@
           (.arc ctx 75 75 50 0 (* 2 js/Math.PI) true)
           (.stroke ctx)
           :draw)
-      (.clearRect ctx 0 0 (.-width canvas) (.-height canvas)))))
+      (do (swap! circles-state dissoc :drawing)
+          (.clearRect ctx 0 0 (.-width canvas) (.-height canvas))))))
 
 (defn div-with-canvas [circles-state]
   (let [{:keys [window-widht
@@ -34,14 +35,10 @@
       (fn [ ]
         window-widht
         [:div.with-canvas
-         [:canvas {:on-click #(if-not drawing
-                                (swap! circles-state
-                                       assoc
-                                       :drawing
-                                       (draw-canvas-contents circles-state))
-                                (swap! circles-state
-                                       dissoc
-                                       :drawing))}
+         [:canvas {:on-click #(swap! circles-state
+                                     assoc
+                                     :drawing
+                                     (draw-canvas-contents circles-state))}
           (when dom-node
             {:width  (.-clientWidth dom-node)
              :height (.-clientHeight dom-node)})]])})))
