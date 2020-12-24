@@ -47,5 +47,4 @@
 (defn circles-ui [circles-state]
   [:<>
    [:div "HI!"]
-   [:dialog {:id "dialog-try"}]
    [div-with-canvas circles-state]])
