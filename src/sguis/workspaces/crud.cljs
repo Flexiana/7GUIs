@@ -63,7 +63,7 @@
        [:li {:style    (if (= current-id id)
                          selection-style
                          {})
-             :on-focus #(swap! crud-state assoc
+             :on-click #(swap! crud-state assoc
                                :name-insertion name
                                :surname-insertion surname
                                :current-id id)}
