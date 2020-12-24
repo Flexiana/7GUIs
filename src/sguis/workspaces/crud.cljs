@@ -92,10 +92,16 @@
     [:button {:style    button-style
               :on-click #(when-not (and (empty? name-insertion)
                                         (empty? surname-insertion))
-                           (swap! crud-state assoc-in [:person/by-id next-id] {:id      next-id
-                                                                               :name    name-insertion
-                                                                               :surname surname-insertion})
-                           (swap! crud-state update :next-id inc))}
+                           (swap! crud-state
+                                  assoc-in
+                                  [:person/by-id next-id]
+                                  {:id      next-id
+                                   :name    name-insertion
+                                   :surname surname-insertion})
+                           (swap! crud-state
+                                  update
+                                  :next-id
+                                  inc))}
      "create"]))
 
 (defn update-person [crud-state]
@@ -106,18 +112,28 @@
               :disabled (not current-id)
               :on-click (fn [_]
                           (swap! crud-state
-                                 update-in [:person/by-id current-id]
-                                 #(assoc % :name name-insertion
+                                 update-in
+                                 [:person/by-id current-id]
+                                 #(assoc %
+                                         :name name-insertion
                                          :surname surname-insertion))
-                          (swap! crud-state dissoc :current-id))}
+                          (swap! crud-state
+                                 dissoc
+                                 :current-id))}
      "update"]))
 
 (defn delete-person [crud-state]
   (let [{:keys [current-id]} @crud-state]
     [:button {:style    button-style
               :disabled (not current-id)
-              :on-click #(do (swap! crud-state update :person/by-id dissoc current-id)
-                             (swap! crud-state dissoc :current-id))}
+              :on-click #(do (swap! crud-state
+                                    update
+                                    :person/by-id
+                                    dissoc
+                                    current-id)
+                             (swap! crud-state
+                                    dissoc
+                                    :current-id))}
      "delete"]))
 
 (defn crud-ui [crud-state]
