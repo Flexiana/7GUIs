@@ -66,14 +66,15 @@
                    name
                    surname]} filtered-data
            :let [current? (= current-id id)
-                 show-name (str surname ", " name)]]
+                 show-name (str surname ", " name)
+                 selection->input-fields! #(swap! crud-state assoc
+                                                  :name-insertion name
+                                                  :surname-insertion surname
+                                                  :current-id id)]]
        [:li {:style    (if current?
                          selection-style
                          {})
-             :on-click #(swap! crud-state assoc
-                               :name-insertion name
-                               :surname-insertion surname
-                               :current-id id)}
+             :on-click selection->input-fields!}
         [:a {:style (if current?
                       (assoc a-style :color "white")
                       a-style)
@@ -128,7 +129,7 @@
   (let [{:keys [current-id
                 name-insertion
                 surname-insertion]} @crud-state]
-    (letfn [(update-selection! []
+    (letfn [(update-selection! [crud-state]
               (swap! crud-state
                      update-in
                      [:person/by-id current-id]
