@@ -67,11 +67,39 @@
       [:div (with-out-str (cljs.pprint/pprint (str modal-opened)))]
       [:div])))
 
+(defn circles-table []
+  (let [{:keys [circles]
+         :as   st} {:circles [{:x 1
+                               :y 2
+                               :r 3}
+                              {:x 4
+                               :y 5
+                               :r 6}]}
+        columns    [{:attr  :x
+                     :label "x"}
+                    {:attr  :y
+                     :label "y"}
+                    {:attr  :r
+                     :label "r"}]]
+    [:table
+     [:thead
+      [:tr (for [{:keys [label]} columns]
+             ^{:key label}
+             [:th label])]]
+     [:tbody
+      (for [line circles]
+        ^{:key line}
+        [:tr
+         (for [{:keys [attr]} columns]
+           ^{:key attr}
+           [:td (get line attr)])])]]))
+
 (defn circles-ui [circles-state]
   [:div {:padding "1em"}
    [:div "HI!"]
    [:div
     [:button "Undo"]
     [:button "Redo"]]
+   [circles-table]
    [:div [div-with-canvas circles-state]]
    [:pre (with-out-str (cljs.pprint/pprint @*circles))]])
