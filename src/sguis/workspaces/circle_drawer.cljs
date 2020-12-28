@@ -16,16 +16,14 @@
 
 (defn ui-draw-circles-on-canvas [circles-state mouse-event]
   (let [{:keys [canvas
-                drawing
-                current-id]} @circles-state
-        rect                 (.getBoundingClientRect canvas)
-        xrel                 (- (.-clientX mouse-event) (.-left rect) )
-        yrel                 (- (.-clientY mouse-event) (.-top rect))
-        ctx                  (.getContext canvas "2d")]
+                drawing]} @circles-state
+        rect              (.getBoundingClientRect canvas)
+        xrel              (- (.-clientX mouse-event) (.-left rect))
+        yrel              (- (.-clientY mouse-event) (.-top rect))
+        ctx               (.getContext canvas "2d")]
     (if-not drawing
-      (do (insert-circle! circles-state {:axis      xrel
-                                         :ayis      yrel
-                                         :circle-id current-id})
+      (do (insert-circle! circles-state {:axis xrel
+                                         :ayis yrel})
           (doto ctx
             (.beginPath)
             (.arc xrel yrel 50 0 (* 2 Math/PI))
