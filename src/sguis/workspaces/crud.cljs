@@ -129,30 +129,30 @@
         empty-inputs?               (and (empty? name-insertion)
                                          (empty? surname-insertion))]
     [:button {:style    button-style
-              :on-click (fn [_]
-                          (when-not empty-inputs?
-                            (create-person! crud-state)
-                            (clear-input-fields! crud-state)
-                            (increment-id! crud-state)))}
+              :on-click #(when-not empty-inputs?
+                           (create-person! crud-state)
+                           (clear-input-fields! crud-state)
+                           (increment-id! crud-state))}
      "create"]))
 
+(defn update-selection! [crud-state]
+  (let [{:keys [name-insertion
+                surname-insertion
+                current-id]} @crud-state]
+    (swap! crud-state
+           update-in
+           [:person/by-id current-id]
+           #(assoc %
+                   :name name-insertion
+                   :surname surname-insertion))))
+
 (defn update-person [crud-state]
-  (let [{:keys [current-id
-                name-insertion
-                surname-insertion]} @crud-state]
-    (letfn [(update-selection! [crud-state]
-              (swap! crud-state
-                     update-in
-                     [:person/by-id current-id]
-                     #(assoc %
-                             :name name-insertion
-                             :surname surname-insertion)))]
-      [:button {:style    button-style
-                :disabled (not current-id)
-                :on-click (fn [_]
-                            (update-selection! crud-state)
-                            (clear-input-fields! crud-state))}
-       "update"])))
+  (let [{:keys [current-id]} @crud-state]
+    [:button {:style    button-style
+              :disabled (not current-id)
+              :on-click #(do (update-selection! crud-state)
+                             (clear-input-fields! crud-state))}
+     "update"]))
 
 (defn delete-selection! [crud-state]
   (let [{:keys [current-id]} @crud-state]
