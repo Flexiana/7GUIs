@@ -45,53 +45,36 @@
 (defn matching-name? [filter-prefix {:keys [surname name]}]
   (str/starts-with? (str surname "," name) filter-prefix))
 
+(defn person-row [{:keys [current-id]} select-person! {:keys [name surname id] :as person}]
+  (let [show-name (str surname ", " name)]
+    ^{:key id} [:li {:style    (if (= current-id id)
+                                 (assoc read-style
+                                        :color "white"
+                                        :background-color "blue")
+                                 read-style)
+                     :on-click (partial select-person! person)}
+                show-name]))
 
-(defn selection-as-input-fields! [*state {:keys [name surname id]}]
+(defn person-list [{:person/keys [by-id]
+                    :keys        [filter-prefix]
+                    :as          state} select-person!]
+  [:ul {:style {:list-style-type "none", :padding 0, :margin 0}}
+   (->> by-id
+        vals
+        (filter (partial matching-name? filter-prefix))
+        (map (partial person-row state select-person!)))])
+
+(defn select-person! [*state {:keys [name surname id]}]
   (swap! *state assoc
          :name-insertion name
          :surname-insertion surname
          :current-id id))
 
-
-(defn list-ui [*state {:keys [id
-                              name
-                              surname]
-                       :as   selection}]
-  (let [{:keys [current-id]} @*state
-        selected?            (= current-id id)
-        show-name            (str surname ", " name)]
-    ^{:key show-name}
-    [:li {:style    (if selected?
-                      (assoc read-style
-                             :color "white"
-                             :background-color "blue")
-                      read-style)
-          :on-click #(selection-as-input-fields! *state selection)}
-     show-name]))
-
-(defn read-ui [*state]
-  (let [{:person/keys [by-id]
-         :keys        [filter-prefix]} @*state]
-    [:ul {:style {:list-style-type "none"
-                  :padding         0
-                  :margin          0}}
-     (doall
-      (->> by-id
-           vals
-           (filter (partial matching-name? filter-prefix))
-           (map (partial list-ui *state))))]))
-
-
-(defn people-ui [*state]
-  [:div {:style {:display         "flex"
-                 :justify-content "space-between"}}
-   [:div {:style {:width  "100%"
-                  :height "100%"
-                  :border "1px solid gray"}}
-    [read-ui *state]]
-   [:div {:style {:display        "flex"
-                  :padding        "1em"
-                  :flex-direction "column"}}
+(defn people-panel [*state]
+  [:div {:style {:display "flex" :justify-content "space-between"}}
+   [:div {:style {:width "100%" :height "100%" :border "1px solid gray"}}
+    [person-list @*state (partial select-person! *state)]]
+   [:div {:style {:display "flex" :padding "1em" :flex-direction "column"}}
     [insert-panel @*state (partial insert-value! *state)]]])
 
 (defn clear-input-fields! [*state]
@@ -171,7 +154,7 @@
                  :justify-content "space-between"}}
    [:div {:padding "1em"}
     [filter-prefix *state]
-    [people-ui *state]]
+    [people-panel *state]]
    [:div {:style {:display "flex"
                   :padding "1em"}}
     [create-person *state]
