@@ -101,7 +101,7 @@
             :name    name-insertion
             :surname surname-insertion})))
 
-(defn create-person [*state]
+(defn create-button [*state]
   (let [{:keys [name-insertion
                 surname-insertion]} @*state
         empty-inputs?               (and (empty? name-insertion)
@@ -124,7 +124,7 @@
                    :name name-insertion
                    :surname surname-insertion))))
 
-(defn update-person [*state]
+(defn update-button [*state]
   (let [{:keys [current-id]} @*state]
     [:button {:style    button-style
               :disabled (not current-id)
@@ -140,7 +140,7 @@
            dissoc
            current-id)))
 
-(defn delete-person [*state]
+(defn delete-button [*state]
   (let [{:keys [current-id]} @*state]
     [:button {:style    button-style
               :disabled (not current-id)
@@ -157,6 +157,6 @@
     [people-panel *state]]
    [:div {:style {:display "flex"
                   :padding "1em"}}
-    [create-person *state]
-    [update-person *state]
-    [delete-person *state]]])
+    [create-button *state]
+    [update-button *state]
+    [delete-button *state]]])
