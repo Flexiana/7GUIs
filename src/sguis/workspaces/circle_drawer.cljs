@@ -64,7 +64,7 @@
 (defn input-circles-ui [circles-state]
   (let [{:keys [modal-opened]} @circles-state]
     (if modal-opened
-      [:div (with-out-str (cljs.pprint/pprint (str modal-opened)))]
+      [:div modal-opened]
       [:div])))
 
 (defn circles-table []
@@ -101,5 +101,4 @@
     [:button "Undo"]
     [:button "Redo"]]
    [circles-table]
-   [:div [div-with-canvas circles-state]]
-   [:pre (with-out-str (cljs.pprint/pprint @*circles))]])
+   [:div [div-with-canvas circles-state]]])
