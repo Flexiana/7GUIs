@@ -156,12 +156,6 @@
             :on-click delete-person!}
    "delete"])
 
-(defn cud-panel [*state]
-  [:<>
-   [create-button @*state (partial create-person! *state)]
-   [update-button @*state (partial update-person! *state)]
-   [delete-button @*state (partial delete-person! *state)]])
-
 (defn crud-ui [*state]
   [:div {:style {:display         "flex"
                  :flex-direction  "column"
@@ -169,4 +163,6 @@
    [:div {:padding "1em"}
     [filter-field *state]
     [people-panel *state]
-    [cud-panel *state]]])
+    [create-button @*state (partial create-person! *state)]
+    [update-button @*state (partial update-person! *state)]
+    [delete-button @*state (partial delete-person! *state)]]])
