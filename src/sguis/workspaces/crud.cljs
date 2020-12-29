@@ -57,12 +57,12 @@
 
 (defn person-list [{:person/keys [by-id]
                     :keys        [filter-prefix]
-                    :as          state} select-person!]
+                    :as          *state} select-person!]
   [:ul {:style {:list-style-type "none", :padding 0, :margin 0}}
    (->> by-id
         vals
         (filter (partial matching-name? filter-prefix))
-        (map (partial person-row state select-person!)))])
+        (map (partial person-row *state select-person!)))])
 
 (defn select-person! [*state {:keys [name surname id]}]
   (swap! *state assoc
