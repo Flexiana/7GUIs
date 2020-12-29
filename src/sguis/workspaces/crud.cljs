@@ -24,26 +24,19 @@
                                :filter-prefix
                                (.. % -target -value))}]])
 
-(defn insert-ui [*state]
-  (let [{:keys [name-insertion
-                surname-insertion]} @*state]
-    [:div {:padding "1em"}
-     [:label "Name: "
-      [:input {:type      "text"
-               :value     (when name-insertion
-                            name-insertion)
-               :on-change #(swap! *state
-                                  assoc
-                                  :name-insertion
-                                  (.. % -target -value))}]]
-     [:label "Surname: "
-      [:input {:type      "text"
-               :value     (when surname-insertion
-                            surname-insertion)
-               :on-change #(swap! *state
-                                  assoc
-                                  :surname-insertion
-                                  (.. % -target -value))}]]]))
+(defn text-field [id value label on-change]
+  [:label label
+   [:input {:type      "text"
+            :value     (when value value)
+            :on-change (partial on-change id)}]])
+
+(defn insert-value! [*state id event]
+  (swap! *state assoc id (-> event .-target .-value)))
+
+(defn insert-panel [{:keys [name-insertion surname-insertion]} insert-value!]
+  [:div {:padding "1em"}
+   [text-field :name-insertion name-insertion "Name: " insert-value!]
+   [text-field :surname-insertion surname-insertion "Surname: " insert-value!]])
 
 (def read-style
   {:text-decoration "none"
@@ -99,7 +92,7 @@
    [:div {:style {:display        "flex"
                   :padding        "1em"
                   :flex-direction "column"}}
-    [insert-ui *state]]])
+    [insert-panel @*state (partial insert-value! *state)]]])
 
 (defn clear-input-fields! [*state]
   (swap! *state
