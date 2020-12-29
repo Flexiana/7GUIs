@@ -15,7 +15,7 @@
    :cursor        "pointer"
    :border-radius "50px"})
 
-(defn filter-prefix [*state]
+(defn filter-field [*state]
   [:div {:padding "1em"}
    [:label "Filter prefix: "]
    [:input {:type      "text"
@@ -153,7 +153,7 @@
                  :flex-direction  "column"
                  :justify-content "space-between"}}
    [:div {:padding "1em"}
-    [filter-prefix *state]
+    [filter-field *state]
     [people-panel *state]]
    [:div {:style {:display "flex"
                   :padding "1em"}}
