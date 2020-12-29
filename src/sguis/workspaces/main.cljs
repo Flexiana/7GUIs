@@ -8,8 +8,10 @@
                                                   *temperature]]
             [sguis.workspaces.flight-booker :refer [booker-ui
                                                     *booker]]
-            [sguis.workspaces.timer :refer [timer-ui
-                                            *timer]]))
+             [sguis.workspaces.timer :refer [timer-ui
+                                            *timer]]
+            [sguis.workspaces.crud :refer [crud-ui
+                                           *crud]]))
 
 (defonce init (ws/mount))
 
@@ -27,6 +29,11 @@
   (ct.react/react-card
    *booker
    (r/as-element [booker-ui *booker (js/Date.)])))
+
+(ws/defcard crud
+  (ct.react/react-card
+   *crud
+   (r/as-element [crud-ui *crud])))
 
 (ws/defcard timer-booker
   (ct.react/react-card
