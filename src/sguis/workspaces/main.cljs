@@ -35,7 +35,7 @@
    *crud
    (r/as-element [crud-ui *crud])))
 
-(ws/defcard timer-booker
+(ws/defcard timer
   (ct.react/react-card
    *timer
    (r/as-element [timer-ui *timer])))
