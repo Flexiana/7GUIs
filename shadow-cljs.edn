@@ -1,12 +1,12 @@
 {:source-paths ["src"]
  :dependencies [[reagent "1.0.0-rc1"]
-                [nubank/workspaces "1.0.15"]]
+                [nubank/workspaces "1.0.15"]
+                [binaryage/devtools "1.0.2"]]
  :builds       {:workspaces {:target     :browser
                              :output-dir "resources/public/js/workspaces"
                              :asset-path "/js/workspaces"
-                             :devtools   {;:preloads   [fulcro.inspect.preload ] ; include for Fulcro Inspect support
-                                          :http-root          "resources/public"
+                             :devtools   {:http-root          "resources/public"
                                           :http-port          8080
                                           :http-resource-root "."
-                                          :preloads           []}
+                                          :preloads           [devtools.preload]}
                              :modules    {:main {:entries [sguis.workspaces.main]}}}}}

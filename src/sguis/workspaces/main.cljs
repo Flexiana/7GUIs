@@ -10,6 +10,8 @@
                                                     *booker]]
             [sguis.workspaces.timer :refer [timer-ui
                                             *timer]]
+            [sguis.workspaces.crud :refer [crud-ui
+                                           *crud]]
             [sguis.workspaces.circle-drawer :refer [circles-ui
                                                     *circles]]))
 
@@ -29,6 +31,11 @@
   (ct.react/react-card
    *booker
    (r/as-element [booker-ui *booker (js/Date.)])))
+
+(ws/defcard crud
+  (ct.react/react-card
+   *crud
+   (r/as-element [crud-ui *crud])))
 
 (ws/defcard timer-booker
   (ct.react/react-card
