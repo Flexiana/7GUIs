@@ -10,11 +10,6 @@
            :name-insertion    nil
            :surname-insertion nil}))
 
-(def button-style
-  {:margin-right  "20px"
-   :cursor        "pointer"
-   :border-radius "50px"})
-
 (defn filter-field [*state]
   [:div {:padding "1em"}
    [:label "Filter prefix: "]
@@ -77,6 +72,11 @@
    [:div {:style {:display "flex" :padding "1em" :flex-direction "column"}}
     [insert-panel @*state (partial insert-value! *state)]]])
 
+(def button-style
+  {:margin-right  "20px"
+   :cursor        "pointer"
+   :border-radius "50px"})
+
 (defn clear-input-fields! [*state]
   (swap! *state
          dissoc
@@ -90,7 +90,7 @@
          :next-id
          inc))
 
-(defn create-person! [*state]
+(defn insert-person! [*state]
   (let [{:keys [name-insertion
                 surname-insertion
                 next-id]} @*state]
@@ -101,17 +101,21 @@
             :name    name-insertion
             :surname surname-insertion})))
 
-(defn create-button [*state]
-  (let [{:keys [name-insertion
-                surname-insertion]} @*state
-        empty-inputs?               (and (empty? name-insertion)
-                                         (empty? surname-insertion))]
-    [:button {:style    button-style
-              :on-click #(when-not empty-inputs?
-                           (create-person! *state)
-                           (clear-input-fields! *state)
-                           (increment-id! *state))}
-     "create"]))
+(defn create-person! [*state empty-inputs?]
+  (when-not empty-inputs?
+    (insert-person! *state)
+    (clear-input-fields! *state)
+    (increment-id! *state)))
+
+(defn empty-inputs? [name-insertion surname-insertion]
+  (and (empty? name-insertion)
+       (empty? surname-insertion)))
+
+(defn create-button [{:keys [name-insertion
+                             surname-insertion]} create-person!]
+  [:button {:style    button-style
+            :on-click #(create-person! (empty-inputs? name-insertion surname-insertion))}
+   "create"])
 
 (defn update-selection! [*state]
   (let [{:keys [name-insertion
@@ -124,13 +128,15 @@
                    :name name-insertion
                    :surname surname-insertion))))
 
-(defn update-button [*state]
-  (let [{:keys [current-id]} @*state]
-    [:button {:style    button-style
-              :disabled (not current-id)
-              :on-click #(do (update-selection! *state)
-                             (clear-input-fields! *state))}
-     "update"]))
+(defn update-person! [*state]
+  (update-selection! *state)
+  (clear-input-fields! *state))
+
+(defn update-button [{:keys [current-id]} update-person!]
+  [:button {:style    button-style
+            :disabled (not current-id)
+            :on-click update-person!}
+   "update"])
 
 (defn delete-selection! [*state]
   (let [{:keys [current-id]} @*state]
@@ -140,13 +146,21 @@
            dissoc
            current-id)))
 
-(defn delete-button [*state]
-  (let [{:keys [current-id]} @*state]
-    [:button {:style    button-style
-              :disabled (not current-id)
-              :on-click #(do (delete-selection! *state)
-                             (clear-input-fields! *state))}
-     "delete"]))
+(defn delete-person! [*state]
+  (delete-selection! *state)
+  (clear-input-fields! *state))
+
+(defn delete-button [{:keys [current-id]} delete-person!]
+  [:button {:style    button-style
+            :disabled (not current-id)
+            :on-click delete-person!}
+   "delete"])
+
+(defn cud-panel [*state]
+  [:<>
+   [create-button @*state (partial create-person! *state)]
+   [update-button @*state (partial update-person! *state)]
+   [delete-button @*state (partial delete-person! *state)]])
 
 (defn crud-ui [*state]
   [:div {:style {:display         "flex"
@@ -154,9 +168,5 @@
                  :justify-content "space-between"}}
    [:div {:padding "1em"}
     [filter-field *state]
-    [people-panel *state]]
-   [:div {:style {:display "flex"
-                  :padding "1em"}}
-    [create-button *state]
-    [update-button *state]
-    [delete-button *state]]])
+    [people-panel *state]
+    [cud-panel *state]]])
