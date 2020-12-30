@@ -12,20 +12,18 @@
   (swap! *state update
          :current-id inc))
 
-(defn insert-circle! [*state mouse-event]
-  (let [{:keys [canvas
-                current-id]} @*state
-        rect                 (.getBoundingClientRect canvas)
-        xrel                 (- (.-clientX mouse-event) (.-left rect))
-        yrel                 (- (.-clientY mouse-event) (.-top rect))
-        circle-pos {:id current-id
-                    :x  xrel
-                    :y  yrel
-                    :r  50}]
-    (swap! *state update
-           :circles conj circle-pos)
-    (increment-id! *state)))
 
+(defn circle-pos [canvas {:keys [mouse-x mouse-y]}]
+  (let [rect (.getBoundingClientRect canvas)]
+    {:x (- mouse-x (.-left rect))
+     :y (- mouse-y (.-top rect))}))
+
+(defn insert-circle! [*state {:keys [canvas current-id]} click-on-canvas]
+  (let [circle-pos (merge {:id current-id :r  50}
+                          (circle-pos canvas click-on-canvas))]
+    (swap! *state update
+           :circles conj circle-pos))
+  (increment-id! *state))
 
 #_(defn canvas-draw [*state]
     (let [{:keys [canvas
@@ -57,8 +55,8 @@
         [:div.with-canvas
          [:canvas {:style           {:border   "1px solid #000000"
                                      :position "relative"}
-                   :on-click        (fn [mouse-event]
-                                      (insert-circle! *state mouse-event))
+                   :on-click #(insert-circle! *state @*state {:mouse-x (.-clientX %)
+                                                              :mouse-y (.-clientY %)})
                    :on-context-menu (fn [event]
                                       (swap! *state assoc :modal-opened? true)
                                       (when event
