@@ -58,7 +58,7 @@
                    :on-click #(insert-circle! *state @*state {:mouse-x (.-clientX %)
                                                               :mouse-y (.-clientY %)})
                    :on-context-menu (fn [event]
-                                      (swap! *state assoc :modal-opened? true)
+                                      (swap! *state update :modal-opened? not)
                                       (when event
                                         (.preventDefault event)))}
           (when canvas
@@ -109,8 +109,8 @@
                                             -valueAsNumber))}]])
 
 (defn radius-modal [*state]
-  (let [{:keys [modal-opened]} @*state]
-    (if modal-opened
+  (let [{:keys [modal-opened?]} @*state]
+    (if modal-opened?
       [radius-slider *circles @*circles update-radius!]
       [:div])))
 
