@@ -65,12 +65,6 @@
             {:width  (.-clientWidth canvas)
              :height (.-clientHeight canvas)})]])})))
 
-(defn input-circles-ui [*state]
-  (let [{:keys [modal-opened]} @*state]
-    (if modal-opened
-      [:div modal-opened]
-      [:div])))
-
 (defn circles-table [*state]
   (let [{:keys [circles]} @*state
         columns           [{:attr  :x
@@ -114,6 +108,12 @@
                                             -target
                                             -valueAsNumber))}]])
 
+(defn radius-modal [*state]
+  (let [{:keys [modal-opened]} @*state]
+    (if modal-opened
+      [radius-slider *circles @*circles update-radius!]
+      [:div])))
+
 (defn circles-ui [*circles]
   [:div {:padding "1em"}
    [:div "HI!"]
@@ -123,6 +123,6 @@
    [:div
     [div-with-canvas *circles]
     [circles-table *circles]
-    [radius-slider *circles @*circles update-radius!]]])
+    [radius-modal *circles]]])
 
 ;; (atom {:cells [{:selected? nil :x 0 :y 0 :value ""}]})
