@@ -4,37 +4,43 @@
 
 (def *circles
   (r/atom {:modal-opened? nil
-           :drawing       nil
+           :drawing?       nil
            :current-id    0
            :circles       []}))
 
-(defn insert-circle! [*state circle-pos]
-  (swap! *state update
-         :circles conj circle-pos)
+(defn increment-id! [*state]
   (swap! *state update
          :current-id inc))
 
-(defn ui-draw-circles-on-canvas [*state mouse-event]
+(defn insert-circle! [*state mouse-event]
   (let [{:keys [canvas
-                drawing
                 current-id]} @*state
         rect                 (.getBoundingClientRect canvas)
         xrel                 (- (.-clientX mouse-event) (.-left rect))
         yrel                 (- (.-clientY mouse-event) (.-top rect))
-        ctx                  (.getContext canvas "2d")]
-    (if-not drawing
-      (do (insert-circle! *state {:id current-id
-                                  :x  xrel
-                                  :y  yrel
-                                  :r  50})
+        circle-pos {:id current-id
+                    :x  xrel
+                    :y  yrel
+                    :r  50}]
+    (swap! *state update
+           :circles conj circle-pos)
+    (increment-id! *state)))
+
+
+#_(defn canvas-draw [*state]
+    (let [{:keys [canvas
+                  drawing]} @*state
+          ctx (.getContext canvas "2d")]
+      (if-not drawing
+        (do
           (doto ctx
             (.beginPath)
-            (.arc xrel yrel 50 0 (* 2 Math/PI))
+            #_(.arc xrel yrel 50 0 (* 2 Math/PI))
             ;;    x  y  r  startangle endangle
             (.stroke))
-          :draw)
-      (do (swap! *state dissoc :drawing)
-          (.clearRect ctx 0 0 (.-width canvas) (.-height canvas))))))
+          (swap! *state assoc :drawing? :draw))
+        (do (swap! *state dissoc :drawing?)
+            (.clearRect ctx 0 0 (.-width canvas) (.-height canvas))))))
 
 (defn div-with-canvas [*state]
   (let [{:keys [window-widht
@@ -52,10 +58,7 @@
          [:canvas {:style           {:border   "1px solid #000000"
                                      :position "relative"}
                    :on-click        (fn [mouse-event]
-                                      (swap! *state
-                                             assoc
-                                             :drawing
-                                             (ui-draw-circles-on-canvas *state mouse-event)))
+                                      (insert-circle! *state mouse-event))
                    :on-context-menu (fn [event]
                                       (swap! *state assoc :modal-opened? true)
                                       (when event
@@ -123,3 +126,5 @@
     [div-with-canvas *circles]
     [circles-table *circles]
     [radius-slider *circles @*circles update-radius!]]])
+
+;; (atom {:cells [{:selected? nil :x 0 :y 0 :value ""}]})
