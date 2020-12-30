@@ -16,11 +16,6 @@
 
 (defn ui-draw-circles-on-canvas [circles-state mouse-event]
   (let [{:keys [canvas
-                drawing]} @circles-state
-        rect              (.getBoundingClientRect canvas)
-        xrel              (- (.-clientX mouse-event) (.-left rect))
-        yrel              (- (.-clientY mouse-event) (.-top rect))
-        ctx               (.getContext canvas "2d")]
                 drawing
                 current-id]} @circles-state
         rect                 (.getBoundingClientRect canvas)
@@ -83,18 +78,21 @@
                             :label "y"}
                            {:attr  :r
                             :label "r"}]]
-    [:table
-     [:thead
-      (concat
-       [[:th] [:td "x"] [:td "y"] [:td "r"]])]
-     [:tbody
-      (map-indexed
-       (fn [idx line]
-         [:tr
-          [:td idx]
-          (map (fn [{:keys [attr]}]
-                 ^{:key attr}
-                 [:td (get line attr)]) columns)]) circles)]]))
+
+    (letfn [(row-fn [line {:keys [attr]}]
+              ^{:key attr}
+              [:td (get line attr)])
+            (column-fn [columns {:keys [id] :as line}]
+              [:tr
+               [:td]
+               [:td id]
+               (map (partial row-fn line) columns)])]
+      [:table
+       [:thead
+        (concat
+         [[:th] [:td "id"] [:td "x"] [:td "y"] [:td "r"]])]
+       [:tbody
+        (map (partial column-fn columns) circles)]])))
 
 (defn circles-ui [*circles]
   [:div {:padding "1em"}
