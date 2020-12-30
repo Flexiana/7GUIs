@@ -95,11 +95,20 @@
        [:tbody
         (map (partial column-fn columns) circles)]])))
 
+(defn change-radius! [*state {:keys [circles
+                                     selection]} input]
+  (let [v (.. input
+              -target
+              -valueAsNumber)]
+    (when selection
+      (swap! *state update :circles conj (assoc selection :r v)))))
+
 (defn radius-slider [*state]
   [:label "slider"
    [:input {:type "range"
             :min  0
-            :max  100}]])
+            :max  100
+            :on-change (partial change-radius! *state @*state)}]])
 
 (defn circles-ui [*circles]
   [:div {:padding "1em"}
