@@ -117,13 +117,13 @@
 
 (defn undo-button [*state {:keys [circles]}]
   [:button {:on-click #(when-not (empty? circles)
-                         (swap! *circles update :circles pop)
-                         (swap! *circles update :history conj (last circles)))} "Undo"])
+                         (swap! *state update :circles pop)
+                         (swap! *state update :history conj (last circles)))} "Undo"])
 
 (defn redo-button [*state {:keys [history]}]
   [:button {:on-click #(when-not (empty? history)
-                         (swap! *circles update :circles conj (last history))
-                         (swap! *circles update :history pop))} "Redo"])
+                         (swap! *state update :circles conj (last history))
+                         (swap! *state update :history pop))} "Redo"])
 
 (defn circles-ui [*circles]
   [:div {:padding "1em"}
