@@ -106,6 +106,7 @@
    [:input {:type "range"
             :min  0
             :max  100
+            :disabled (not selection)
             :on-change #(update-radius! *state
                                         selection
                                         (.. %
