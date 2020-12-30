@@ -4,7 +4,7 @@
 
 (def *circles
   (r/atom {:modal-opened? nil
-           :drawing?       nil
+           :drawing?      nil
            :current-id    0
            :circles       []}))
 
