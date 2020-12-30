@@ -124,5 +124,3 @@
     [div-with-canvas *circles]
     [circles-table *circles]
     [radius-modal *circles]]])
-
-;; (atom {:cells [{:selected? nil :x 0 :y 0 :value ""}]})
