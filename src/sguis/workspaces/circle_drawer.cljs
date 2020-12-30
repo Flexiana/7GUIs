@@ -8,38 +8,38 @@
            :current-id    0
            :circles       []}))
 
-(defn insert-circle! [circles-state circle-pos]
-  (swap! circles-state update
+(defn insert-circle! [*state circle-pos]
+  (swap! *state update
          :circles conj circle-pos)
-  (swap! circles-state update
+  (swap! *state update
          :current-id inc))
 
-(defn ui-draw-circles-on-canvas [circles-state mouse-event]
+(defn ui-draw-circles-on-canvas [*state mouse-event]
   (let [{:keys [canvas
                 drawing
-                current-id]} @circles-state
+                current-id]} @*state
         rect                 (.getBoundingClientRect canvas)
         xrel                 (- (.-clientX mouse-event) (.-left rect))
         yrel                 (- (.-clientY mouse-event) (.-top rect))
         ctx                  (.getContext canvas "2d")]
     (if-not drawing
-      (do (insert-circle! circles-state {:id current-id
-                                         :x  xrel
-                                         :y  yrel
-                                         :r  50})
+      (do (insert-circle! *state {:id current-id
+                                  :x  xrel
+                                  :y  yrel
+                                  :r  50})
           (doto ctx
             (.beginPath)
             (.arc xrel yrel 50 0 (* 2 Math/PI))
             ;;    x  y  r  startangle endangle
             (.stroke))
           :draw)
-      (do (swap! circles-state dissoc :drawing)
+      (do (swap! *state dissoc :drawing)
           (.clearRect ctx 0 0 (.-width canvas) (.-height canvas))))))
 
-(defn div-with-canvas [circles-state]
+(defn div-with-canvas [*state]
   (let [{:keys [window-widht
                 canvas
-                drawing]} @circles-state]
+                drawing]} @*state]
     (r/create-class
      {:component-did-mount
       (fn [this]
@@ -47,7 +47,7 @@
                                                dom/dom-node
                                                .-firstChild)))
       :reagent-render
-      (fn [circles-state]
+      (fn [*state]
         [:div.with-canvas
          [:canvas {:style           {:border   "1px solid #000000"
                                      :position "relative"}
@@ -64,14 +64,14 @@
             {:width  (.-clientWidth canvas)
              :height (.-clientHeight canvas)})]])})))
 
-(defn input-circles-ui [circles-state]
-  (let [{:keys [modal-opened]} @circles-state]
+(defn input-circles-ui [*state]
+  (let [{:keys [modal-opened]} @*state]
     (if modal-opened
       [:div modal-opened]
       [:div])))
 
-(defn circles-table [*circles]
-  (let [{:keys [circles]} @*circles
+(defn circles-table [*state]
+  (let [{:keys [circles]} @*state
         columns           [{:attr  :x
                             :label "x"}
                            {:attr  :y
@@ -93,6 +93,8 @@
          [[:th] [:td "id"] [:td "x"] [:td "y"] [:td "r"]])]
        [:tbody
         (map (partial column-fn columns) circles)]])))
+
+(defn radius-slider [*state])
 
 (defn circles-ui [*circles]
   [:div {:padding "1em"}
