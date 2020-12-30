@@ -3,10 +3,10 @@
             [reagent.dom :as dom]))
 
 (def *circles
-  (r/atom {:window-width nil
-           :drawing      nil
-           :current-id   0
-           :circles      []}))
+  (r/atom {:modal-opened? nil
+           :drawing       nil
+           :current-id    0
+           :circles       []}))
 
 (defn insert-circle! [circles-state circle-pos]
   (swap! circles-state update
@@ -47,7 +47,7 @@
                                                dom/dom-node
                                                .-firstChild)))
       :reagent-render
-      (fn []
+      (fn [circles-state]
         [:div.with-canvas
          [:canvas {:style           {:border   "1px solid #000000"
                                      :position "relative"}
@@ -57,7 +57,7 @@
                                              :drawing
                                              (ui-draw-circles-on-canvas circles-state mouse-event)))
                    :on-context-menu (fn [event]
-                                      (swap! circles-state assoc :modal-opened true)
+                                      (swap! circles-state assoc :modal-opened? true)
                                       (when event
                                         (.preventDefault event)))}
           (when canvas
