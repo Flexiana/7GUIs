@@ -95,7 +95,11 @@
        [:tbody
         (map (partial column-fn columns) circles)]])))
 
-(defn radius-slider [*state])
+(defn radius-slider [*state]
+  [:label "slider"
+   [:input {:type "range"
+            :min  0
+            :max  100}]])
 
 (defn circles-ui [*circles]
   [:div {:padding "1em"}
@@ -105,4 +109,5 @@
     [:button "Redo"]]
    [:div
     [div-with-canvas *circles]
-    [circles-table *circles]]])
+    [circles-table *circles]
+    [radius-slider *circles]]])
