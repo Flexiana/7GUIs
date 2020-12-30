@@ -6,11 +6,11 @@
   (r/atom {:window-width nil
            :drawing      nil
            :current-id   0
-           :events       []}))
+           :circles      []}))
 
 (defn insert-circle! [circles-state circle-pos]
   (swap! circles-state update
-         :events conj circle-pos)
+         :circles conj circle-pos)
   (swap! circles-state update
          :current-id inc))
 
@@ -22,8 +22,9 @@
         yrel              (- (.-clientY mouse-event) (.-top rect))
         ctx               (.getContext canvas "2d")]
     (if-not drawing
-      (do (insert-circle! circles-state {:axis xrel
-                                         :ayis yrel})
+      (do (insert-circle! circles-state {:x xrel
+                                         :y yrel
+                                         :r 50})
           (doto ctx
             (.beginPath)
             (.arc xrel yrel 50 0 (* 2 Math/PI))
@@ -67,23 +68,14 @@
       [:div modal-opened]
       [:div])))
 
-(defn circles-table []
-  (let [{:keys [circles]
-         :as   st} {:circles [{:x 1
-                               :y 2
-                               :r 3}
-                              {:x 4
-                               :y 5
-                               :r 6}
-                              {:x 4
-                               :y 5
-                               :r 6}]}
-        columns    [{:attr  :x
-                     :label "x"}
-                    {:attr  :y
-                     :label "y"}
-                    {:attr  :r
-                     :label "r"}]]
+(defn circles-table [*circles]
+  (let [{:keys [circles]} @*circles
+        columns           [{:attr  :x
+                            :label "x"}
+                           {:attr  :y
+                            :label "y"}
+                           {:attr  :r
+                            :label "r"}]]
     [:table
      [:thead
       (concat
@@ -97,11 +89,12 @@
                  ^{:key attr}
                  [:td (get line attr)]) columns)]) circles)]]))
 
-(defn circles-ui [circles-state]
+(defn circles-ui [*circles]
   [:div {:padding "1em"}
    [:div "HI!"]
    [:div
     [:button "Undo"]
     [:button "Redo"]]
-   [circles-table]
-   [:div [div-with-canvas circles-state]]])
+   [:div
+    [div-with-canvas *circles]
+    [circles-table *circles]]])
