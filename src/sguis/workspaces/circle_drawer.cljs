@@ -26,22 +26,7 @@
            :circles conj circle-pos))
   (increment-id! *state))
 
-#_(defn canvas-draw [*state]
-    (let [{:keys [canvas
-                  drawing]} @*state
-          ctx (.getContext canvas "2d")]
-      (if-not drawing
-        (do
-          (doto ctx
-            (.beginPath)
-            #_(.arc xrel yrel 50 0 (* 2 Math/PI))
-            ;;    x  y  r  startangle endangle
-            (.stroke))
-          (swap! *state assoc :drawing? :draw))
-        (do (swap! *state dissoc :drawing?)
-            (.clearRect ctx 0 0 (.-width canvas) (.-height canvas))))))
-
-(defn div-with-canvas [*state]
+(defn div-draw [*state]
   (let [{:keys [window-widht
                 canvas
                 drawing]} @*state]
@@ -132,6 +117,6 @@
     [undo-button *circles @*circles]
     [redo-button *circles @*circles]]
    [:div
-    [div-with-canvas *circles]
+    [div-draw *circles]
     [circles-table *circles]
     [radius-modal *circles]]])
