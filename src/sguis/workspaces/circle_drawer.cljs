@@ -21,10 +21,17 @@
         xrel              (- (.-clientX mouse-event) (.-left rect))
         yrel              (- (.-clientY mouse-event) (.-top rect))
         ctx               (.getContext canvas "2d")]
+                drawing
+                current-id]} @circles-state
+        rect                 (.getBoundingClientRect canvas)
+        xrel                 (- (.-clientX mouse-event) (.-left rect))
+        yrel                 (- (.-clientY mouse-event) (.-top rect))
+        ctx                  (.getContext canvas "2d")]
     (if-not drawing
-      (do (insert-circle! circles-state {:x xrel
-                                         :y yrel
-                                         :r 50})
+      (do (insert-circle! circles-state {:id current-id
+                                         :x  xrel
+                                         :y  yrel
+                                         :r  50})
           (doto ctx
             (.beginPath)
             (.arc xrel yrel 50 0 (* 2 Math/PI))
