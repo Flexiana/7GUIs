@@ -13,17 +13,13 @@
   (swap! *state update
          :current-id inc))
 
-(defn circle-pos [{:keys [mouse-x mouse-y]}]
-  {:x  mouse-x
-   :y  mouse-y})
-
 (defn insert-circle! [*state {:keys [current-id]} click]
-  (let [circle-pos (merge {:id current-id :r  50}
-                          (circle-pos click))]
-    (swap! *state update
-           :circles conj circle-pos)
-    (swap! *state assoc
-           :selected? circle-pos))
+  (swap! *state update
+         :circles conj (assoc click
+                              :id current-id
+                              :r 50))
+  (swap! *state assoc
+         :selected? click)
   (increment-id! *state))
 
 (defn circles-table [*state]
@@ -96,8 +92,8 @@
                     :on-change #(swap! *state assoc :mouse-y
                                        (.. % -target -valueAsNumber))}] "y"]
    [:button {:on-click #(when (and mouse-y mouse-x)
-                          (insert-circle! *state @*state {:mouse-x mouse-x
-                                                          :mouse-y mouse-y}))
+                          (insert-circle! *state @*state {:x mouse-x
+                                                          :y mouse-y}))
              :on-context-menu (fn [event]
                                 (swap! *state update :modal-opened? not)
                                 (when event
