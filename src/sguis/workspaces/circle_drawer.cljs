@@ -3,7 +3,7 @@
             [reagent.dom :as dom]))
 
 (def *circles
-  (r/atom {:modal-opened? nil
+  (r/atom {:slider-opened? nil
            :current-id    0
            :circles       []
            :selected?     {}
@@ -17,7 +17,7 @@
            :circles conj circle-pos)
     (swap! *state assoc
            :selected? circle-pos))
-  (swap! *state assoc :modal-opened? false)
+  (swap! *state assoc :slider-opened? false)
   (swap! *state update
          :current-id inc))
 
@@ -63,8 +63,8 @@
    :background-color "rgba(255,255,255,0.5)"})
 
 (defn radius-modal [*state]
-  (let [{:keys [modal-opened?]} @*state]
-    (when modal-opened?
+  (let [{:keys [slider-opened?]} @*state]
+    (when slider-opened?
       [:div.slider {:style radius-modal-style}
        [radius-slider *circles @*circles update-radius!]])))
 
@@ -86,7 +86,7 @@
 (defn select-circle! [selection *state event]
   (.stopPropagation event)
   (swap! *state assoc :selected? selection)
-  (swap! *state assoc :modal-opened? false))
+  (swap! *state assoc :slider-opened? false))
 
 (defn circle-draw [*state
                    selected?
@@ -112,13 +112,13 @@
 
 (defn svg-draw [{:keys [circles
                         selected?
-                        modal-opened?]} *state]
+                        slider-opened?]} *state]
   [:svg {:style svg-style
          :background-color "#eee"
          :on-context-menu (fn [event]
-                            (if modal-opened?
-                              (swap! *state assoc :modal-opened? false)
-                              (swap! *state assoc :modal-opened? true))
+                            (if slider-opened?
+                              (swap! *state assoc :slider-opened? false)
+                              (swap! *state assoc :slider-opened? true))
                             (when event
                               (.preventDefault event)))
          :on-click (fn [event]
