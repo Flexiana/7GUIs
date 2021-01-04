@@ -138,10 +138,12 @@
 (defn circles-ui [*circles]
   [:div {:padding "1em"
          :position "absolute"
-         :display "flex"
          :width "100%"
          :text-align "center"}
-   [undo-button @*circles *circles]
-   [redo-button @*circles *circles]
+   [:div {:style {:display "flex"
+                  :justify-content "space-around"}
+          :width "800"}
+    [undo-button @*circles *circles]
+    [redo-button @*circles *circles]]
    [svg-draw @*circles *circles]
    [radius-modal *circles]])
