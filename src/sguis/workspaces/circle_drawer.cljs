@@ -15,14 +15,15 @@
 
 (defn circle-pos [{:keys [mouse-x mouse-y]}]
   {:x  mouse-x
-   :y  mouse-y
-   :selected? true})
+   :y  mouse-y})
 
 (defn insert-circle! [*state {:keys [current-id]} click]
   (let [circle-pos (merge {:id current-id :r  50}
                           (circle-pos click))]
     (swap! *state update
-           :circles conj circle-pos))
+           :circles conj circle-pos)
+    (swap! *state assoc
+           :selected? circle-pos))
   (increment-id! *state))
 
 (defn circles-table [*state]
@@ -56,14 +57,14 @@
            update :circles conj
            (assoc selection :r new-radius))))
 
-(defn radius-slider [*state {:keys [selection]} update-radius!]
+(defn radius-slider [*state {:keys [selected?]} update-radius!]
   [:label "slider"
    [:input {:type "range"
             :min  0
             :max  100
-            :disabled (not selection)
+            :disabled (not selected?)
             :on-change #(update-radius! *state
-                                        selection
+                                        selected?
                                         (.. %
                                             -target
                                             -valueAsNumber))}]])
@@ -103,18 +104,30 @@
                                   (.preventDefault event)))}
     "Insert"]])
 
-(defn svg-draw [*state {:keys [circles]}]
+(defn svg-draw [*state {:keys [circles
+                               selected?]}]
   [:svg {:width "100%"
          :height "100%"
          :background-color "#eee"}
-   (map (fn [{:keys [x y r selected?]}]
-          [:circle {:cx x
-                    :cy y
-                    :r r
-                    :stroke "black"
-                    :stroke-width "1"
-                    :fill (when selected?
-                            "yellow")}]) circles)])
+   (let [circles-to-plot (->> circles
+                              (map (juxt :id identity))
+                              (into {})
+                              vals)]
+     (map (fn [{:keys [x y r] :as select}]
+            [:circle {:cx x
+                      :cy y
+                      :r r
+                      :stroke "black"
+                      :stroke-width "1"
+                      :fill (let [{selected-x :x
+                                   selected-y :y} selected?]
+                              (when (and (= x selected-x)
+                                         (= y selected-y)) "yellow"))
+                      :on-click #(swap! *state assoc :selected? select)
+                      :on-context-menu (fn [event]
+                                         (swap! *state update :modal-opened? not)
+                                         (when event
+                                           (.preventDefault event)))}]) circles-to-plot))])
 
 (defn circles-ui [*circles]
   [:div {:padding "1em"}
