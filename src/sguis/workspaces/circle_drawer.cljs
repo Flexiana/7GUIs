@@ -125,9 +125,13 @@
                       :stroke-width "1"
                       :fill (let [{selected-x :x
                                    selected-y :y} selected?]
-                              (when (and (= x selected-x)
-                                         (= y selected-y)) "yellow"))
-                      :on-click #(swap! *state assoc :selected? select)
+                              (if (and (= x selected-x)
+                                       (= y selected-y))
+                                "red"
+                                "white"))
+                      :on-click (fn [event]
+                                  (.stopPropagation event)
+                                  (swap! *state assoc :selected? select))
                       :on-context-menu (fn [event]
                                          (swap! *state update :modal-opened? not)
                                          (when event
