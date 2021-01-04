@@ -99,6 +99,8 @@
                         modal-opened?]} *state]
   [:svg {:style {:width "800"
                  :height "600"
+                 :display "flex"
+                 :border "1px solid black"
                  :stroke #"646464"
                  :stroke-width "1px"
                  :stroke-dasharray 2.2
@@ -125,6 +127,7 @@
 (defn circles-ui [*circles]
   [:div {:padding "1em"
          :position "absolute"
+         :display "flex"
          :width "100%"
          :text-align "center"}
    [undo-button @*circles *circles]
