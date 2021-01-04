@@ -21,12 +21,12 @@
   (swap! *state update
          :current-id inc))
 
-(defn undo-button [*state {:keys [circles]}]
+(defn undo-button [{:keys [circles]} *state]
   [:button {:on-click #(when-not (empty? circles)
                          (swap! *state update :circles pop)
                          (swap! *state update :history conj (last circles)))} "Undo"])
 
-(defn redo-button [*state {:keys [history]}]
+(defn redo-button [{:keys [history]} *state]
   [:button {:on-click #(when-not (empty? history)
                          (swap! *state update :circles conj (last history))
                          (swap! *state update :history pop))} "Redo"])
@@ -127,7 +127,7 @@
          :position "absolute"
          :width "100%"
          :text-align "center"}
-   [undo-button *circles @*circles]
-   [redo-button *circles @*circles]
-   [svg-draw *circles @*circles]
+   [undo-button @*circles *circles]
+   [redo-button @*circles *circles]
+   [svg-draw @*circles *circles]
    [radius-modal *circles]])
