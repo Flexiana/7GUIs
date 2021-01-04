@@ -104,7 +104,15 @@
                                selected?]}]
   [:svg {:width "100%"
          :height "100%"
-         :background-color "#eee"}
+         :background-color "#eee"
+         :on-click (fn [event]
+                     (let [dim (-> ^js event
+                                   .-target
+                                   .getBoundingClientRect)
+                           x-rel (.-clientX event)
+                           y-rel (.-clientY event)]
+                       (insert-circle! *state @*state {:x (- x-rel (.-left dim))
+                                                       :y (- y-rel (.-top dim))})))}
    (let [circles-to-plot (->> circles
                               (map (juxt :id identity))
                               (into {})
