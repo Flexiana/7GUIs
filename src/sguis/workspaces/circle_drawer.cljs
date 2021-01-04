@@ -33,7 +33,7 @@
 
     (letfn [(row-fn [line {:keys [attr]}]
               ^{:key attr}
-              [:td {:on-click #(swap! *state assoc :selection line)}
+              [:td {:on-click #(swap! *state assoc :selected? line)}
                (get line attr)])
             (column-fn [columns {:keys [id] :as line}]
               [:tr
