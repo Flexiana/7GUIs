@@ -72,13 +72,7 @@
     "red"
     "white"))
 
-(defn select-circle! [selection *state event]
-  (.stopPropagation event)
-  (swap! *state assoc :selected? selection))
-
-(defn circle-draw! [*state
-                    selected?
-                    {:keys [id x y r] :as selection}]
+(defn circle-draw! [*state selected? {:keys [id x y r] :as selection}]
   ^{:key id}
   [:circle {:cx x
             :cy y
@@ -86,8 +80,9 @@
             :stroke "black"
             :stroke-width "1"
             :fill (select-fill selected? selection)
-            :on-click (partial select-circle! selection *state)}])
-
+            :on-click (fn [event]
+                        (.stopPropagation event)
+                        (swap! *state assoc :selected? selection))}])
 
 (def svg-style
   {:width "800"
