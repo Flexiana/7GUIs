@@ -14,12 +14,13 @@
          :current-id inc))
 
 (defn insert-circle! [*state {:keys [current-id]} click]
-  (swap! *state update
-         :circles conj (assoc click
-                              :id current-id
-                              :r 50))
-  (swap! *state assoc
-         :selected? click)
+  (let [circle-pos (assoc click
+                          :id current-id
+                          :r 50)]
+    (swap! *state update
+           :circles conj circle-pos)
+    (swap! *state assoc
+           :selected? circle-pos))
   (increment-id! *state))
 
 (defn circles-table [*state]
