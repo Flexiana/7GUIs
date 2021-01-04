@@ -9,18 +9,6 @@
            :selected?     {}
            :history       []}))
 
-(defn insert-circle! [*state {:keys [current-id]} click]
-  (let [circle-pos (assoc click
-                          :id current-id
-                          :r 50)]
-    (swap! *state update
-           :circles conj circle-pos)
-    (swap! *state assoc
-           :selected? circle-pos))
-  (swap! *state assoc :slider-opened? false)
-  (swap! *state update
-         :current-id inc))
-
 (defn undo-button [{:keys [circles]} *state]
   [:button {:on-click #(when-not (empty? circles)
                          (swap! *state update :circles pop)
@@ -116,6 +104,18 @@
     (swap! *state assoc :slider-opened? true))
   (when event
     (.preventDefault event)))
+
+(defn insert-circle! [*state {:keys [current-id]} click]
+  (let [circle-pos (assoc click
+                          :id current-id
+                          :r 50)]
+    (swap! *state update
+           :circles conj circle-pos)
+    (swap! *state assoc
+           :selected? circle-pos))
+  (swap! *state assoc :slider-opened? false)
+  (swap! *state update
+         :current-id inc))
 
 (defn click-insert-circle! [*state event]
   (let [dim (-> ^js event
