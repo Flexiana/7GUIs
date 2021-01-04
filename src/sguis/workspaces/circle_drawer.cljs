@@ -106,6 +106,10 @@
   [:svg {:width "100%"
          :height "100%"
          :background-color "#eee"
+         :on-context-menu (fn [event]
+                            (swap! *state update :modal-opened? not)
+                            (when event
+                              (.preventDefault event)))
          :on-click (fn [event]
                      (let [dim (-> ^js event
                                    .-target
@@ -132,11 +136,9 @@
                                 "white"))
                       :on-click (fn [event]
                                   (.stopPropagation event)
-                                  (swap! *state assoc :selected? select))
-                      :on-context-menu (fn [event]
-                                         (swap! *state update :modal-opened? not)
-                                         (when event
-                                           (.preventDefault event)))}]) circles-to-plot))])
+                                  (swap! *state assoc :selected? select))}]) circles-to-plot))])
+
+
 
 (defn circles-ui [*circles]
   [:div {:padding "1em"}
