@@ -10,11 +10,13 @@
 
 (defn undo-button [{:keys [circles]} *state]
   [:button {:on-click #(when-not (empty? circles)
+                         (swap! *state assoc :slider-opened? false)
                          (swap! *state update :circles pop)
                          (swap! *state update :history conj (last circles)))} "Undo"])
 
 (defn redo-button [{:keys [history]} *state]
   [:button {:on-click #(when-not (empty? history)
+                         (swap! *state assoc :slider-opened? false)
                          (swap! *state update :circles conj (last history))
                          (swap! *state update :history pop))} "Redo"])
 
@@ -73,7 +75,7 @@
 (defn select-circle! [selection *state event]
   (.stopPropagation event)
   (swap! *state assoc :selected? selection)
-  (swap! *state assoc :slider-opened? false))
+  )
 
 (defn circle-draw [*state
                    selected?
