@@ -106,10 +106,21 @@
   (when event
     (.preventDefault event)))
 
-(defn insert-circle! [*state {:keys [current-id]} click]
-  (let [circle-pos (assoc click
-                          :id current-id
-                          :r 50)]
+(defn get-circle-dim [event]
+  (let [dim   (-> ^js event
+                .-target
+                .getBoundingClientRect)
+        x-rel (.-clientX event)
+        y-rel (.-clientY event)]
+    {:x (- x-rel (.-left dim))
+     :y (- y-rel (.-top dim))}))
+
+(defn insert-circle! [*state current-id event]
+  (let [circle-pos (-> event
+                       get-circle-dim
+                       (assoc
+                        :id current-id
+                        :r 50))]
     (swap! *state update
            :circles conj circle-pos)
     (swap! *state assoc
@@ -118,23 +129,17 @@
   (swap! *state update
          :current-id inc))
 
-(defn click-insert-circle! [*state event]
-  (let [dim (-> ^js event
-                .-target
-                .getBoundingClientRect)
-        x-rel (.-clientX event)
-        y-rel (.-clientY event)]
-    (insert-circle! *state @*state {:x (- x-rel (.-left dim))
-                                    :y (- y-rel (.-top dim))})))
-
-(defn svg-draw [{:keys [circles selected? slider-opened?]}
+(defn svg-draw [{:keys [circles
+                        selected?
+                        slider-opened?
+                        current-id]}
                 open-slider!
-                click-insert-circle!
+                insert-circle!
                 circle-draw!]
   [:svg {:style svg-style
          :background-color "#eee"
          :on-context-menu (partial open-slider! selected? slider-opened?)
-         :on-click click-insert-circle!}
+         :on-click (partial insert-circle! current-id)}
    (->> circles
         last-circles-by-id
         (map (partial circle-draw! selected?)))])
@@ -151,6 +156,6 @@
     [redo-button @*circles *circles]]
    [svg-draw @*circles
     (partial open-slider! *circles)
-    (partial click-insert-circle! *circles)
+    (partial insert-circle! *circles)
     (partial circle-draw! *circles)]
    [radius-modal *circles]])
