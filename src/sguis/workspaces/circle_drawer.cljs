@@ -117,20 +117,22 @@
   (when event
     (.preventDefault event)))
 
+(defn click-insert-circle! [*state event]
+  (let [dim (-> ^js event
+                .-target
+                .getBoundingClientRect)
+        x-rel (.-clientX event)
+        y-rel (.-clientY event)]
+    (insert-circle! *state @*state {:x (- x-rel (.-left dim))
+                                    :y (- y-rel (.-top dim))})))
+
 (defn svg-draw [{:keys [circles
                         selected?
                         slider-opened?]} *state]
   [:svg {:style svg-style
          :background-color "#eee"
          :on-context-menu (partial open-slider! slider-opened? *state)
-         :on-click (fn [event]
-                     (let [dim (-> ^js event
-                                   .-target
-                                   .getBoundingClientRect)
-                           x-rel (.-clientX event)
-                           y-rel (.-clientY event)]
-                       (insert-circle! *state @*state {:x (- x-rel (.-left dim))
-                                                       :y (- y-rel (.-top dim))})))}
+         :on-click (partial click-insert-circle! *state)}
    (->> circles
         last-circles-by-id
         (map (partial circle-draw *state selected?)))])
