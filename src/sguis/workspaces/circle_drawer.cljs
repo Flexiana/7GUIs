@@ -9,10 +9,6 @@
            :selected?     {}
            :history       []}))
 
-(defn increment-id! [*state]
-  (swap! *state update
-         :current-id inc))
-
 (defn insert-circle! [*state {:keys [current-id]} click]
   (let [circle-pos (assoc click
                           :id current-id
@@ -22,7 +18,8 @@
     (swap! *state assoc
            :selected? circle-pos))
   (swap! *state assoc :modal-opened? false)
-  (increment-id! *state))
+  (swap! *state update
+         :current-id inc))
 
 (defn undo-button [*state {:keys [circles]}]
   [:button {:on-click #(when-not (empty? circles)
