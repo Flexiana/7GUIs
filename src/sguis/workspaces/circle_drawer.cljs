@@ -99,10 +99,10 @@
    :stroke-dasharray 2.2
    :stroke-linejoin "round"})
 
-(defn open-slider! [slider-opened? *state event]
-  (if slider-opened?
-    (swap! *state assoc :slider-opened? false)
-    (swap! *state assoc :slider-opened? true))
+(defn open-slider! [*state selected? slider-opened? event]
+  (if-not (and slider-opened? (not-empty selected?))
+    (swap! *state assoc :slider-opened? true)
+    (swap! *state assoc :slider-opened? false))
   (when event
     (.preventDefault event)))
 
@@ -127,16 +127,17 @@
     (insert-circle! *state @*state {:x (- x-rel (.-left dim))
                                     :y (- y-rel (.-top dim))})))
 
-(defn svg-draw [{:keys [circles
-                        selected?
-                        slider-opened?]} *state]
+(defn svg-draw [{:keys [circles selected? slider-opened?]}
+                open-slider!
+                click-insert-circle!
+                circle-draw!]
   [:svg {:style svg-style
          :background-color "#eee"
-         :on-context-menu (partial open-slider! slider-opened? *state)
-         :on-click (partial click-insert-circle! *state)}
+         :on-context-menu (partial open-slider! selected? slider-opened?)
+         :on-click click-insert-circle!}
    (->> circles
         last-circles-by-id
-        (map (partial circle-draw *state selected?)))])
+        (map (partial circle-draw! selected?)))])
 
 (defn circles-ui [*circles]
   [:div {:padding "1em"
@@ -148,5 +149,8 @@
           :width "800"}
     [undo-button @*circles *circles]
     [redo-button @*circles *circles]]
-   [svg-draw @*circles *circles]
+   [svg-draw @*circles
+    (partial open-slider! *circles)
+    (partial click-insert-circle! *circles)
+    (partial circle-draw! *circles)]
    [radius-modal *circles]])
