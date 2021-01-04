@@ -15,7 +15,8 @@
 
 (defn circle-pos [{:keys [mouse-x mouse-y]}]
   {:x  mouse-x
-   :y  mouse-y})
+   :y  mouse-y
+   :selected? true})
 
 (defn insert-circle! [*state {:keys [current-id]} click]
   (let [circle-pos (merge {:id current-id :r  50}
@@ -102,18 +103,18 @@
                                   (.preventDefault event)))}
     "Insert"]])
 
-(defn svg-draw [*circles {:keys [circles]}]
+(defn svg-draw [*state {:keys [circles]}]
   [:svg {:width "100%"
          :height "100%"
-         :background-color "#eee"
-         :on-click #()}
-   (map (fn [{:keys [x y r]}]
+         :background-color "#eee"}
+   (map (fn [{:keys [x y r selected?]}]
           [:circle {:cx x
                     :cy y
                     :r r
                     :stroke "black"
                     :stroke-width "1"
-                    :fill "yellow"}]) circles)])
+                    :fill (when selected?
+                            "yellow")}]) circles)])
 
 (defn circles-ui [*circles]
   [:div {:padding "1em"}
