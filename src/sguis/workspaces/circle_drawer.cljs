@@ -1,6 +1,5 @@
 (ns sguis.workspaces.circle-drawer
-  (:require [reagent.core :as r]
-            [reagent.dom :as dom]))
+  (:require [reagent.core :as r]))
 
 (def *circles
   (r/atom {:slider-opened? nil
