@@ -6,6 +6,7 @@
   (r/atom {:modal-opened? nil
            :current-id    0
            :circles       []
+           :selected?     {}
            :history       []}))
 
 (defn increment-id! [*state]
