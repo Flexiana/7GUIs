@@ -48,29 +48,7 @@
        [:tbody
         (map (partial column-fn columns) circles)]])))
 
-(defn update-radius! [*state selection new-radius]
-  (when selection
-    (swap! *state
-           update :circles conj
-           (assoc selection :r new-radius))))
 
-(defn radius-slider [*state {:keys [selected?]} update-radius!]
-  [:label "slider"
-   [:input {:type "range"
-            :min  0
-            :max  100
-            :disabled (not selected?)
-            :on-change #(update-radius! *state
-                                        selected?
-                                        (.. %
-                                            -target
-                                            -valueAsNumber))}]])
-
-(defn radius-modal [*state]
-  (let [{:keys [modal-opened?]} @*state]
-    (if modal-opened?
-      [radius-slider *circles @*circles update-radius!]
-      [:div])))
 
 (defn undo-button [*state {:keys [circles]}]
   [:button {:on-click #(when-not (empty? circles)
@@ -100,6 +78,30 @@
                                 (when event
                                   (.preventDefault event)))}
     "Insert"]])
+
+(defn update-radius! [*state selection new-radius]
+  (when selection
+    (swap! *state
+           update :circles conj
+           (assoc selection :r new-radius))))
+
+(defn radius-slider [*state {:keys [selected?]} update-radius!]
+  [:label "slider"
+   [:input {:type "range"
+            :min  0
+            :max  100
+            :disabled (not selected?)
+            :on-change #(update-radius! *state
+                                        selected?
+                                        (.. %
+                                            -target
+                                            -valueAsNumber))}]])
+
+(defn radius-modal [*state]
+  (let [{:keys [modal-opened?]} @*state]
+    (when modal-opened?
+      [:div.slider
+       [radius-slider *circles @*circles update-radius!]])))
 
 (defn svg-draw [*state {:keys [circles
                                selected?]}]
