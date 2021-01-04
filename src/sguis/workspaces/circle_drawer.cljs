@@ -97,10 +97,20 @@
                                             -target
                                             -valueAsNumber))}]])
 
+(def radius-modal-style
+  {:position "absolute"
+   :width "80%"
+   :top "50%"
+   :left "50%"
+   :transform "translate(-50%,-50%)"
+   :padding "1em"
+   :text-align "center"
+   :background-color "rgba(255,255,255,0.5)"})
+
 (defn radius-modal [*state]
   (let [{:keys [modal-opened?]} @*state]
     (when modal-opened?
-      [:div.slider
+      [:div.slider {:style radius-modal-style}
        [radius-slider *circles @*circles update-radius!]])))
 
 (defn svg-draw [*state {:keys [circles
