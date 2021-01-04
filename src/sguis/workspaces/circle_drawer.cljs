@@ -94,9 +94,9 @@
                         (swap! *state assoc :selected? select)
                         (swap! *state assoc :modal-opened? false))}])
 
-(defn svg-draw [*state {:keys [circles
-                               selected?
-                               modal-opened?]}]
+(defn svg-draw [{:keys [circles
+                        selected?
+                        modal-opened?]} *state]
   [:svg {:style {:width "800"
                  :height "600"
                  :stroke #"646464"
