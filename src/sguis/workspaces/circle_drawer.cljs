@@ -102,10 +102,24 @@
                                   (.preventDefault event)))}
     "Insert"]])
 
+(defn svg-draw [*circles {:keys [circles]}]
+  [:svg {:width "100%"
+         :height "100%"
+         :background-color "#eee"
+         :on-click #()}
+   (map (fn [{:keys [x y r]}]
+          [:circle {:cx x
+                    :cy y
+                    :r r
+                    :stroke "black"
+                    :stroke-width "1"
+                    :fill "yellow"}]) circles)])
+
 (defn circles-ui [*circles]
   [:div {:padding "1em"}
    [:div "HI!"]
    [:div
+    [svg-draw *circles @*circles]
     [insert-input *circles @*circles]
     [undo-button *circles @*circles]
     [redo-button *circles @*circles]]
