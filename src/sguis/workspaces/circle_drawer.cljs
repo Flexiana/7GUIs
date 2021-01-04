@@ -75,24 +75,29 @@
        (into {})
        vals))
 
+(defn select-fill [{selected-x :x
+                    selected-y :y}
+                   {:keys [x y]}]
+  (if (and (= x selected-x)
+           (= y selected-y))
+    "red"
+    "white"))
+
+(defn select-circle! [selection *state event]
+  (.stopPropagation event)
+  (swap! *state assoc :selected? selection)
+  (swap! *state assoc :modal-opened? false))
+
 (defn circle-draw [*state
                    selected?
-                   {:keys [x y r] :as select}]
+                   {:keys [x y r] :as selection}]
   [:circle {:cx x
             :cy y
             :r r
             :stroke "black"
             :stroke-width "1"
-            :fill (let [{selected-x :x
-                         selected-y :y} selected?]
-                    (if (and (= x selected-x)
-                             (= y selected-y))
-                      "red"
-                      "white"))
-            :on-click (fn [event]
-                        (.stopPropagation event)
-                        (swap! *state assoc :selected? select)
-                        (swap! *state assoc :modal-opened? false))}])
+            :fill (select-fill selected? selection)
+            :on-click (partial select-circle! selection *state)}])
 
 
 (def svg-style
