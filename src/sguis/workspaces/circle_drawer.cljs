@@ -110,17 +110,19 @@
    :stroke-dasharray 2.2
    :stroke-linejoin "round"})
 
+(defn open-slider! [slider-opened? *state event]
+  (if slider-opened?
+    (swap! *state assoc :slider-opened? false)
+    (swap! *state assoc :slider-opened? true))
+  (when event
+    (.preventDefault event)))
+
 (defn svg-draw [{:keys [circles
                         selected?
                         slider-opened?]} *state]
   [:svg {:style svg-style
          :background-color "#eee"
-         :on-context-menu (fn [event]
-                            (if slider-opened?
-                              (swap! *state assoc :slider-opened? false)
-                              (swap! *state assoc :slider-opened? true))
-                            (when event
-                              (.preventDefault event)))
+         :on-context-menu (partial open-slider! slider-opened? *state)
          :on-click (fn [event]
                      (let [dim (-> ^js event
                                    .-target
