@@ -94,17 +94,21 @@
                         (swap! *state assoc :selected? select)
                         (swap! *state assoc :modal-opened? false))}])
 
+
+(def svg-style
+  {:width "800"
+   :height "600"
+   :display "flex"
+   :border "1px solid black"
+   :stroke #"646464"
+   :stroke-width "1px"
+   :stroke-dasharray 2.2
+   :stroke-linejoin "round"})
+
 (defn svg-draw [{:keys [circles
                         selected?
                         modal-opened?]} *state]
-  [:svg {:style {:width "800"
-                 :height "600"
-                 :display "flex"
-                 :border "1px solid black"
-                 :stroke #"646464"
-                 :stroke-width "1px"
-                 :stroke-dasharray 2.2
-                 :stroke-linejoin "round"}
+  [:svg {:style svg-style
          :background-color "#eee"
          :on-context-menu (fn [event]
                             (if modal-opened?
