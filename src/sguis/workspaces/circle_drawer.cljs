@@ -13,43 +13,16 @@
   (swap! *state update
          :current-id inc))
 
+(defn circle-pos [{:keys [mouse-x mouse-y]}]
+  {:x  mouse-x
+   :y  mouse-y})
 
-(defn circle-pos [canvas {:keys [mouse-x mouse-y]}]
-  (let [rect (.getBoundingClientRect canvas)]
-    {:x (- mouse-x (.-left rect))
-     :y (- mouse-y (.-top rect))}))
-
-(defn insert-circle! [*state {:keys [canvas current-id]} click-on-canvas]
+(defn insert-circle! [*state {:keys [current-id]} click]
   (let [circle-pos (merge {:id current-id :r  50}
-                          (circle-pos canvas click-on-canvas))]
+                          (circle-pos click))]
     (swap! *state update
            :circles conj circle-pos))
   (increment-id! *state))
-
-(defn div-draw [*state]
-  (let [{:keys [window-widht
-                canvas
-                drawing]} @*state]
-    (r/create-class
-     {:component-did-mount
-      (fn [this]
-        (swap! *state assoc :canvas (-> this
-                                        dom/dom-node
-                                        .-firstChild)))
-      :reagent-render
-      (fn [*state]
-        [:div.with-canvas
-         [:canvas {:style           {:border   "1px solid #000000"
-                                     :position "relative"}
-                   :on-click #(insert-circle! *state @*state {:mouse-x (.-clientX %)
-                                                              :mouse-y (.-clientY %)})
-                   :on-context-menu (fn [event]
-                                      (swap! *state update :modal-opened? not)
-                                      (when event
-                                        (.preventDefault event)))}
-          (when canvas
-            {:width  (.-clientWidth canvas)
-             :height (.-clientHeight canvas)})]])})))
 
 (defn circles-table [*state]
   (let [{:keys [circles]} @*state
@@ -110,13 +83,32 @@
                          (swap! *state update :circles conj (last history))
                          (swap! *state update :history pop))} "Redo"])
 
+
+(defn insert-input [*state {:keys [mouse-x
+                                   mouse-y]}]
+  [:<>
+   [:label [:input {:type "number"
+                    :on-change #(swap! *state assoc :mouse-x
+                                       (.. % -target -valueAsNumber))}] "x"]
+   [:label [:input {:type "number"
+                    :on-change #(swap! *state assoc :mouse-y
+                                       (.. % -target -valueAsNumber))}] "y"]
+   [:button {:on-click #(when (and mouse-y mouse-x)
+                          (insert-circle! *state @*state {:mouse-x mouse-x
+                                                          :mouse-y mouse-y}))
+             :on-context-menu (fn [event]
+                                (swap! *state update :modal-opened? not)
+                                (when event
+                                  (.preventDefault event)))}
+    "Insert"]])
+
 (defn circles-ui [*circles]
   [:div {:padding "1em"}
    [:div "HI!"]
    [:div
+    [insert-input *circles @*circles]
     [undo-button *circles @*circles]
     [redo-button *circles @*circles]]
    [:div
-    [div-draw *circles]
     [circles-table *circles]
     [radius-modal *circles]]])
