@@ -23,33 +23,6 @@
            :selected? circle-pos))
   (increment-id! *state))
 
-(defn circles-table [*state]
-  (let [{:keys [circles]} @*state
-        columns           [{:attr  :x
-                            :label "x"}
-                           {:attr  :y
-                            :label "y"}
-                           {:attr  :r
-                            :label "r"}]]
-
-    (letfn [(row-fn [line {:keys [attr]}]
-              ^{:key attr}
-              [:td {:on-click #(swap! *state assoc :selected? line)}
-               (get line attr)])
-            (column-fn [columns {:keys [id] :as line}]
-              [:tr
-               [:td]
-               [:td id]
-               (map (partial row-fn line) columns)])]
-      [:table
-       [:thead
-        (concat
-         [[:th] [:td "id"] [:td "x"] [:td "y"] [:td "r"]])]
-       [:tbody
-        (map (partial column-fn columns) circles)]])))
-
-
-
 (defn undo-button [*state {:keys [circles]}]
   [:button {:on-click #(when-not (empty? circles)
                          (swap! *state update :circles pop)
@@ -59,25 +32,6 @@
   [:button {:on-click #(when-not (empty? history)
                          (swap! *state update :circles conj (last history))
                          (swap! *state update :history pop))} "Redo"])
-
-
-(defn insert-input [*state {:keys [mouse-x
-                                   mouse-y]}]
-  [:<>
-   [:label [:input {:type "number"
-                    :on-change #(swap! *state assoc :mouse-x
-                                       (.. % -target -valueAsNumber))}] "x"]
-   [:label [:input {:type "number"
-                    :on-change #(swap! *state assoc :mouse-y
-                                       (.. % -target -valueAsNumber))}] "y"]
-   [:button {:on-click #(when (and mouse-y mouse-x)
-                          (insert-circle! *state @*state {:x mouse-x
-                                                          :y mouse-y}))
-             :on-context-menu (fn [event]
-                                (swap! *state update :modal-opened? not)
-                                (when event
-                                  (.preventDefault event)))}
-    "Insert"]])
 
 (defn update-radius! [*state selection new-radius]
   (when selection
