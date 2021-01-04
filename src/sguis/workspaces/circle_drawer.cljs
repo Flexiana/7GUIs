@@ -38,7 +38,10 @@
            (assoc selection :r new-radius))))
 
 (defn radius-slider [*state {:keys [selected?]} update-radius!]
-  [:label "slider"
+  [:label (str "Changing circle at "
+               "("
+               (:x selected?) ", "
+               (:y selected?)")")
    [:input {:type "range"
             :min  0
             :max  100
@@ -105,8 +108,6 @@
                                   (.stopPropagation event)
                                   (swap! *state assoc :selected? select)
                                   (swap! *state assoc :modal-opened? false))}]) circles-to-plot))])
-
-
 
 (defn circles-ui [*circles]
   [:div {:padding "1em"
