@@ -21,6 +21,7 @@
            :circles conj circle-pos)
     (swap! *state assoc
            :selected? circle-pos))
+  (swap! *state assoc :modal-opened? false)
   (increment-id! *state))
 
 (defn undo-button [*state {:keys [circles]}]
@@ -68,12 +69,15 @@
        [radius-slider *circles @*circles update-radius!]])))
 
 (defn svg-draw [*state {:keys [circles
-                               selected?]}]
+                               selected?
+                               modal-opened?]}]
   [:svg {:width "100%"
          :height "100%"
          :background-color "#eee"
          :on-context-menu (fn [event]
-                            (swap! *state update :modal-opened? not)
+                            (if modal-opened?
+                              (swap! *state assoc :modal-opened? false)
+                              (swap! *state assoc :modal-opened? true))
                             (when event
                               (.preventDefault event)))
          :on-click (fn [event]
@@ -102,7 +106,8 @@
                                 "white"))
                       :on-click (fn [event]
                                   (.stopPropagation event)
-                                  (swap! *state assoc :selected? select))}]) circles-to-plot))])
+                                  (swap! *state assoc :selected? select)
+                                  (swap! *state assoc :modal-opened? false))}]) circles-to-plot))])
 
 
 
