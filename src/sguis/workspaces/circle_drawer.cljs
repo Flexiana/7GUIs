@@ -74,12 +74,12 @@
 
 (defn select-circle! [selection *state event]
   (.stopPropagation event)
-  (swap! *state assoc :selected? selection)
-  )
+  (swap! *state assoc :selected? selection))
 
-(defn circle-draw [*state
-                   selected?
-                   {:keys [x y r] :as selection}]
+(defn circle-draw! [*state
+                    selected?
+                    {:keys [id x y r] :as selection}]
+  ^{:key id}
   [:circle {:cx x
             :cy y
             :r r
