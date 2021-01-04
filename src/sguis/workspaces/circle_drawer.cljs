@@ -153,10 +153,11 @@
 
 
 (defn circles-ui [*circles]
-  [:div {:padding "1em"}
-   [:div
-    [undo-button *circles @*circles]
-    [redo-button *circles @*circles]
-    [svg-draw *circles @*circles]
-    [radius-modal *circles]
-    #_[insert-input *circles @*circles]]])
+  [:div {:padding "1em"
+         :position "absolute"
+         :width "100%"
+         :text-align "center"}
+   [undo-button *circles @*circles]
+   [redo-button *circles @*circles]
+   [svg-draw *circles @*circles]
+   [radius-modal *circles]])
