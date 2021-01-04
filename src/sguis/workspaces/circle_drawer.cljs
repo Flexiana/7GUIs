@@ -68,11 +68,41 @@
       [:div.slider {:style radius-modal-style}
        [radius-slider *circles @*circles update-radius!]])))
 
+
+(defn last-circles-by-id [circles]
+  (->> circles
+       (map (juxt :id identity))
+       (into {})
+       vals))
+
+(defn circle-draw [*state
+                   selected?
+                   {:keys [x y r] :as select}]
+  [:circle {:cx x
+            :cy y
+            :r r
+            :stroke "black"
+            :stroke-width "1"
+            :fill (let [{selected-x :x
+                         selected-y :y} selected?]
+                    (if (and (= x selected-x)
+                             (= y selected-y))
+                      "red"
+                      "white"))
+            :on-click (fn [event]
+                        (.stopPropagation event)
+                        (swap! *state assoc :selected? select)
+                        (swap! *state assoc :modal-opened? false))}])
+
 (defn svg-draw [*state {:keys [circles
                                selected?
                                modal-opened?]}]
-  [:svg {:width "100%"
-         :height "100%"
+  [:svg {:style {:width "800"
+                 :height "600"
+                 :stroke #"646464"
+                 :stroke-width "1px"
+                 :stroke-dasharray 2.2
+                 :stroke-linejoin "round"}
          :background-color "#eee"
          :on-context-menu (fn [event]
                             (if modal-opened?
@@ -88,26 +118,9 @@
                            y-rel (.-clientY event)]
                        (insert-circle! *state @*state {:x (- x-rel (.-left dim))
                                                        :y (- y-rel (.-top dim))})))}
-   (let [circles-to-plot (->> circles
-                              (map (juxt :id identity))
-                              (into {})
-                              vals)]
-     (map (fn [{:keys [x y r] :as select}]
-            [:circle {:cx x
-                      :cy y
-                      :r r
-                      :stroke "black"
-                      :stroke-width "1"
-                      :fill (let [{selected-x :x
-                                   selected-y :y} selected?]
-                              (if (and (= x selected-x)
-                                       (= y selected-y))
-                                "red"
-                                "white"))
-                      :on-click (fn [event]
-                                  (.stopPropagation event)
-                                  (swap! *state assoc :selected? select)
-                                  (swap! *state assoc :modal-opened? false))}]) circles-to-plot))])
+   (->> circles
+        last-circles-by-id
+        (map (partial circle-draw *state selected?)))])
 
 (defn circles-ui [*circles]
   [:div {:padding "1em"
