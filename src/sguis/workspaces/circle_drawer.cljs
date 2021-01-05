@@ -19,7 +19,7 @@
    :stroke-linejoin "round"
    :background-color "#eee"})
 
-(defn undo-on-click! [*state circles _event]
+(defn undo-on-click! [*state circles _]
   (when-not (empty? circles)
     (swap! *state assoc :slider-opened? false)
     (swap! *state update :circles pop)
@@ -28,7 +28,7 @@
 (defn undo-button [{:keys [circles]} undo-on-click!]
   [:button {:on-click (partial undo-on-click! circles)} "Undo"])
 
-(defn redo-on-click! [*state history _event]
+(defn redo-on-click! [*state history _]
   (when-not (empty? history)
     (swap! *state assoc :slider-opened? false)
     (swap! *state update :circles conj (last history))
