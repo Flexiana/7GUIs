@@ -5,37 +5,23 @@
   (r/atom {:cells [{:id 0 :x 1 :y 2}]}))
 
 (def a->z
-  (map (comp (fn [c] [:td c]) char) (range 65 91)))
+  (map char (range 65 91)))
+
+(def table-lines
+  (range 0 10))
 
 (defn cells-ui [*cells]
-  (let [{:keys [cells]} @*cells
-        columns         [{:attr  :x
-                          :label "x"}
-                         {:attr  :y
-                          :label "y"}]]
-    (letfn [(row-fn [line {:keys [attr]}]
-              ^{:key attr}
-              [:td {:on-click #(swap! *cells assoc :selected? line)}
-               (get line attr)])
-            (column-fn [columns {:keys [id] :as line}]
-              [:tr
-               [:td]
-               [:td id]
-               (map (partial row-fn line) columns)])]
-      [:table
-       (map (fn [[line coll]]
-              [:<>
-               [:thead (concat [[:th]] a->z)]
-               [:tbody (concat [[:th]]
-                               (map (fn [c]
-                                      [:tr [:td c]
-                                       [:td line]])
-                                    ;; lines
-                                    (range 0 10)))]]) {0 {:A 1 :B 2}})]
-
-      #_[:table
-         [:thead
-          (concat
-           [[:th] [:td "id"] [:td "a"] [:td "b"]])]
-         [:tbody
-          (map (partial column-fn columns) cells)]])))
+  [:table {:style {:border "1px solid black"}}
+   [:thead (concat [^{:key :n} [:th]]
+                   (map (fn [c] ^{:key c} [:td c])  a->z))]
+   [:tbody (concat [^{:key :n} [:th]]
+                   (map (fn [l]
+                          ^{:key l}
+                          [:tr
+                           ;; coll entries per line
+                           (concat [^{:key l} [:td l]]
+                                   (map (fn [c]
+                                          ^{:key (str l c)}
+                                          [:td {:on-click #(js/console.log (str l c))} c]) a->z))])
+                        ;; lines
+                        table-lines))]])
