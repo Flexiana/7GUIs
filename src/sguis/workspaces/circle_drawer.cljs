@@ -19,38 +19,23 @@
    :stroke-linejoin "round"
    :background-color "#eee"})
 
-(defn undo-button [{:keys [circles]} *state]
-  [:button {:on-click #(when-not (empty? circles)
-                         (swap! *state assoc :slider-opened? false)
-                         (swap! *state update :circles pop)
-                         (swap! *state update :history conj (last circles)))} "Undo"])
+(defn undo-on-click! [*state circles _event]
+  (when-not (empty? circles)
+    (swap! *state assoc :slider-opened? false)
+    (swap! *state update :circles pop)
+    (swap! *state update :history conj (last circles))))
 
-(defn redo-button [{:keys [history]} *state]
-  [:button {:on-click #(when-not (empty? history)
+(defn undo-button [{:keys [circles]} undo-on-click!]
+  [:button {:on-click (partial undo-on-click! circles)} "Undo"])
+
+(defn redo-on-click! [*state history _event]
+  (when-not (empty? history)
                          (swap! *state assoc :slider-opened? false)
                          (swap! *state update :circles conj (last history))
-                         (swap! *state update :history pop))} "Redo"])
+                         (swap! *state update :history pop)))
 
-(defn update-radius! [*state selection new-radius]
-  (when selection
-    (swap! *state
-           update :circles conj
-           (assoc selection :r new-radius))))
-
-(defn radius-slider [*state {:keys [selected?]} update-radius!]
-  [:label (str "Changing circle at "
-               "("
-               (:x selected?) ", "
-               (:y selected?)")")
-   [:input {:type "range"
-            :min  0
-            :max  100
-            :disabled (not selected?)
-            :on-change #(update-radius! *state
-                                        selected?
-                                        (.. %
-                                            -target
-                                            -valueAsNumber))}]])
+(defn redo-button [{:keys [history]} redo-on-click!]
+  [:button {:on-click (partial redo-on-click! history)} "Redo"])
 
 (def radius-box-style
   {:position "absolute"
@@ -162,8 +147,8 @@
    [:div {:style {:display "flex"
                   :justify-content "space-around"}
           :width "800"}
-    [undo-button @*circles *circles]
-    [redo-button @*circles *circles]]
+    [undo-button @*circles (partial undo-on-click! *circles)]
+    [redo-button @*circles (partial redo-on-click! *circles)]]
    [svg-draw @*circles
     (partial open-slider! *circles)
     (partial insert-circle! *circles)
