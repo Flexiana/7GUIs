@@ -12,7 +12,6 @@
 (def table-lines
   (range 0 10))
 
-
 (defn header-fn [c]
   ^{:key c}
   [:td {:style {:border "1px solid black"}} c])
@@ -23,9 +22,12 @@
     [:td {:style    {:border "1px solid black"}
           :on-click #(swap! *cells assoc :focused-cell cell-id)}
      [:div (when (= cell-id focused-cell)
-             [:input {:type      "text"
-                      :on-change #(swap! *cells assoc :edition (.. % -target -value))
-                      :on-submit #(js/console.log (str [:cells cell-id]) #_(swap! *cells assoc-in [:cells cell-id] edition))}])
+             [:form {:id        cell-id
+                     :on-submit #(do (.preventDefault %)
+                                     (swap! *cells assoc-in [:cells cell-id] edition)
+                                     (swap! *cells dissoc :focused-cell))}
+              [:input {:type      "text"
+                       :on-change #(swap! *cells assoc :edition (.. % -target -value))}]])
       (get cells cell-id)]]))
 
 (defn row-fn [focused-cell cells edition l]
