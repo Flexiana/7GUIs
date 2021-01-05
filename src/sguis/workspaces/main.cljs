@@ -10,6 +10,10 @@
                                                     *booker]]
             [sguis.workspaces.timer :refer [timer-ui
                                             *timer]]
+            [sguis.workspaces.crud :refer [crud-ui
+                                           *crud]]
+            [sguis.workspaces.circle-drawer :refer [circles-ui
+                                                    *circles]]
             [sguis.workspaces.cells :refer [cells-ui
                                             *cells]]))
 
@@ -30,10 +34,20 @@
    *booker
    (r/as-element [booker-ui *booker (js/Date.)])))
 
-(ws/defcard timer-booker
+(ws/defcard crud
+  (ct.react/react-card
+   *crud
+   (r/as-element [crud-ui *crud])))
+
+(ws/defcard timer
   (ct.react/react-card
    *timer
    (r/as-element [timer-ui *timer])))
+
+(ws/defcard circle-drawer
+  (ct.react/react-card
+   *circles
+   (r/as-element [circles-ui *circles])))
 
 (ws/defcard cells
   (ct.react/react-card
