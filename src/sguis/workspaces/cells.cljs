@@ -19,8 +19,8 @@
 (defn coll-fn [focused-cell cells edition l c]
   (let [cell-id (keyword (str l c))]
     ^{:key cell-id}
-    [:td {:style    {:border "1px solid black"}
-          :on-click #(swap! *cells assoc :focused-cell cell-id)}
+    [:td {:style           {:border "1px solid black"}
+          :on-double-click #(swap! *cells assoc :focused-cell cell-id)}
      [:div (when (= cell-id focused-cell)
              [:form {:id        cell-id
                      :on-submit #(do (.preventDefault %)
