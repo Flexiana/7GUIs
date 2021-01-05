@@ -8,6 +8,17 @@
            :selected?     {}
            :history       []}))
 
+(def svg-style
+  {:width "800"
+   :height "600"
+   :display "flex"
+   :border "1px solid black"
+   :stroke "#646464"
+   :stroke-width "1px"
+   :stroke-dasharray 2.2
+   :stroke-linejoin "round"
+   :background-color "#eee"})
+
 (defn undo-button [{:keys [circles]} *state]
   [:button {:on-click #(when-not (empty? circles)
                          (swap! *state assoc :slider-opened? false)
@@ -84,16 +95,6 @@
                         (.stopPropagation event)
                         (swap! *state assoc :selected? selection))}])
 
-(def svg-style
-  {:width "800"
-   :height "600"
-   :display "flex"
-   :border "1px solid black"
-   :stroke #"646464"
-   :stroke-width "1px"
-   :stroke-dasharray 2.2
-   :stroke-linejoin "round"})
-
 (defn open-slider! [*state selected? slider-opened? event]
   (if-not (and slider-opened? (not-empty selected?))
     (swap! *state assoc :slider-opened? true)
@@ -132,7 +133,6 @@
                 insert-circle!
                 circle-draw!]
   [:svg {:style svg-style
-         :background-color "#eee"
          :on-context-menu (partial open-slider! selected? slider-opened?)
          :on-click (partial insert-circle! current-id)}
    (->> circles
@@ -140,10 +140,8 @@
         (map (partial circle-draw! selected?)))])
 
 (defn circles-ui [*circles]
-  [:div {:padding "1em"
-         :position "absolute"
-         :width "100%"
-         :text-align "center"}
+  [:div {:style {:padding "1em"
+                 :text-align "center"}}
    [:div {:style {:display "flex"
                   :justify-content "space-around"}
           :width "800"}
