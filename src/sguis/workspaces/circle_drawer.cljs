@@ -5,7 +5,7 @@
   (r/atom {:slider-opened? nil
            :current-id    0
            :circles       []
-           :selected?     {}
+           :selection     {}
            :history       []}))
 
 (def svg-style
@@ -30,9 +30,9 @@
 
 (defn redo-on-click! [*state history _event]
   (when-not (empty? history)
-                         (swap! *state assoc :slider-opened? false)
-                         (swap! *state update :circles conj (last history))
-                         (swap! *state update :history pop)))
+    (swap! *state assoc :slider-opened? false)
+    (swap! *state update :circles conj (last history))
+    (swap! *state update :history pop)))
 
 (defn redo-button [{:keys [history]} redo-on-click!]
   [:button {:on-click (partial redo-on-click! history)} "Redo"])
@@ -65,8 +65,7 @@
             :disabled (not selected?)
             :on-change (partial update-radius! selected?)}]])
 
-(defn radius-box [{:keys [slider-opened?
-                            selected?]} update-radius!]
+(defn radius-box [{:keys [slider-opened? selected?]} update-radius!]
     (when slider-opened?
       [:div.slider {:style radius-box-style}
        [radius-slider selected? update-radius!]]))
@@ -95,7 +94,7 @@
             :fill (select-fill selected? selection)
             :on-click (fn [event]
                         (.stopPropagation event)
-                        (swap! *state assoc :selected? selection))}])
+                        (swap! *state assoc :selection selection))}])
 
 (defn open-slider! [*state selected? slider-opened? event]
   (if-not (and slider-opened? (not-empty selected?))
@@ -119,25 +118,25 @@
                        (assoc :id current-id
                               :r 50))]
     (swap! *state update :circles conj circle-pos)
-    (swap! *state assoc :selected? circle-pos))
+    (swap! *state assoc :selection circle-pos))
   (swap! *state assoc :slider-opened? false)
   (swap! *state update :current-id inc))
 
-(defn svg-draw [{:keys [circles selected? slider-opened? current-id]}
+(defn svg-draw [{:keys [circles selection slider-opened? current-id]}
                 open-slider!
                 insert-circle!
                 circle-draw!]
   [:svg {:style svg-style
-         :on-context-menu (partial open-slider! selected? slider-opened?)
+         :on-context-menu (partial open-slider! selection slider-opened?)
          :on-click (partial insert-circle! current-id)}
    (->> circles
         last-circles-by-id
-        (map (partial circle-draw! selected?)))])
+        (map (partial circle-draw! selection)))])
 
 (defn circles-ui [*circles]
-  [:div {:style {:padding "1em"
+  [:div {:style {:padding    "1em"
                  :text-align "center"}}
-   [:div {:style {:display "flex"
+   [:div {:style {:display         "flex"
                   :justify-content "space-around"}
           :width "800"}
     [undo-button @*circles (partial undo-on-click! *circles)]
