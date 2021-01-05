@@ -52,7 +52,7 @@
                                             -target
                                             -valueAsNumber))}]])
 
-(def radius-modal-style
+(def radius-box-style
   {:position "absolute"
    :width "80%"
    :top "50%"
@@ -62,12 +62,29 @@
    :text-align "center"
    :background-color "rgba(255,255,255,0.5)"})
 
-(defn radius-modal [*state]
-  (let [{:keys [slider-opened?]} @*state]
-    (when slider-opened?
-      [:div.slider {:style radius-modal-style}
-       [radius-slider *circles @*circles update-radius!]])))
 
+(defn update-radius! [*state selection event]
+  (when selection
+    (swap! *state
+           update :circles conj
+           (assoc selection :r  (.. event
+                                    -target
+                                    -valueAsNumber)))))
+
+(defn radius-slider [{:keys [x y] :as selected?} update-radius!]
+  [:label (str "Changing circle at "
+               "(" x ", " y ")")
+   [:input {:type "range"
+            :min  0
+            :max  100
+            :disabled (not selected?)
+            :on-change (partial update-radius! selected?)}]])
+
+(defn radius-box [{:keys [slider-opened?
+                            selected?]} update-radius!]
+    (when slider-opened?
+      [:div.slider {:style radius-box-style}
+       [radius-slider selected? update-radius!]]))
 
 (defn last-circles-by-id [circles]
   (->> circles
@@ -151,4 +168,4 @@
     (partial open-slider! *circles)
     (partial insert-circle! *circles)
     (partial circle-draw! *circles)]
-   [radius-modal *circles]])
+   [radius-box @*circles (partial update-radius! *circles)]])
