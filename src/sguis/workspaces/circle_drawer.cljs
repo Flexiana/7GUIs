@@ -116,21 +116,14 @@
 (defn insert-circle! [*state current-id event]
   (let [circle-pos (-> event
                        get-circle-dim
-                       (assoc
-                        :id current-id
-                        :r 50))]
-    (swap! *state update
-           :circles conj circle-pos)
-    (swap! *state assoc
-           :selected? circle-pos))
+                       (assoc :id current-id
+                              :r 50))]
+    (swap! *state update :circles conj circle-pos)
+    (swap! *state assoc :selected? circle-pos))
   (swap! *state assoc :slider-opened? false)
-  (swap! *state update
-         :current-id inc))
+  (swap! *state update :current-id inc))
 
-(defn svg-draw [{:keys [circles
-                        selected?
-                        slider-opened?
-                        current-id]}
+(defn svg-draw [{:keys [circles selected? slider-opened? current-id]}
                 open-slider!
                 insert-circle!
                 circle-draw!]
