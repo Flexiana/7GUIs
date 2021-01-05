@@ -12,13 +12,12 @@
 (def table-lines
   (range 0 10))
 
-(defn header-fn [c]
-  ^{:key c}
-  [:td {:style {:border "1px solid black"}} c])
+(defn header-fn [chars]
+  ^{:key chars}
+  [:td {:style {:border "1px solid black"}} chars])
 
 (defn focus-cell! [*state cell-id _]
   (swap! *state assoc :focused-cell cell-id))
-
 
 (defn submit-cell! [*state cell-id edition event]
   (.preventDefault event)
@@ -52,7 +51,7 @@
 (defn cells-ui [*cells]
   [:table {:style {:border "1px solid black"}}
    [:thead (concat [^{:key :n} [:td]]
-                   (map header-fn  a->z))]
+                   (map header-fn a->z))]
    [:tbody (concat [^{:key :n} [:th]]
                    (map (partial row-fn @*cells
                                  (partial focus-cell! *cells)
