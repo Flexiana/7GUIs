@@ -65,10 +65,10 @@
             :disabled (not selected?)
             :on-change (partial update-radius! selected?)}]])
 
-(defn radius-box [{:keys [slider-opened? selected?]} update-radius!]
+(defn radius-box [{:keys [slider-opened? selection]} update-radius!]
     (when slider-opened?
       [:div.slider {:style radius-box-style}
-       [radius-slider selected? update-radius!]]))
+       [radius-slider selection update-radius!]]))
 
 (defn last-circles-by-id [circles]
   (->> circles
