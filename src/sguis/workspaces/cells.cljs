@@ -11,19 +11,22 @@
   (range 0 10))
 
 (defn cells-ui [*cells]
-  [:table {:style {:border "1px solid black"}}
-   [:thead (concat [^{:key :n} [:th]]
-                   (map (fn [c] ^{:key c} [:td {:style {:border "1px solid black"}} c])  a->z))]
-   [:tbody (concat [^{:key :n} [:th]]
-                   (map (fn [l]
-                          ^{:key l}
-                          [:tr
-                           ;; coll entries per line
-                           (concat [^{:key l}
-                                    [:td {:style {:border "1px solid black"}} l]]
-                                   (map (fn [c]
-                                          ^{:key (str l c)}
-                                          [:td {:style    {:border "1px solid black"}
-                                                :on-click #(js/console.log (str l c))} ""]) a->z))])
-                        ;; lines
-                        table-lines))]])
+  (letfn [(header-fn [c]
+            ^{:key c}
+            [:td {:style {:border "1px solid black"}} c])
+          (coll-fn [l c]
+            ^{:key (str l c)}
+            [:td {:style    {:border "1px solid black"}
+                  :on-click #(swap! *cells assoc :focused-cell  (keyword (str l c)))}])
+          (row-fn [l]
+            ^{:key l}
+            [:tr
+             ;; coll entries per line
+             (concat [^{:key l}
+                      [:td {:style {:border "1px solid black"}} l]]
+                     (map (partial coll-fn l) a->z))])]
+    [:table {:style {:border "1px solid black"}}
+     [:thead (concat [^{:key :n} [:th]]
+                     (map header-fn  a->z))]
+     [:tbody (concat [^{:key :n} [:th]]
+                     (map row-fn table-lines))]]))
