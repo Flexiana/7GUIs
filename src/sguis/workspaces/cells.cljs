@@ -1,5 +1,6 @@
 (ns sguis.workspaces.cells
-  (:require [reagent.core :as r]))
+  (:require [reagent.core :as r]
+            [clojure.string :as str]))
 
 (def *cells
   (r/atom {:focused-cell nil
@@ -24,6 +25,11 @@
 
 (def table-lines
   (range 0 100))
+
+(def possible-cells
+  (set (for [s a->z
+             n table-lines]
+         (keyword (str s n)))))
 
 (defn header-fn [chars]
   ^{:key chars}
@@ -77,3 +83,49 @@
                            {:focus-cell!  (partial focus-cell! *cells)
                             :submit-cell! (partial submit-cell! *cells)
                             :change-cell! (partial change-cell! *cells)}) table-lines))]]])
+
+(defn numeric? [x]
+  (and (number? x) (not (js/Number.isNaN x))))
+
+(def kw->op
+  {:add  #(+ %1 %2)
+   :sub  #(- %1 %2)
+   :div  #(/ %1 %2)
+   :mul  #(* %1 %2)
+   :mod  #(mod %1 %2)
+   :sum  +
+   :prod *})
+
+(defn is-cell? [parsed-exp]
+  (and (= 2 (count parsed-exp))
+       (possible-cells (keyword (str/upper-case parsed-exp)))))
+
+(defn is-range-cells? [parsed-exp]
+  (and (= 5 (count parsed-exp))
+       (->> (str/split parsed-exp #":")
+            (map (comp boolean possible-cells keyword str/upper-case))
+            (every? true?))))
+
+(defn is-op? [parsed-exp]
+  ((set (keys kw->op)) (keyword parsed-exp)))
+
+(defn tokenizer [parsed-exp]
+  (cond
+    (is-cell? parsed-exp)        (keyword parsed-exp)
+    (is-range-cells? parsed-exp) (map keyword (-> parsed-exp
+                                                  (str/upper-case)
+                                                  (str/split #":")))
+    (is-op? parsed-exp)          (get kw->op (keyword parsed-exp))))
+
+(defn parse [s]
+  (let [parsed (-> s
+                   str/lower-case)]
+    (cond (str/ends-with? parsed "=") (->> (str/split parsed #" ")
+                                           (map tokenizer)
+                                           (remove nil?))
+          :else                       s)))
+
+#_(is (= `(~+ (:A2 :B8)) (parse "Sum of A2:B8 =")))
+#_(is (= :A3 (tokenize "A3"))
+      (= [:A3 :B5] (tokenize "A3:B5"))
+      (= + (tokenize "sum")))
