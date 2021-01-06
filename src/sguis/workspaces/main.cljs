@@ -2,6 +2,7 @@
   (:require [reagent.core :as r]
             [nubank.workspaces.card-types.react :as ct.react]
             [nubank.workspaces.core :as ws]
+            [nubank.workspaces.model :as wsm]
             [sguis.workspaces.counter :refer [counter-ui
                                               *counter]]
             [sguis.workspaces.temperature :refer [temperature-ui
@@ -50,6 +51,7 @@
    (r/as-element [circles-ui *circles])))
 
 (ws/defcard cells
+  {::wsm/align       {:justify-content "left"}}
   (ct.react/react-card
    *cells
    (r/as-element [cells-ui *cells])))
