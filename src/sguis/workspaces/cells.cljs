@@ -44,12 +44,12 @@
 (defn row-fn [cells actions-map l]
   ^{:key l}
   [:tr
-   (concat [^{:key l}
-            [:td {:style {:border  "1px solid #ccc"
-                          :padding "8px 16px"
-                          ;;:border: 1px solid #ccc;
-                          }} l]]
-           (map (partial coll-fn cells actions-map l) a->z))])
+   (concat
+    [^{:key l}
+     [:td {:style {:border  "1px solid #ccc"
+                   :padding "8px 16px"}}
+      l]]
+    (map (partial coll-fn cells actions-map l) a->z))])
 
 (defn cells-ui [*cells]
   [:table {:style {:border          "1px solid black"
