@@ -14,7 +14,8 @@
 
 (defn header-fn [chars]
   ^{:key chars}
-  [:td {:style {:border "1px solid black"}} chars])
+  [:td {:style {:border  "1px solid #ccc"
+                :padding "8px 16px"}} chars])
 
 (defn focus-cell! [*state cell-id _]
   (swap! *state assoc :focused-cell cell-id))
@@ -31,28 +32,38 @@
                {:keys [focus-cell! submit-cell! change-cell!]} l c]
   (let [cell-id (keyword (str l c))]
     ^{:key cell-id}
-    [:td {:style           {:border "1px solid black"}
+    [:td {:style           {:border "1px solid #ccc"}
           :on-double-click (partial focus-cell! cell-id)}
-     [:div (if (= cell-id focused-cell)
-             [:form {:id        cell-id
-                     :on-submit (partial submit-cell! cell-id edition)}
-              [:input {:type      "text"
-                       :on-change change-cell!}]]
-             (get cells cell-id))]]))
+     (if (= cell-id focused-cell)
+       [:form {:id        cell-id
+               :on-submit (partial submit-cell! cell-id edition)}
+        [:input {:type      "text"
+                 :on-change change-cell!}]]
+       (get cells cell-id))]))
 
 (defn row-fn [cells actions-map l]
   ^{:key l}
   [:tr
    (concat [^{:key l}
-            [:td {:style {:border "1px solid black"}} l]]
+            [:td {:style {:border  "1px solid #ccc"
+                          :padding "8px 16px"
+                          ;;:border: 1px solid #ccc;
+                          }} l]]
            (map (partial coll-fn cells actions-map l) a->z))])
 
 (defn cells-ui [*cells]
-  [:table {:style {:border "1px solid black"}}
-   [:thead [:tr (concat [^{:key :n} [:th]]
-                        (map header-fn a->z))]]
-   [:tbody  (concat [^{:key :n} [:tr]]
-                    (map (partial row-fn @*cells
-                                  {:focus-cell!  (partial focus-cell! *cells)
-                                   :submit-cell! (partial submit-cell! *cells)
-                                   :change-cell! (partial change-cell! *cells)}) table-lines))]])
+  [:table {:style {:border          "1px solid black"
+                   :border-collapse "collapse"
+                   :width           "100%"}}
+   [:thead {:style {:overflow-y "auto" }}
+    [:tr {:style {:border  "1px solid #ccc"
+                  :padding "8px 16px"}}
+     (concat [^{:key :n} [:th]]
+             (map header-fn a->z))]]
+   [:tbody {:style {:overflow-y "auto"}}
+    (concat [^{:key :n} [:tr {:border  "1px solid #ccc"
+                              :padding "8px 16px"}]]
+            (map (partial row-fn @*cells
+                          {:focus-cell!  (partial focus-cell! *cells)
+                           :submit-cell! (partial submit-cell! *cells)
+                           :change-cell! (partial change-cell! *cells)}) table-lines))]])
