@@ -49,10 +49,10 @@
 
 (defn cells-ui [*cells]
   [:table {:style {:border "1px solid black"}}
-   [:thead (concat [^{:key :n} [:td]]
-                   (map header-fn a->z))]
-   [:tbody (concat [^{:key :n} [:th]]
-                   (map (partial row-fn @*cells
-                                 {:focus-cell!  (partial focus-cell! *cells)
-                                  :submit-cell! (partial submit-cell! *cells)
-                                  :change-cell! (partial change-cell! *cells)}) table-lines))]])
+   [:thead [:tr (concat [^{:key :n} [:th]]
+                        (map header-fn a->z))]]
+   [:tbody  (concat [^{:key :n} [:tr]]
+                    (map (partial row-fn @*cells
+                                  {:focus-cell!  (partial focus-cell! *cells)
+                                   :submit-cell! (partial submit-cell! *cells)
+                                   :change-cell! (partial change-cell! *cells)}) table-lines))]])
