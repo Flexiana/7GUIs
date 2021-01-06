@@ -15,7 +15,7 @@
 (defn header-fn [chars]
   ^{:key chars}
   [:td {:style {:border  "1px solid #ccc"
-                :padding "8px 16px"}} chars])
+                :padding "1em"}} chars])
 
 (defn focus-cell! [*state cell-id _]
   (swap! *state assoc :focused-cell cell-id))
@@ -32,12 +32,16 @@
                {:keys [focus-cell! submit-cell! change-cell!]} l c]
   (let [cell-id (keyword (str l c))]
     ^{:key cell-id}
-    [:td {:style           {:border "1px solid #ccc"}
+    [:td {:style           {:border  "1px solid #ccc"
+                            :padding "0.5em"}
           :on-double-click (partial focus-cell! cell-id)}
      (if (= cell-id focused-cell)
-       [:form {:id        cell-id
+       [:form {:style     {:border "1px solid #ccc"}
+               :id        cell-id
                :on-submit (partial submit-cell! cell-id edition)}
-        [:input {:type      "text"
+        [:input { :style    {:border  "1px solid #ccc"
+                             :padding "0.5em"}
+                 :type      "text"
                  :on-change change-cell!}]]
        (get cells cell-id))]))
 
@@ -47,7 +51,7 @@
    (concat
     [^{:key l}
      [:td {:style {:border  "1px solid #ccc"
-                   :padding "8px 16px"}}
+                   :padding "0.5em"}}
       l]]
     (map (partial coll-fn cells actions-map l) a->z))])
 
@@ -57,12 +61,12 @@
                    :width           "100%"}}
    [:thead {:style {:overflow-y "auto" }}
     [:tr {:style {:border  "1px solid #ccc"
-                  :padding "8px 16px"}}
+                  :padding "0.5em"}}
      (concat [^{:key :n} [:th]]
              (map header-fn a->z))]]
    [:tbody {:style {:overflow-y "auto"}}
     (concat [^{:key :n} [:tr {:border  "1px solid #ccc"
-                              :padding "8px 16px"}]]
+                              :padding "0.5em"}]]
             (map (partial row-fn @*cells
                           {:focus-cell!  (partial focus-cell! *cells)
                            :submit-cell! (partial submit-cell! *cells)
