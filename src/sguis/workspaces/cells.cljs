@@ -83,9 +83,8 @@
 (defn eval-cell [env s]
   (let [low-cased (-> s
                       str/lower-case)]
-    (cond (str/ends-with? low-cased "=") (->> low-cased
-                                              (parse env)
-                                              eval-string)
+    (cond (str/ends-with? low-cased "=") (-> (parse env low-cased)
+                                             (eval-string {:allow (vals kw->op)}))
           :else                          s)))
 
 ;; Manual tests
