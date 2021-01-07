@@ -1,6 +1,7 @@
 (ns sguis.workspaces.cells
-  (:require [reagent.core :as r]
-            [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [reagent.core :as r]
+            [sci.core :refer [eval-form]]))
 
 (def *cells
   (r/atom {:focused-cell nil
@@ -143,9 +144,11 @@
                                            (remove nil?))
           :else                       s)))
 
-#_(parse {:cells {:A2 2
-                  :B8 8}} "Sum of A2:B8 =")
+(defn eval-cell [env s]
+  (eval-form {}
+             (flatten (parse env s))))
 
+#_(is (= 10 (eval-cell {:cells {:A2 2 :B8 8}} "Sum of A2:B8 =")))
 #_(is (= `(~+ (0 0 0 0 0 0 0 0 0 0 0 0 0 0)) (parse {} "Sum of A2:B8 ="))
       (= `(~+ 4.0 (0 0 0 0 0 0 0 0 0 0 0 0 0 0)) (parse {} "Sum of 4 and A2:B8 ="))
       (= `(~/ 0 0) (parse {} "Div of B5 and C5 ="))
