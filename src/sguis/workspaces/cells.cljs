@@ -118,7 +118,7 @@
   ^{:key chars}
   [:td {:style light-border-style} chars])
 
-(defn focus-cell! [*state cell-id _]
+(defn focus-cell! [*state {:keys [cells]} cell-id _]
   (swap! *state assoc :focused-cell cell-id))
 
 (defn submit-cell! [*state cell-id {:keys [edition] :as env} event]
