@@ -3,6 +3,22 @@
             [reagent.core :as r]
             [sci.core :refer [eval-form]]))
 
+(def *cells
+  (r/atom {:focused-cell nil
+           :edition      ""
+           :cells        {}}))
+
+(def a->z
+  (map char (range 65 91)))
+
+(def table-lines
+  (range 0 100))
+
+(def possible-cells
+  (set (for [s a->z
+             n table-lines]
+         (keyword (str s n)))))
+
 ;; Parser Impl
 (defn numeric? [x]
   (and (number? x) (not (js/Number.isNaN x))))
@@ -94,17 +110,6 @@
 (def light-border-style
   {:border  "1px solid #ccc"
    :padding "0.5em"})
-
-(def a->z
-  (map char (range 65 91)))
-
-(def table-lines
-  (range 0 100))
-
-(def possible-cells
-  (set (for [s a->z
-             n table-lines]
-         (keyword (str s n)))))
 
 (defn header-fn [chars]
   ^{:key chars}
