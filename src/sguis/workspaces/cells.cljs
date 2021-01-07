@@ -71,8 +71,7 @@
                                              range-cells-get)
                                          (map keyword)
                                          (map #(get cells % 0)))
-    (is-op? parsed-exp)             (get kw->op (keyword parsed-exp))
-    :else parsed-exp))
+    (is-op? parsed-exp)             (get kw->op (keyword parsed-exp))))
 
 (defn parse [env s]
   (->> (str/split s #" ")
@@ -94,7 +93,8 @@
 #_(is (= 0 (eval-cell {} "Sum of A2:B8 ="))
       (= 4 (eval-cell {} "Sum of 4 and A2:B8 ="))
       (= 3 (eval-cell {} "Add 1 and 2 ="))
-      (js/Number.isNaN (eval-cell {} "Div of B5 and C5 =")))
+      (js/Number.isNaN (eval-cell {} "Div of B5 and C5 ="))
+      (= "a" (eval-cell {} "a")))
 
 #_(is (= "lol" (tokenizer {:cells {:A3 "lol"}} "A3"))
       (= [:A3 :B5] (tokenizer {} "A3:B5"))
@@ -128,7 +128,7 @@
   (swap! *state dissoc :focused-cell)
   (swap! *state dissoc :edition))
 
-(defn change-cell! [*state event]
+(defn change-cell! [*state {:keys [edition]} event]
   (swap! *state assoc :edition (.. event -target -value)))
 
 (defn coll-fn [{:keys [focused-cell cells] :as env}
