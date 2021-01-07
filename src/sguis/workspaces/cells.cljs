@@ -41,7 +41,8 @@
 (defn submit-cell! [*state cell-id edition event]
   (.preventDefault event)
   (swap! *state assoc-in [:cells cell-id] edition)
-  (swap! *state dissoc :focused-cell))
+  (swap! *state dissoc :focused-cell)
+  (swap! *state dissoc :edition))
 
 (defn change-cell! [*state event]
   (swap! *state assoc :edition (.. event -target -value)))
