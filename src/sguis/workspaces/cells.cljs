@@ -99,7 +99,8 @@
 
 (defn can-parse-numeric? [parsed-exp]
   (and (re-find  #"^[0-9]" parsed-exp)
-       (not (re-find #"[aA-zZ]" parsed-exp))))
+       (not (re-find #"[aA-zZ]" parsed-exp))
+       (numeric? (js/parseFloat parsed-exp))))
 
 (defn is-cell? [parsed-exp]
   (and (= 2 (count parsed-exp))
