@@ -24,13 +24,13 @@
   (and (number? x) (not (js/Number.isNaN x))))
 
 (def kw->op
-  {:add  `+
-   :sub  `-
-   :div  `/
-   :mul  `*
-   :mod  `mod
-   :sum  `+
-   :prod `*})
+  {:add      `+
+   :subtract `-
+   :div      `/
+   :mul      `*
+   :mod      `mod
+   :sum      `+
+   :prod     `*})
 
 (defn can-parse-numeric? [parsed-exp]
   (and (re-find  #"^[0-9]" parsed-exp)
