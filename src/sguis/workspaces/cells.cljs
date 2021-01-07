@@ -112,30 +112,6 @@
             (map (comp boolean possible-cells keyword str/upper-case))
             (every? true?))))
 
-(defn is-op? [parsed-exp]
-  ((set (keys kw->op)) (keyword parsed-exp)))
-
-(defn tokenizer [parsed-exp]
-  (cond
-    (can-parse-numeric? parsed-exp) (js/parseFloat parsed-exp)
-    (is-cell? parsed-exp)           (keyword (str/upper-case parsed-exp))
-    (is-range-cells? parsed-exp)    (map keyword (-> parsed-exp
-                                                     (str/upper-case)
-                                                     (str/split #":")))
-    (is-op? parsed-exp)             (get kw->op (keyword parsed-exp))))
-
-(defn parse [s]
-  (let [parsed (-> s
-                   str/lower-case)]
-    (cond (str/ends-with? parsed "=") (->> (str/split parsed #" ")
-                                           (map tokenizer)
-                                           (remove nil?))
-          :else                       s)))
-
-(defn list-of-kw? [ls]
-  (and (list? ls)
-       (every? keyword? ls)))
-
 (defn range-cells-get [kw-range]
   (let [[fst snd]     kw-range
         [collmin min] (name fst)
@@ -144,21 +120,35 @@
           v     (range (int min) (inc (int max)))]
       (keyword (str (char collv) v)))))
 
-(defn cells-parse-data [cells tokenized-exp]
-  (reduce (fn [acc v]
-            (conj acc (cond (list-of-kw? v) (map #(get cells % 0) v) ;; eval every cell between
-                            #_#_            (keyword? v)             (get cells v)
-                            #_#_:else       v))) [] tokenized-exp))
+(defn is-op? [parsed-exp]
+  ((set (keys kw->op)) (keyword parsed-exp)))
 
-#_(cells-parse-data {:A2 2
-                     :B8 8} (parse "Sum of A2:B8 ="))
-#_(cells-parse-data {:A2 2
-                     :B8 8} `(~+ (:A2 :B8)))
+(defn tokenizer [{:keys [cells]} parsed-exp]
+  (cond
+    (can-parse-numeric? parsed-exp) (js/parseFloat parsed-exp)
+    (is-cell? parsed-exp)           (keyword (str/upper-case parsed-exp))
+    (is-range-cells? parsed-exp)    (map keyword (-> parsed-exp
+                                                     (str/upper-case)
+                                                     (str/split #":")
+                                                     range-cells-get
+                                                     #_(map #(get cells % 0))))
+    (is-op? parsed-exp)             (get kw->op (keyword parsed-exp))))
 
-#_(is (= `(~+ (:A2 :B8)) (parse "Sum of A2:B8 ="))
-      (= `(~+ 4.0 (:A2 :B8)) (parse "Sum of 4 and A2:B8 ="))
-      (= `(~/ :B5 :C5) (parse "Div of B5 and C5 ="))
-      (= `(2) (parse "2 =")))
+(defn parse [env s]
+  (let [parsed (-> s
+                   str/lower-case)]
+    (cond (str/ends-with? parsed "=") (->> (str/split parsed #" ")
+                                           (map (partial tokenizer env))
+                                           (remove nil?))
+          :else                       s)))
+
+#_(parse {:A2 2
+          :B8 8} "Sum of A2:B8 =")
+
+#_(is (= `(~+ (:A2 :B8)) (parse {} "Sum of A2:B8 ="))
+      (= `(~+ 4.0 (:A2 :B8)) (parse {} "Sum of 4 and A2:B8 ="))
+      (= `(~/ :B5 :C5) (parse {} "Div of B5 and C5 ="))
+      (= `(2) (parse {} "2 =")))
 #_(is (= :A3 (tokenizer "A3"))
       (= [:A3 :B5] (tokenizer "A3:B5"))
       (= + (tokenize "sum")))
