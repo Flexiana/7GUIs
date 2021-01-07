@@ -135,7 +135,6 @@
                :on-submit (partial submit-cell! cell-id env)}
         [:input {:style     light-border-style
                  :type      "text"
-                 :value     (get cells cell-id)
                  :on-change change-cell!}]]
        (get cells cell-id))]))
 
