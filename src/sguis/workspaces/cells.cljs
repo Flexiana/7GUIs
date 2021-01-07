@@ -76,18 +76,18 @@
     (is-op? parsed-exp)             (get kw->op (keyword parsed-exp))))
 
 (defn parse [env s]
-  (->> (str/split s #" ")
-       (map (partial tokenizer env))
-       (remove nil?)
-       flatten
-       str))
+  (some->> (str/split s #" ")
+           (map (partial tokenizer env))
+           (remove nil?)
+           flatten
+           str))
 
 (defn eval-cell [env s]
-  (let [low-cased (-> s
-                      str/lower-case)]
-    (cond (str/ends-with? low-cased "=") (-> (parse env low-cased)
-                                             (eval-string {:allow (vals kw->op)})
-                                             str)
+  (let [low-cased (some-> s str/lower-case)]
+    (cond (nil? s)                       ""
+          (str/ends-with? low-cased "=") (some-> (parse env low-cased)
+                                                 (eval-string {:allow (vals kw->op)})
+                                                 str)
           :else                          s)))
 
 ;; Manual tests
