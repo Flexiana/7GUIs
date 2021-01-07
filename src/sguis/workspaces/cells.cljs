@@ -132,7 +132,33 @@
                                            (remove nil?))
           :else                       s)))
 
-#_(is (= `(~+ (:A2 :B8)) (parse "Sum of A2:B8 =")))
-#_(is (= :A3 (tokenize "A3"))
-      (= [:A3 :B5] (tokenize "A3:B5"))
+(defn list-of-kw? [ls]
+  (and (list? ls)
+       (every? keyword? ls)))
+
+(defn range-cells-get [kw-range]
+  (let [[fst snd]     kw-range
+        [collmin min] (name fst)
+        [collmax max] (name snd)]
+    (for [collv (range (.charCodeAt collmin) (inc (.charCodeAt collmax)))
+          v     (range (int min) (inc (int max)))]
+      (keyword (str (char collv) v)))))
+
+(defn cells-parse-data [cells tokenized-exp]
+  (reduce (fn [acc v]
+            (conj acc (cond (list-of-kw? v) (map #(get cells % 0) v) ;; eval every cell between
+                            #_#_            (keyword? v)             (get cells v)
+                            #_#_:else       v))) [] tokenized-exp))
+
+#_(cells-parse-data {:A2 2
+                     :B8 8} (parse "Sum of A2:B8 ="))
+#_(cells-parse-data {:A2 2
+                     :B8 8} `(~+ (:A2 :B8)))
+
+#_(is (= `(~+ (:A2 :B8)) (parse "Sum of A2:B8 ="))
+      (= `(~+ 4.0 (:A2 :B8)) (parse "Sum of 4 and A2:B8 ="))
+      (= `(~/ :B5 :C5) (parse "Div of B5 and C5 ="))
+      (= `(2) (parse "2 =")))
+#_(is (= :A3 (tokenizer "A3"))
+      (= [:A3 :B5] (tokenizer "A3:B5"))
       (= + (tokenize "sum")))
