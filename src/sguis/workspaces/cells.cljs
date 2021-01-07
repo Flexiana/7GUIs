@@ -1,7 +1,7 @@
 (ns sguis.workspaces.cells
   (:require [clojure.string :as str]
             [reagent.core :as r]
-            [sci.core :refer [eval-form]]))
+            [sci.core :refer [eval-string]]))
 
 (def *cells
   (r/atom {:focused-cell nil
@@ -24,13 +24,13 @@
   (and (number? x) (not (js/Number.isNaN x))))
 
 (def kw->op
-  {:add  #(+ %1 %2)
-   :sub  #(- %1 %2)
-   :div  #(/ %1 %2)
-   :mul  #(* %1 %2)
-   :mod  #(mod %1 %2)
-   :sum  +
-   :prod *})
+  {:add  `+
+   :sub  `-
+   :div  `/
+   :mul  `*
+   :mod  `mod
+   :sum  `+
+   :prod `*})
 
 (defn can-parse-numeric? [parsed-exp]
   (and (re-find  #"^[0-9]" parsed-exp)
@@ -60,37 +60,45 @@
 
 (defn tokenizer [{:keys [cells]} parsed-exp]
   (cond
-    (can-parse-numeric? parsed-exp) (js/parseFloat parsed-exp)
-    (is-cell? parsed-exp)           (get cells (keyword (str/upper-case parsed-exp)) 0)
+    (can-parse-numeric? parsed-exp)  (js/parseFloat parsed-exp)
+    (is-cell? parsed-exp)           (->> parsed-exp
+                                         str/upper-case
+                                         keyword
+                                         (#(get cells % 0)))
     (is-range-cells? parsed-exp)    (->> (-> parsed-exp
                                              (str/upper-case)
                                              (str/split #":")
                                              range-cells-get)
                                          (map keyword)
                                          (map #(get cells % 0)))
-    (is-op? parsed-exp)             (get kw->op (keyword parsed-exp))))
+    (is-op? parsed-exp)             (get kw->op (keyword parsed-exp))
+    :else parsed-exp))
 
 (defn parse [env s]
   (->> (str/split s #" ")
        (map (partial tokenizer env))
        (remove nil?)
-       flatten))
+       flatten
+       str))
 
 (defn eval-cell [env s]
   (let [low-cased (-> s
                       str/lower-case)]
-    (cond (str/ends-with? low-cased "=") (eval-form {} (parse env low-cased))
+    (cond (str/ends-with? low-cased "=") (->> low-cased
+                                              (parse env)
+                                              eval-string)
           :else                          s)))
 
 ;; Manual tests
 #_(is (= 10 (eval-cell {:cells {:A2 2 :B8 8}} "Sum of A2:B8 =")))
 #_(is (= 0 (eval-cell {} "Sum of A2:B8 ="))
       (= 4 (eval-cell {} "Sum of 4 and A2:B8 ="))
+      (= 3 (eval-cell {} "Add 1 and 2 ="))
       (js/Number.isNaN (eval-cell {} "Div of B5 and C5 =")))
 
-#_(is (= :A3 (tokenizer "A3"))
-      (= [:A3 :B5] (tokenizer "A3:B5"))
-      (= + (tokenize "sum")))
+#_(is (= "lol" (tokenizer {:cells {:A3 "lol"}} "A3"))
+      (= [:A3 :B5] (tokenizer {} "A3:B5"))
+      (= `+ (tokenizer {} "sum")))
 
 ;; UI impl
 
@@ -125,7 +133,7 @@
 
 (defn coll-fn [{:keys [focused-cell cells] :as env}
                {:keys [focus-cell! submit-cell! change-cell!]} l c]
-  (let [cell-id (keyword (str l c))]
+  (let [cell-id (keyword (str c l))]
     ^{:key cell-id}
     [:td {:style           light-border-style
           :on-double-click (partial focus-cell! cell-id)}
