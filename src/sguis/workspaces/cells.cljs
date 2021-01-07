@@ -71,32 +71,28 @@
     (is-op? parsed-exp)             (get kw->op (keyword parsed-exp))))
 
 (defn parse [env s]
-  (let [parsed (-> s
-                   str/lower-case)]
-    (cond (str/ends-with? parsed "=") (->> (str/split parsed #" ")
-                                           (map (partial tokenizer env))
-                                           (remove nil?))
-          :else                       s)))
+  (->> (str/split s #" ")
+       (map (partial tokenizer env))
+       (remove nil?)
+       flatten))
 
 (defn eval-cell [env s]
-  (eval-form {}
-             (flatten (parse env s))))
+  (let [low-cased (-> s
+                      str/lower-case)]
+    (cond (str/ends-with? low-cased "=") (eval-form {} (parse env low-cased))
+          :else                          s)))
 
 ;; Manual tests
 #_(is (= 10 (eval-cell {:cells {:A2 2 :B8 8}} "Sum of A2:B8 =")))
-#_(is (= `(~+ (0 0 0 0 0 0 0 0 0 0 0 0 0 0)) (parse {} "Sum of A2:B8 ="))
-      (= `(~+ 4.0 (0 0 0 0 0 0 0 0 0 0 0 0 0 0)) (parse {} "Sum of 4 and A2:B8 ="))
-      (= `(~/ 0 0) (parse {} "Div of B5 and C5 ="))
-      (= `(2) (parse {} "2 =")))
+#_(is (= 0 (eval-cell {} "Sum of A2:B8 ="))
+      (= 4 (eval-cell {} "Sum of 4 and A2:B8 ="))
+      (js/Number.isNaN (eval-cell {} "Div of B5 and C5 =")))
+
 #_(is (= :A3 (tokenizer "A3"))
       (= [:A3 :B5] (tokenizer "A3:B5"))
       (= + (tokenize "sum")))
 
 ;; UI impl
-(def *cells
-  (r/atom {:focused-cell nil
-           :edition      ""
-           :cells        {}}))
 
 (def table-style
   {:border          "1px solid black"
@@ -118,16 +114,16 @@
 (defn focus-cell! [*state cell-id _]
   (swap! *state assoc :focused-cell cell-id))
 
-(defn submit-cell! [*state cell-id edition event]
+(defn submit-cell! [*state cell-id {:keys [edition] :as env} event]
   (.preventDefault event)
-  (swap! *state assoc-in [:cells cell-id] edition)
+  (swap! *state assoc-in [:cells cell-id] (eval-cell env edition))
   (swap! *state dissoc :focused-cell)
   (swap! *state dissoc :edition))
 
 (defn change-cell! [*state event]
   (swap! *state assoc :edition (.. event -target -value)))
 
-(defn coll-fn [{:keys [focused-cell cells edition]}
+(defn coll-fn [{:keys [focused-cell cells edition] :as env}
                {:keys [focus-cell! submit-cell! change-cell!]} l c]
   (let [cell-id (keyword (str l c))]
     ^{:key cell-id}
@@ -136,7 +132,7 @@
      (if (= cell-id focused-cell)
        [:form {:style     {:border "1px solid #ccc"}
                :id        cell-id
-               :on-submit (partial submit-cell! cell-id edition)}
+               :on-submit (partial submit-cell! cell-id env)}
         [:input {:style     light-border-style
                  :type      "text"
                  :value     (get cells cell-id)
