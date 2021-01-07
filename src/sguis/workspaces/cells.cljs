@@ -123,7 +123,7 @@
 (defn change-cell! [*state event]
   (swap! *state assoc :edition (.. event -target -value)))
 
-(defn coll-fn [{:keys [focused-cell cells edition] :as env}
+(defn coll-fn [{:keys [focused-cell cells] :as env}
                {:keys [focus-cell! submit-cell! change-cell!]} l c]
   (let [cell-id (keyword (str l c))]
     ^{:key cell-id}
