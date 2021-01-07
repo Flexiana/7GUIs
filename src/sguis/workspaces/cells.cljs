@@ -124,10 +124,10 @@
   ^{:key chars}
   [:td {:style light-border-style} chars])
 
-(defn focus-cell! [*state {:keys [cells]} cell-id _]
+(defn focus-cell! [*state cell-id _]
   (swap! *state assoc :focused-cell cell-id))
 
-(defn submit-cell! [*state cell-id {:keys [edition] :as env} event]
+(defn submit-cell! [*state {:keys [edition] :as env} cell-id event]
   (.preventDefault event)
   (swap! *state assoc-in [:cells cell-id] (eval-cell env edition))
   (swap! *state dissoc :focused-cell)
@@ -141,14 +141,16 @@
   (let [cell-id (keyword (str c l))]
     ^{:key cell-id}
     [:td {:style           light-border-style
-          :on-double-click (partial focus-cell! env cell-id)}
+          :on-double-click (partial focus-cell! cell-id)}
      (if (= cell-id focused-cell)
        [:form {:style     {:border "1px solid #ccc"}
                :id        cell-id
-               :on-submit (partial submit-cell! cell-id env)}
+               :on-submit (partial submit-cell! env cell-id)}
         [:input {:style     light-border-style
                  :type      "text"
-                 :on-change change-cell!}]]
+                 :auto-focus true
+                 :default-value (get cells cell-id)
+                 :on-change (partial change-cell!)}]]
        (get cells cell-id))]))
 
 (defn row-fn [cells actions-map l]
