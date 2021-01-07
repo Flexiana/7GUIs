@@ -64,13 +64,15 @@
     (is-cell? parsed-exp)           (->> parsed-exp
                                          str/upper-case
                                          keyword
-                                         (#(get cells % 0)))
+                                         (#(get cells % 0))
+                                         js/parseFloat)
     (is-range-cells? parsed-exp)    (->> (-> parsed-exp
                                              (str/upper-case)
                                              (str/split #":")
                                              range-cells-get)
                                          (map keyword)
-                                         (map #(get cells % 0)))
+                                         (map #(get cells % 0))
+                                         (map js/parseFloat))
     (is-op? parsed-exp)             (get kw->op (keyword parsed-exp))))
 
 (defn parse [env s]
@@ -84,20 +86,23 @@
   (let [low-cased (-> s
                       str/lower-case)]
     (cond (str/ends-with? low-cased "=") (-> (parse env low-cased)
-                                             (eval-string {:allow (vals kw->op)}))
+                                             (eval-string {:allow (vals kw->op)})
+                                             str)
           :else                          s)))
 
 ;; Manual tests
-#_(is (= 10 (eval-cell {:cells {:A2 2 :B8 8}} "Sum of A2:B8 =")))
-#_(is (= 0 (eval-cell {} "Sum of A2:B8 ="))
-      (= 4 (eval-cell {} "Sum of 4 and A2:B8 ="))
-      (= 3 (eval-cell {} "Add 1 and 2 ="))
-      (js/Number.isNaN (eval-cell {} "Div of B5 and C5 ="))
-      (= "a" (eval-cell {} "a")))
+#_(is (= "10" (eval-cell {:cells {:A2 "2" :B8 "8"}} "Sum of A2:B8 =")))
+#_(is (= "0" (eval-cell {} "Sum of A2:B8 ="))
+      (= "4" (eval-cell {} "Sum of 4 and A2:B8 ="))
+      (= "3" (eval-cell {} "Add 1 and 2 ="))
+      (= "NaN" (eval-cell {} "Div of B5 and C5 ="))
+      (= "a" (eval-cell {} "a"))
+      (= "20" (eval-cell {:cells {:A7 "10"
+                                  :G0 "10"}} "Add A7 and G0 ="))
 
-#_(is (= "lol" (tokenizer {:cells {:A3 "lol"}} "A3"))
-      (= [:A3 :B5] (tokenizer {} "A3:B5"))
-      (= `+ (tokenizer {} "sum")))
+      #_(is (= "lol" (tokenizer {:cells {:A3 "lol"}} "A3"))
+            (= [:A3 :B5] (tokenizer {} "A3:B5"))
+            (= `+ (tokenizer {} "sum"))))
 
 ;; UI impl
 
@@ -127,7 +132,7 @@
   (swap! *state dissoc :focused-cell)
   (swap! *state dissoc :edition))
 
-(defn change-cell! [*state {:keys [edition]} event]
+(defn change-cell! [*state event]
   (swap! *state assoc :edition (.. event -target -value)))
 
 (defn coll-fn [{:keys [focused-cell cells] :as env}
@@ -135,7 +140,7 @@
   (let [cell-id (keyword (str c l))]
     ^{:key cell-id}
     [:td {:style           light-border-style
-          :on-double-click (partial focus-cell! cell-id)}
+          :on-double-click (partial focus-cell! env cell-id)}
      (if (= cell-id focused-cell)
        [:form {:style     {:border "1px solid #ccc"}
                :id        cell-id
