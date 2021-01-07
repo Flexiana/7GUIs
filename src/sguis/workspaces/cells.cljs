@@ -126,12 +126,13 @@
 (defn tokenizer [{:keys [cells]} parsed-exp]
   (cond
     (can-parse-numeric? parsed-exp) (js/parseFloat parsed-exp)
-    (is-cell? parsed-exp)           (keyword (str/upper-case parsed-exp))
-    (is-range-cells? parsed-exp)    (map keyword (-> parsed-exp
-                                                     (str/upper-case)
-                                                     (str/split #":")
-                                                     range-cells-get
-                                                     #_(map #(get cells % 0))))
+    (is-cell? parsed-exp)           (get cells (keyword (str/upper-case parsed-exp)) 0)
+    (is-range-cells? parsed-exp)    (->> (-> parsed-exp
+                                             (str/upper-case)
+                                             (str/split #":")
+                                             range-cells-get)
+                                         (map keyword)
+                                         (map #(get cells % 0)))
     (is-op? parsed-exp)             (get kw->op (keyword parsed-exp))))
 
 (defn parse [env s]
@@ -142,12 +143,12 @@
                                            (remove nil?))
           :else                       s)))
 
-#_(parse {:A2 2
-          :B8 8} "Sum of A2:B8 =")
+#_(parse {:cells {:A2 2
+                  :B8 8}} "Sum of A2:B8 =")
 
-#_(is (= `(~+ (:A2 :B8)) (parse {} "Sum of A2:B8 ="))
-      (= `(~+ 4.0 (:A2 :B8)) (parse {} "Sum of 4 and A2:B8 ="))
-      (= `(~/ :B5 :C5) (parse {} "Div of B5 and C5 ="))
+#_(is (= `(~+ (0 0 0 0 0 0 0 0 0 0 0 0 0 0)) (parse {} "Sum of A2:B8 ="))
+      (= `(~+ 4.0 (0 0 0 0 0 0 0 0 0 0 0 0 0 0)) (parse {} "Sum of 4 and A2:B8 ="))
+      (= `(~/ 0 0) (parse {} "Div of B5 and C5 ="))
       (= `(2) (parse {} "2 =")))
 #_(is (= :A3 (tokenizer "A3"))
       (= [:A3 :B5] (tokenizer "A3:B5"))
