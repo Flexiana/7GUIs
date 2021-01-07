@@ -99,6 +99,7 @@
       (= "a" (eval-cell {} "a"))
       (= "20" (eval-cell {:cells {:A7 "10"
                                   :G0 "10"}} "Add A7 and G0 ="))
+      (= "" (eval-cell {} nil))
 
       #_(is (= "lol" (tokenizer {:cells {:A3 "lol"}} "A3"))
             (= [:A3 :B5] (tokenizer {} "A3:B5"))
