@@ -112,11 +112,12 @@
 
 (defn tokenizer [parsed-exp]
   (cond
-    (is-cell? parsed-exp)        (keyword parsed-exp)
-    (is-range-cells? parsed-exp) (map keyword (-> parsed-exp
-                                                  (str/upper-case)
-                                                  (str/split #":")))
-    (is-op? parsed-exp)          (get kw->op (keyword parsed-exp))))
+    (can-parse-numeric? parsed-exp) (js/parseFloat parsed-exp)
+    (is-cell? parsed-exp)           (keyword (str/upper-case parsed-exp))
+    (is-range-cells? parsed-exp)    (map keyword (-> parsed-exp
+                                                     (str/upper-case)
+                                                     (str/split #":")))
+    (is-op? parsed-exp)             (get kw->op (keyword parsed-exp))))
 
 (defn parse [s]
   (let [parsed (-> s
