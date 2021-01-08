@@ -1,6 +1,5 @@
 (ns sguis.workspaces.cells-test
-  (:require [sguis.workspaces.cells :refer [eval-cell
-                                            tokenizer]]
+  (:require [sguis.workspaces.cells :refer [eval-cell]]
             [cljs.test :as t
              :include-macros true
              :refer [deftest is]]))
@@ -15,9 +14,3 @@
   (is (= "20" (eval-cell {:cells {:A7 "10"
                                   :G0 "10"}} "Add A7 and G0 =")))
   (is (= "" (eval-cell {} nil))))
-
-
-(deftest tokenizer-test
-  (is (= "lol" (tokenizer {:cells {:A3 "lol"}} "A3")))
-  (is (= [:A3 :B5] (tokenizer {} "A3:B5")))
-  (is (= `+ (tokenizer {} "sum"))))

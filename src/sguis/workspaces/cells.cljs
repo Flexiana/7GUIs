@@ -55,23 +55,27 @@
       (keyword (str (char collv) v)))))
 
 (defn is-op? [parsed-exp]
-  (contains? (keys kw->op) (keyword parsed-exp)))
+  (contains? (set (keys kw->op)) (keyword "sum")))
 
-(defn tokenizer [{:keys [cells]} parsed-exp]
+(defn parse-cell [{:keys [cells]} parsed-exp]
+  (->> parsed-exp
+       str/upper-case
+       keyword
+       (#(get cells % 0))
+       js/parseFloat))
+
+(defn parse-range-cells [{:keys [cells]} parsed-exp]
+  (map (comp js/parseFloat #(get cells % 0) keyword)
+       (-> parsed-exp
+           (str/upper-case)
+           (str/split #":")
+           range-cells-get)))
+
+(defn tokenizer [env parsed-exp]
   (cond
-    (can-parse-numeric? parsed-exp)  (js/parseFloat parsed-exp)
-    (is-cell? parsed-exp)           (->> parsed-exp
-                                         str/upper-case
-                                         keyword
-                                         (#(get cells % 0))
-                                         js/parseFloat)
-    (is-range-cells? parsed-exp)    (->> (-> parsed-exp
-                                             (str/upper-case)
-                                             (str/split #":")
-                                             range-cells-get)
-                                         (map keyword)
-                                         (map #(get cells % 0))
-                                         (map js/parseFloat))
+    (can-parse-numeric? parsed-exp) (js/parseFloat parsed-exp)
+    (is-cell? parsed-exp)           (parse-cell env parsed-exp)
+    (is-range-cells? parsed-exp)    (parse-range-cells env parsed-exp)
     (is-op? parsed-exp)             (get kw->op (keyword parsed-exp))))
 
 (defn parse [env s]
@@ -98,44 +102,44 @@
    :overflow        "auto"})
 
 (def overflow-style
-  {:overflow "auto"})
+{:overflow "auto"})
 
 (def light-border-style
-  {:border  "1px solid #ccc"
-   :padding "0.5em"})
+{:border  "1px solid #ccc"
+ :padding "0.5em"})
 
 (defn header-fn [chars]
-  ^{:key chars}
-  [:td {:style light-border-style} chars])
+^{:key chars}
+[:td {:style light-border-style} chars])
 
 (defn focus-cell! [*state cell-id _]
-  (swap! *state assoc :focused-cell cell-id))
+(swap! *state assoc :focused-cell cell-id))
 
 (defn submit-cell! [*state {:keys [edition] :as env} cell-id event]
-  (.preventDefault event)
-  (swap! *state assoc-in [:cells cell-id] (eval-cell env edition))
-  (swap! *state dissoc :focused-cell)
-  (swap! *state dissoc :edition))
+(.preventDefault event)
+(swap! *state assoc-in [:cells cell-id] (eval-cell env edition))
+(swap! *state dissoc :focused-cell)
+(swap! *state dissoc :edition))
 
 (defn change-cell! [*state event]
-  (swap! *state assoc :edition (.. event -target -value)))
+(swap! *state assoc :edition (.. event -target -value)))
 
 (defn coll-fn [{:keys [focused-cell cells] :as env}
                {:keys [focus-cell! submit-cell! change-cell!]} l c]
-  (let [cell-id (keyword (str c l))]
-    ^{:key cell-id}
-    [:td {:style           light-border-style
-          :on-double-click (partial focus-cell! cell-id)}
-     (if (= cell-id focused-cell)
-       [:form {:style     {:border "1px solid #ccc"}
-               :id        cell-id
-               :on-submit (partial submit-cell! env cell-id)}
-        [:input {:style     light-border-style
-                 :type      "text"
-                 :auto-focus true
-                 :default-value (get cells cell-id)
-                 :on-change (partial change-cell!)}]]
-       (get cells cell-id))]))
+(let [cell-id (keyword (str c l))]
+  ^{:key cell-id}
+  [:td {:style           light-border-style
+        :on-double-click (partial focus-cell! cell-id)}
+   (if (= cell-id focused-cell)
+     [:form {:style     {:border "1px solid #ccc"}
+             :id        cell-id
+             :on-submit (partial submit-cell! env cell-id)}
+      [:input {:style     light-border-style
+               :type      "text"
+               :auto-focus true
+               :default-value (get cells cell-id)
+               :on-change (partial change-cell!)}]]
+     (get cells cell-id))]))
 
 (defn row-fn [cells actions-map l]
   ^{:key l}
