@@ -1,4 +1,4 @@
-{:source-paths ["src"]
+{:source-paths ["src" "test"]
  :dependencies [[reagent "1.0.0-rc1"]
                 [nubank/workspaces "1.0.15"]
                 [binaryage/devtools "1.0.2"]
