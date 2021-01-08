@@ -47,9 +47,8 @@
             (map (comp boolean possible-cells keyword str/upper-case))
             (every? true?))))
 
-(defn range-cells-get [kw-range]
-  (let [[fst snd]     kw-range
-        [collmin min] (name fst)
+(defn range-cells-get [[fst snd]]
+  (let [[collmin min] (name fst)
         [collmax max] (name snd)]
     (for [collv (range (.charCodeAt collmin) (inc (.charCodeAt collmax)))
           v     (range (int min) (inc (int max)))]
