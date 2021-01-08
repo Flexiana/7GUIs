@@ -102,27 +102,27 @@
    :overflow        "auto"})
 
 (def overflow-style
-{:overflow "auto"})
+  {:overflow "auto"})
 
 (def light-border-style
 {:border  "1px solid #ccc"
  :padding "0.5em"})
 
 (defn header-fn [chars]
-^{:key chars}
-[:td {:style light-border-style} chars])
+  ^{:key chars}
+  [:td {:style light-border-style} chars])
 
 (defn focus-cell! [*state cell-id _]
-(swap! *state assoc :focused-cell cell-id))
+  (swap! *state assoc :focused-cell cell-id))
 
 (defn submit-cell! [*state {:keys [edition] :as env} cell-id event]
-(.preventDefault event)
-(swap! *state assoc-in [:cells cell-id] (eval-cell env edition))
-(swap! *state dissoc :focused-cell)
-(swap! *state dissoc :edition))
+  (.preventDefault event)
+  (swap! *state assoc-in [:cells cell-id] (eval-cell env edition))
+  (swap! *state dissoc :focused-cell)
+  (swap! *state dissoc :edition))
 
 (defn change-cell! [*state event]
-(swap! *state assoc :edition (.. event -target -value)))
+  (swap! *state assoc :edition (.. event -target -value)))
 
 (defn coll-fn [{:keys [focused-cell cells] :as env}
                {:keys [focus-cell! submit-cell! change-cell!]} l c]
