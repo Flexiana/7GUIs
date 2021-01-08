@@ -90,21 +90,6 @@
                                                  str)
           :else                          s)))
 
-;; Manual tests
-#_(is (= "10" (eval-cell {:cells {:A2 "2" :B8 "8"}} "Sum of A2:B8 =")))
-#_(is (= "0" (eval-cell {} "Sum of A2:B8 ="))
-      (= "4" (eval-cell {} "Sum of 4 and A2:B8 ="))
-      (= "3" (eval-cell {} "Add 1 and 2 ="))
-      (= "NaN" (eval-cell {} "Div of B5 and C5 ="))
-      (= "a" (eval-cell {} "a"))
-      (= "20" (eval-cell {:cells {:A7 "10"
-                                  :G0 "10"}} "Add A7 and G0 ="))
-      (= "" (eval-cell {} nil))
-
-      #_(is (= "lol" (tokenizer {:cells {:A3 "lol"}} "A3"))
-            (= [:A3 :B5] (tokenizer {} "A3:B5"))
-            (= `+ (tokenizer {} "sum"))))
-
 ;; UI impl
 
 (def table-style
