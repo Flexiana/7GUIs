@@ -8,14 +8,14 @@
            :edition      ""
            :cells        {}}))
 
-(def a->z
+(def az-range
   (map char (range 65 91)))
 
 (def table-lines
   (range 0 100))
 
 (def possible-cells
-  (set (for [s a->z
+  (set (for [s az-range
              n table-lines]
          (keyword (str s n)))))
 
@@ -160,7 +160,7 @@
     [^{:key l}
      [:td {:style light-border-style}
       l]]
-    (map (partial coll-fn cells actions-map l) a->z))])
+    (map (partial coll-fn cells actions-map l) az-range))])
 
 (defn cells-ui [*cells]
   [:div {:padding "1em"}
@@ -168,7 +168,7 @@
     [:thead {:style overflow-style}
      [:tr {:style light-border-style}
       (concat [^{:key :n} [:th]]
-              (map header-fn a->z))]]
+              (map header-fn az-range))]]
     [:tbody {:style overflow-style}
      (concat [^{:key :n} [:tr (merge light-border-style overflow-style)]]
              (map (partial row-fn @*cells
