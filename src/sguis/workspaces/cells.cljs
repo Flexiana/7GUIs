@@ -55,7 +55,7 @@
       (keyword (str (char collv) v)))))
 
 (defn is-op? [parsed-exp]
-  ((set (keys kw->op)) (keyword parsed-exp)))
+  (contains? (keys kw->op) (keyword parsed-exp)))
 
 (defn tokenizer [{:keys [cells]} parsed-exp]
   (cond
