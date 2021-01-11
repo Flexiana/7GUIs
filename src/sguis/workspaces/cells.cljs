@@ -33,8 +33,7 @@
    :prod     `*})
 
 (defn can-parse-numeric? [parsed-exp]
-  (and (re-find  #"^[0-9]" parsed-exp)
-       (not (re-find #"[aA-zZ]" parsed-exp))
+  (and (re-matches #"\d+" parsed-exp)
        (numeric? (js/parseFloat parsed-exp))))
 
 (defn is-cell? [parsed-exp]
