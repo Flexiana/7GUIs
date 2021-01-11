@@ -1,7 +1,8 @@
-{:source-paths ["src"]
+{:source-paths ["src" "test"]
  :dependencies [[reagent "1.0.0-rc1"]
                 [nubank/workspaces "1.0.15"]
-                [binaryage/devtools "1.0.2"]]
+                [binaryage/devtools "1.0.2"]
+                [borkdude/sci "0.2.1-alpha.1"]]
  :builds       {:workspaces {:target     :browser
                              :output-dir "resources/public/js/workspaces"
                              :asset-path "/js/workspaces"
