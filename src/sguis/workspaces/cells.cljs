@@ -54,7 +54,7 @@
       (keyword (str (char collv) v)))))
 
 (defn is-op? [parsed-exp]
-  (contains? (set (keys kw->op)) parsed-exp))
+  (contains? (set (keys kw->op)) (keyword parsed-exp)))
 
 (defn parse-cell [{:keys [cells]} parsed-exp]
   (->> parsed-exp
