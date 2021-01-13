@@ -2,7 +2,6 @@
   (:require [clojure.string :as str]
             [reagent.core :as r]
             [sci.core :refer [eval-string]]))
-
 (def *cells
   (r/atom {:focused-cell nil
            :edition      ""
@@ -33,7 +32,7 @@
    :prod     `*})
 
 (defn can-parse-numeric? [parsed-exp]
-  (and (re-matches #"\d+" parsed-exp)
+  (and (re-matches #"^[+-]?\d+(\.\d+)?$" parsed-exp)
        (numeric? (js/parseFloat parsed-exp))))
 
 (defn is-cell? [parsed-exp]
