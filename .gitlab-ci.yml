@@ -1,0 +1,8 @@
+image: theasp/clojurescript-nodejs:shadow-cljs
+
+before_script:
+  - npm install
+
+test:
+  script:
+    - npm run tests
