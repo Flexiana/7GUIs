@@ -1,10 +1,11 @@
-(ns sguis.workspaces.main
+(ns sguis.main
   (:require [reagent.core :as r]
             [nubank.workspaces.card-types.react :as ct.react]
             [nubank.workspaces.core :as ws]
             [nubank.workspaces.model :as wsm]
             [sguis.workspaces.counter :refer [counter-ui
                                               *counter]]
+            [sguis.workspaces.counter-test]
             [sguis.workspaces.temperature :refer [temperature-ui
                                                   *temperature]]
             [sguis.workspaces.flight-booker :refer [booker-ui
@@ -16,7 +17,8 @@
             [sguis.workspaces.circle-drawer :refer [circles-ui
                                                     *circles]]
             [sguis.workspaces.cells :refer [cells-ui
-                                            *cells]]))
+                                            *cells]]
+            [sguis.workspaces.cells-test]))
 
 (defonce init (ws/mount))
 

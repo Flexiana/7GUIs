@@ -3,6 +3,7 @@
         "clean": "rm -rf node_modules/ && rm -rf package-lock.json && rm -rf .shadow-cljs/ && rm -rf resources/public/js && rm -rf .lsp/"
     },
     "dependencies": {
+        "@testing-library/react": "^11.2.3",
         "date-fns": "^2.16.1",
         "highlight.js": "9.18.5",
         "react": "17.0.1",
