@@ -4,6 +4,9 @@
     },
     "dependencies": {
         "@testing-library/react": "^11.2.3",
+        "karma": "^2.0.0",
+        "karma-chrome-launcher": "^2.2.0",
+        "karma-cljs-test": "^0.1.0",
         "date-fns": "^2.16.1",
         "highlight.js": "9.18.5",
         "react": "17.0.1",
