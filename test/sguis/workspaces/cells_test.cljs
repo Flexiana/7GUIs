@@ -2,7 +2,7 @@
   (:require [sguis.workspaces.cells :refer [eval-cell]]
             [cljs.test :as t
              :include-macros true
-             :refer [is testing]]
+             :refer [is]]
             [nubank.workspaces.core :as ws]))
 
 (ws/deftest eval-cell-test
