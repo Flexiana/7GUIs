@@ -31,7 +31,7 @@
     (testing "Counter Increase"
       (.click rtl/fireEvent increase-elem)
       (r/flush)
-      (is (= "1"(get-counter-elem))))
+      (is (= "1" (get-counter-elem))))
 
     (testing "Counter Reset"
       (.click rtl/fireEvent reset-elem)
