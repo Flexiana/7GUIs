@@ -1,6 +1,6 @@
 (ns sguis.workspaces.temperature
   (:require [reagent.core :as r]
-            [clojure.string :as str]))
+            [sguis.workspaces.validator :as valid]))
 
 (def *temperature
   (r/atom {}))
@@ -19,49 +19,36 @@
 
 #_(== 5 (f->c (c->f 5)))
 
-(defn numeric? [x]
-  (and (number? x) (not (js/Number.isNaN x))))
 
-#_(false? (numeric? (js/parseFloat "a")))
-#_(true? (numeric? (js/parseFloat "1")))
-
-(defn add-celsius [current-state data]
-  (when (numeric? data)
-    (assoc current-state
+(defn ->fahrenheit [current-state data]
+  (assoc current-state
            :celsius data
-           :fahrenheit (celsius->fahrenheit data))))
+           :fahrenheit (celsius->fahrenheit data)))
 
-(defn add-celsius! [temperature-state field]
-  (let [target (-> field .-target)]
-    (if (str/blank? (.-value target))
-      (swap! temperature-state assoc
-             :celsius ""
-             :fahrenheit "")
-      (swap! temperature-state add-celsius (.-valueAsNumber target)))))
+(defn ->celsius [current-state data]
+  (assoc current-state
+         :celsius (fahrenheit->celsius data)
+         :fahrenheit data))
 
-(defn add-fahrenheit [current-state data]
-  (when (numeric? data)
-    (assoc current-state
-           :celsius (fahrenheit->celsius data)
-           :fahrenheit data)))
-
-(defn add-fahrenheit! [temperature-state field]
-  (let [target (-> field .-target)]
-    (if (str/blank? (.-value target))
+(defn convert! [temperature-state to field]
+  (let [data (-> field .-target .-valueAsNumber)]
+    (if (valid/numeric? data)
+      (swap! temperature-state to data)
       (swap! temperature-state assoc
              :fahrenheit ""
-             :celsius "")
-      (swap! temperature-state add-fahrenheit (.-valueAsNumber target)))))
+             :celsius ""))))
+
+(defn degree-input [{:keys [on-change label value]}]
+  [:label [:input {:type      "number"
+                   :on-change (partial on-change)
+                   :value     value}]
+   label])
 
 (defn temperature-ui [temperature-state]
-  (let [{:keys [celsius
-                fahrenheit]} @temperature-state]
     [:div {:style {:padding "1em"}}
-     [:label [:input {:type      "number"
-                      :on-change (partial add-celsius! temperature-state)
-                      :value     (str celsius)}]
-      "Celsius"]
-     [:label [:input {:type      "number"
-                      :on-change (partial add-fahrenheit! temperature-state)
-                      :value     (str fahrenheit)}]
-      "Fahrenheit"]]))
+     (degree-input  {:on-change (partial convert! temperature-state ->fahrenheit)
+                     :label "Celsius"
+                     :value (:celsius @temperature-state)})
+     (degree-input {:on-change (partial convert! temperature-state ->celsius)
+                    :label "Fahrenheit"
+                    :value (:fahrenheit @temperature-state)})])
