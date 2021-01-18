@@ -10,4 +10,4 @@
                                           :http-port          8080
                                           :http-resource-root "."
                                           :preloads           [devtools.preload]}
-                             :modules    {:main {:entries [sguis.workspaces.main]}}}}}
+                             :modules    {:main {:entries [sguis.main]}}}}}
