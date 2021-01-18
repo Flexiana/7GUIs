@@ -1,5 +1,6 @@
 (ns sguis.workspaces.temperature
   (:require [reagent.core :as r]
+            [sguis.workspaces.validator :as valid]
             [clojure.string :as str]))
 
 (def *temperature
@@ -19,14 +20,9 @@
 
 #_(== 5 (f->c (c->f 5)))
 
-(defn numeric? [x]
-  (and (number? x) (not (js/Number.isNaN x))))
-
-#_(false? (numeric? (js/parseFloat "a")))
-#_(true? (numeric? (js/parseFloat "1")))
 
 (defn add-celsius [current-state data]
-  (when (numeric? data)
+  (when (valid/numeric? data)
     (assoc current-state
            :celsius data
            :fahrenheit (celsius->fahrenheit data))))
@@ -40,7 +36,7 @@
       (swap! temperature-state add-celsius (.-valueAsNumber target)))))
 
 (defn add-fahrenheit [current-state data]
-  (when (numeric? data)
+  (when (valid/numeric? data)
     (assoc current-state
            :celsius (fahrenheit->celsius data)
            :fahrenheit data)))

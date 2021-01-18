@@ -1,7 +1,8 @@
 (ns sguis.workspaces.cells
   (:require [clojure.string :as str]
             [reagent.core :as r]
-            [sci.core :refer [eval-string]]))
+            [sci.core :refer [eval-string]]
+            [sguis.workspaces.validator :as valid]))
 (def *cells
   (r/atom {:focused-cell nil
            :edition      ""
@@ -19,8 +20,6 @@
          (keyword (str s n)))))
 
 ;; Parser Impl
-(defn numeric? [x]
-  (and (number? x) (not (js/Number.isNaN x))))
 
 (def kw->op
   {:add      `+
@@ -33,7 +32,7 @@
 
 (defn can-parse-numeric? [parsed-exp]
   (and (re-matches #"^[+-]?\d+(\.\d+)?$" parsed-exp)
-       (numeric? (js/parseFloat parsed-exp))))
+       (valid/numeric? (js/parseFloat parsed-exp))))
 
 (defn is-cell? [parsed-exp]
   (and (= 2 (count parsed-exp))
