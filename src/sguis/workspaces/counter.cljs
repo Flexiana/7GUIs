@@ -8,7 +8,8 @@
   [counter-state]
   (let [{:keys [click-count]} @counter-state]
     [:div {:style {:padding "1em"}}
-     [:fieldset {:type "number"} (str click-count)]
+     [:fieldset {:id "counter"
+                 :type "number"} (str click-count)]
      [:button {:on-click #(swap! counter-state update :click-count inc)}
       "Increase"]
      [:button {:on-click #(swap! counter-state assoc :click-count 0)}
