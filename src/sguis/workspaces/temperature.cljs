@@ -21,34 +21,34 @@
 #_(== 5 (f->c (c->f 5)))
 
 
-(defn to-celsius [current-state data]
-  (assoc current-state
-         :celsius data
-         :fahrenheit (celsius->fahrenheit data)))
-
 (defn to-fahrenheit [current-state data]
+  (assoc current-state
+           :celsius data
+           :fahrenheit (celsius->fahrenheit data)))
+
+(defn to-celsius [current-state data]
   (assoc current-state
          :celsius (fahrenheit->celsius data)
          :fahrenheit data))
 
 (defn convert! [temperature-state to field]
-  (let [target (-> field .-target)
-        data (.-valueAsNumber target)]
+  (println field)
+  (let [target (-> field .-target)]
     (if (str/blank? (.-value target))
       (swap! temperature-state assoc
              :fahrenheit ""
              :celsius "")
-      (when (valid/numeric? data) (swap! temperature-state to data)))))
+      (when (valid/numeric? (.-valueAsNumber target)) (swap! temperature-state to (.-valueAsNumber target))))))
 
 (defn degree-input [temperature-state {:keys [on-change label unit]}]
   [:label [:input {:type      "number"
-                   :on-change (partial on-change temperature-state)
+                   :on-change (partial on-change)
                    :value     (get @temperature-state unit)}]
    label])
 
 (defn temperature-ui [temperature-state]
     [:div {:style {:padding "1em"}}
-     (degree-input temperature-state {:on-change (partial convert! temperature-state to-fahrenheit) 
+     (degree-input temperature-state {:on-change (partial convert! temperature-state to-fahrenheit)
                                       :label "Celsius" 
                                       :unit :celsius})
      (degree-input temperature-state {:on-change (partial convert! temperature-state to-celsius)
