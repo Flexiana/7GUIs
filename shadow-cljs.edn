@@ -10,4 +10,8 @@
                                           :http-port          8080
                                           :http-resource-root "."
                                           :preloads           [devtools.preload]}
-                             :modules    {:main {:entries [sguis.main]}}}}}
+                             :modules    {:main {:entries [sguis.main]}}}
+                :ci         {:target           :karma
+                             :compiler-options {:output-feature-set :es6}
+                             :ns-regexp        "-test$"
+                             :output-to        "target/ci.js"}}}
