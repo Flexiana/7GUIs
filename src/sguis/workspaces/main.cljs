@@ -46,6 +46,7 @@
    (r/as-element [timer-ui *timer])))
 
 (ws/defcard circle-drawer
+  {::wsm/align       {:justify-content "left"}}
   (ct.react/react-card
    *circles
    (r/as-element [circles-ui *circles])))
