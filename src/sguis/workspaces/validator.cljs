@@ -1,6 +1,6 @@
-(ns validator)
+(ns sguis.workspaces.validator)
 
-(defn number? [x]
+(defn numeric? [x]
   (and (number? x) (not (js/Number.isNaN x))))
 
 #_(false? (numeric? (js/parseFloat "a")))
