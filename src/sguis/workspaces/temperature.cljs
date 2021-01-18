@@ -1,7 +1,6 @@
 (ns sguis.workspaces.temperature
   (:require [reagent.core :as r]
-            [sguis.workspaces.validator :as valid]
-            [clojure.string :as str]))
+            [sguis.workspaces.validator :as valid]))
 
 (def *temperature
   (r/atom {}))
@@ -21,24 +20,23 @@
 #_(== 5 (f->c (c->f 5)))
 
 
-(defn to-fahrenheit [current-state data]
+(defn ->fahrenheit [current-state data]
   (assoc current-state
            :celsius data
            :fahrenheit (celsius->fahrenheit data)))
 
-(defn to-celsius [current-state data]
+(defn ->celsius [current-state data]
   (assoc current-state
          :celsius (fahrenheit->celsius data)
          :fahrenheit data))
 
 (defn convert! [temperature-state to field]
-  (println field)
-  (let [target (-> field .-target)]
-    (if (str/blank? (.-value target))
+  (let [data (-> field .-target .-valueAsNumber)]
+    (if (valid/numeric? data)
+      (swap! temperature-state to data)
       (swap! temperature-state assoc
              :fahrenheit ""
-             :celsius "")
-      (when (valid/numeric? (.-valueAsNumber target)) (swap! temperature-state to (.-valueAsNumber target))))))
+             :celsius ""))))
 
 (defn degree-input [temperature-state {:keys [on-change label unit]}]
   [:label [:input {:type      "number"
@@ -48,9 +46,9 @@
 
 (defn temperature-ui [temperature-state]
     [:div {:style {:padding "1em"}}
-     (degree-input temperature-state {:on-change (partial convert! temperature-state to-fahrenheit)
+     (degree-input temperature-state {:on-change (partial convert! temperature-state ->fahrenheit)
                                       :label "Celsius" 
                                       :unit :celsius})
-     (degree-input temperature-state {:on-change (partial convert! temperature-state to-celsius)
+     (degree-input temperature-state {:on-change (partial convert! temperature-state ->celsius)
                                       :label "Fahrenheit"
                                       :unit :fahrenheit})])
