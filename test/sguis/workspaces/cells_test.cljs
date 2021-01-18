@@ -2,9 +2,10 @@
   (:require [sguis.workspaces.cells :refer [eval-cell]]
             [cljs.test :as t
              :include-macros true
-             :refer [deftest is]]))
+             :refer [is testing]]
+            [nubank.workspaces.core :as ws]))
 
-(deftest eval-cell-test
+(ws/deftest eval-cell-test
   (is (= "10" (eval-cell {:cells {:A2 "2" :B8 "8"}} "Sum of A2:B8 =")))
   (is (= "0" (eval-cell {} "Sum of A2:B8 =")))
   (is (= "4" (eval-cell {} "Sum of 4 and A2:B8 =")))

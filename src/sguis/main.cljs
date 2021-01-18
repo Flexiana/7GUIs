@@ -1,4 +1,4 @@
-(ns sguis.workspaces.main
+(ns sguis.main
   (:require [reagent.core :as r]
             [nubank.workspaces.card-types.react :as ct.react]
             [nubank.workspaces.core :as ws]
@@ -16,7 +16,8 @@
             [sguis.workspaces.circle-drawer :refer [circles-ui
                                                     *circles]]
             [sguis.workspaces.cells :refer [cells-ui
-                                            *cells]]))
+                                            *cells]]
+            [sguis.workspaces.cells-test]))
 
 (defonce init (ws/mount))
 
