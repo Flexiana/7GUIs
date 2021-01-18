@@ -1,13 +1,13 @@
 * 7GUI's project
-** install npm dependencies
+** Install npm dependencies
  #+BEGIN_SRC shell
   npm install
  #+END_SRC
-** start by jacking-in some repl onto your preferred editor :D
+** Start by jacking-in some repl onto your preferred editor :D
  #+BEGIN_SRC shell
   npx shadow-cljs
  #+END_SRC
-** start shadow/watch to begin the project
+** Start shadow/watch to begin the project
 - on shadow clj repl do:
 #+BEGIN_SRC clojure
 (shadow/watch :workspaces)

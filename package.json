@@ -1,6 +1,7 @@
 {
     "scripts": {
-        "clean": "rm -rf node_modules/ && rm -rf package-lock.json && rm -rf .shadow-cljs/ && rm -rf resources/public/js && rm -rf .lsp/"
+        "clean": "rm -rf node_modules/ && rm -rf package-lock.json && rm -rf .shadow-cljs/ && rm -rf resources/public/js && rm -rf .lsp/",
+        "tests": "shadow-cljs compile ci && npx karma start --single-run"
     },
     "dependencies": {
         "@testing-library/react": "^11.2.3",
