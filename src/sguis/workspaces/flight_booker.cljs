@@ -10,7 +10,9 @@
   "yyyy.MM.dd")
 
 (def *booker
-  (r/atom {:book-flight :one-way-flight}))
+  (r/atom {:book-flight   :one-way-flight
+           :go-flight     ""
+           :return-flight ""}))
 
 (defn parse-date [date]
   (when (isMatch date parse-date-format)
@@ -21,7 +23,7 @@
 (defn can-book-one-way-flight? [{:keys [go-flight]} today]
   (let [go-flight-parsed (parse-date go-flight)]
     (or (isSameDay go-flight-parsed today)
-        (isAfter go-flight-parsed today))))
+        (isAfter today go-flight-parsed))))
 
 (defn can-book-return-flight?
   [booker]
