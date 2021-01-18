@@ -16,7 +16,7 @@
                 r/as-element
                 rtl/render)]
     (testing "Counter initial state"
-      (is (= "0"
-             (->  [:#counter]
-                  sel1
-                  .-innerHTML))))))
+      (let [couter-elem (-> [:#counter]
+                            sel1
+                            .-innerHTML)]
+        (is (= "0" couter-elem))))))
