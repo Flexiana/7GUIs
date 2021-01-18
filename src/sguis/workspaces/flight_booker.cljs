@@ -10,7 +10,9 @@
   "yyyy.MM.dd")
 
 (def *booker
-  (r/atom {:book-flight :one-way-flight}))
+  (r/atom {:book-flight :one-way-flight
+           :go-flight   ""
+           :return-flight ""}))
 
 (defn parse-date [date]
   (when (isMatch date parse-date-format)
