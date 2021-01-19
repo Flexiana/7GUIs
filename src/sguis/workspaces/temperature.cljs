@@ -20,9 +20,6 @@
       (* 5.0)
       (/ 9.0)))
 
-#_(== 5 (f->c (c->f 5)))
-
-
 (defn ->fahrenheit [current-state data]
   (assoc current-state
            :celsius data
