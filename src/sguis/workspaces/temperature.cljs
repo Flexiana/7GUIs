@@ -48,10 +48,10 @@
    label])
 
 (defn temperature-ui [temperature-state]
-    [:div {:style {:padding "1em"}}
-     (degree-input  {:on-change (partial convert! temperature-state ->fahrenheit)
-                     :label "Celsius"
-                     :value (:celsius @temperature-state)})
-     (degree-input {:on-change (partial convert! temperature-state ->celsius)
-                    :label "Fahrenheit"
-                    :value (:fahrenheit @temperature-state)})])
+  [:div {:style {:padding "1em"}}
+   [degree-input {:on-change (partial convert! temperature-state ->fahrenheit)
+                  :label     "Celsius"
+                  :value     (:celsius @temperature-state)}]
+   [degree-input {:on-change (partial convert! temperature-state ->celsius)
+                  :label     "Fahrenheit"
+                  :value     (:fahrenheit @temperature-state)}]])
