@@ -21,9 +21,10 @@
         reset-elem       (fn [comp]
                            (-> comp
                                .-container
-                               (.querySelector "#reset")))]
+                               (.querySelector "#reset")))
+        *state           (r/atom counter-start)]
 
-    (u/with-mounted-component [counter-ui (r/atom counter-start)]
+    (u/with-mounted-component [counter-ui *state]
       (fn [comp]
         (testing "Initial render."
           (is (= "0" (get-counter-elem comp))))
