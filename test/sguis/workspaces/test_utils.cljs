@@ -15,3 +15,11 @@
 (defn click-element! [el]
   (.click rtl/fireEvent el)
   (r/flush))
+
+(defn input-element! [el action-map]
+  (.input rtl/fireEvent el (clj->js action-map))
+  (r/flush))
+
+(defn change-element! [el action-map]
+  (.change rtl/fireEvent el (clj->js action-map))
+  (r/flush))
