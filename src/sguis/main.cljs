@@ -11,6 +11,7 @@
             [sguis.workspaces.temperature-test]
             [sguis.workspaces.flight-booker :refer [booker-ui
                                                     *booker]]
+            [sguis.workspaces.flight-booker-test]
             [sguis.workspaces.timer :refer [timer-ui
                                             *timer]]
             [sguis.workspaces.crud :refer [crud-ui
