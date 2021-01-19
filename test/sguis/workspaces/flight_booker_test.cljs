@@ -1,7 +1,12 @@
 (ns sguis.workspaces.flight-booker-test
   (:require [sguis.workspaces.flight-booker :refer [booker-ui
                                                     booker-start
-                                                    parse-date]]
+                                                    parse-date
+                                                    can-book?
+                                                    parse-date-format]]
+            ["date-fns" :refer [addDays
+                                subDays
+                                format]]
             [cljs.test :as t
              :include-macros true
              :refer [is testing]]
@@ -9,5 +14,43 @@
             [reagent.core :as r]
             [sguis.workspaces.test-utils :as u]))
 
-(ws/deftest parse-date-test
+(def testing-dates
+  (let [today (js/Date.)]
+    {:today     today
+     :yesterday (subDays today 1)
+     :tomorrow  (addDays today 1)
+     :future    (addDays today 40)}))
+
+(defn unparse-date [date]
+  (format date parse-date-format))
+
+(ws/deftest parse-date-specific-format-test
   (is (= #inst "2020-02-29T03:00:00.000-00:00" (parse-date "2020.02.29"))))
+
+(ws/deftest can-book-one-way?-test
+  (let [{:keys [today yesterday tomorrow]} testing-dates]
+    (letfn [(today-can-book? [booker]
+              (can-book? booker today))]
+      (is (false? (today-can-book? {:book-flight :one-way-flight
+                                    :go-flight   (unparse-date yesterday)})))
+      (is (true? (today-can-book? {:book-flight :one-way-flight
+                                   :go-flight   (unparse-date today)})))
+      (is (true? (today-can-book? {:book-flight :one-way-flight
+                                   :go-flight   (unparse-date tomorrow)}))))))
+
+(ws/deftest can-book-return?-test
+  (let [{:keys [today yesterday tomorrow future]} testing-dates]
+    (letfn [(today-can-book? [booker]
+              (can-book? booker today))]
+      (is (false? (today-can-book? {:book-flight   :return-flight
+                                    :go-flight     (unparse-date yesterday)
+                                    :return-flight (unparse-date tomorrow)})))
+      (is (true? (today-can-book? {:book-flight   :return-flight
+                                   :go-flight     (unparse-date today)
+                                   :return-flight (unparse-date tomorrow)})))
+      (is (false? (today-can-book? {:book-flight   :return-flight
+                                    :go-flight     (unparse-date tomorrow)
+                                    :return-flight (unparse-date tomorrow)})))
+      (is (true? (today-can-book? {:book-flight   :return-flight
+                                   :go-flight     (unparse-date tomorrow)
+                                   :return-flight (unparse-date future)}))))))
