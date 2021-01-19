@@ -13,7 +13,7 @@
 (ws/deftest fahrenheit<->celsius-test
   (is (== 5 (fahrenheit->celsius (celsius->fahrenheit 5)))))
 
-(ws/deftest temperature-tests
+(ws/deftest temperature-ui-tests
   (letfn [(get-celsius-input [comp]
             (-> comp
                 .-container
@@ -24,9 +24,8 @@
                 (.querySelector "#Fahrenheit-input")))]
     (u/with-mounted-component [temperature-ui (r/atom temperature-start)]
       (fn [comp]
-
-        (u/change-element! (get-celsius-input comp) {:target {:value "5"}})
-        (u/change-element! (get-fahrenheit-input comp)  {:target {:value (-> (get-fahrenheit-input comp)
-                                                                             .-value)}})
-        (is (= "5" (-> (get-celsius-input comp)
-                       .-value)))))))
+        (is (= "5" (do (u/change-element! (get-celsius-input comp) {:target {:value "5"}})
+                       (u/change-element! (get-fahrenheit-input comp)  {:target {:value (-> (get-fahrenheit-input comp)
+                                                                                            .-value)}})
+                       (-> (get-celsius-input comp)
+                           .-value))))))))
