@@ -25,8 +25,8 @@
 
 (defn can-book-one-way-flight? [{:keys [go-flight]} today]
   (let [go-flight-parsed (parse-date go-flight)]
-    (or (isAfter today go-flight-parsed)
-        (isSameDay go-flight-parsed today))))
+    (or (isSameDay go-flight-parsed today)
+        (isAfter go-flight-parsed today))))
 
 (defn can-book-return-flight?
   [booker]
