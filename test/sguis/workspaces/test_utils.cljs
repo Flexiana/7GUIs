@@ -12,7 +12,7 @@
         (r/flush)))
     (rtl/cleanup)))
 
-(defn component-select-id [comp id]
+(defn component-select-id [id comp]
   (-> comp
       .-container
       (.querySelector id)))
