@@ -9,10 +9,13 @@
 (def parse-date-format
   "yyyy.MM.dd")
 
+(def booker-start
+  {:book-flight   :one-way-flight
+   :go-flight     ""
+   :return-flight ""})
+
 (def *booker
-  (r/atom {:book-flight   :one-way-flight
-           :go-flight     ""
-           :return-flight ""}))
+  (r/atom booker-start))
 
 (defn parse-date [date]
   (when (isMatch date parse-date-format)
