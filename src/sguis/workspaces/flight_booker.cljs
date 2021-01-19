@@ -76,7 +76,8 @@
                :disabled  (false? (= :return-flight book-flight))}]]]))
 
 (defn book-button [booker today]
-  [:button {:disabled (not (can-book? booker today))}
+  [:button {:id "book-button"
+            :disabled (not (can-book? booker today))}
    "Book!"])
 
 (defn booker-ui [booker today]
