@@ -33,6 +33,6 @@
           (u/click-element! (increase-elem comp))
           (is (= "2" (get-counter-elem comp))))
 
-        (testing "Decrease button."
+        (testing "Reset button."
           (u/click-element! (reset-elem comp))
           (is (= "0" (get-counter-elem comp))))))))
