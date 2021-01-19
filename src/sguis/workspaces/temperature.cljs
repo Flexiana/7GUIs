@@ -42,9 +42,11 @@
              :celsius ""))))
 
 (defn degree-input [{:keys [on-change label value]}]
-  [:label [:input {:type      "number"
-                   :on-change (partial on-change)
-                   :value     value}]
+  [:label {:id label}
+   [:input {:id        (str label "-input")
+            :type      "number"
+            :on-change (partial on-change)
+            :value     value}]
    label])
 
 (defn temperature-ui [temperature-state]
