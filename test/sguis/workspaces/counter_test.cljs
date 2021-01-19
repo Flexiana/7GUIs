@@ -9,18 +9,9 @@
 
 (ws/deftest counter-tests
   (let [get-counter-elem (fn [comp]
-                           (-> comp
-                               .-container
-                               (.querySelector "#counter")
-                               .-innerHTML))
-        increase-elem    (fn [comp]
-                           (-> comp
-                               .-container
-                               (.querySelector "#increase")))
-        reset-elem       (fn [comp]
-                           (-> comp
-                               .-container
-                               (.querySelector "#reset")))
+                           (.-innerHTML (u/component-select-id "#counter" comp)))
+        increase-elem    (partial u/component-select-id "#increase")
+        reset-elem       (partial u/component-select-id "#reset")
         *state           (r/atom counter-start)]
 
     (u/with-mounted-component [counter-ui *state]
