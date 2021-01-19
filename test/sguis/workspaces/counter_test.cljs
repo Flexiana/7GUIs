@@ -2,10 +2,9 @@
   (:require [sguis.workspaces.counter :refer [counter-ui counter-start]]
             [cljs.test :as t
              :include-macros true
-             :refer [is testing use-fixtures]]
+             :refer [is testing]]
             [nubank.workspaces.core :as ws]
             [reagent.core :as r]
-            ["@testing-library/react" :as rtl]
             [sguis.workspaces.test-utils :as u]))
 
 (ws/deftest counter-tests
