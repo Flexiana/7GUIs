@@ -2,8 +2,11 @@
   (:require [reagent.core :as r]
             [sguis.workspaces.validator :as valid]))
 
+(def temperature-start
+  {:celsius    nil
+   :fahrenheit nil})
 (def *temperature
-  (r/atom {}))
+  (r/atom temperature-start))
 
 (defn celsius->fahrenheit [c]
   (-> c
