@@ -8,6 +8,7 @@
             [sguis.workspaces.counter-test]
             [sguis.workspaces.temperature :refer [temperature-ui
                                                   *temperature]]
+            [sguis.workspaces.temperature-test]
             [sguis.workspaces.flight-booker :refer [booker-ui
                                                     *booker]]
             [sguis.workspaces.timer :refer [timer-ui
