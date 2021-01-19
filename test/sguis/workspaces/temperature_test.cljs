@@ -25,8 +25,10 @@
     (u/with-mounted-component [temperature-ui (r/atom temperature-start)]
       (fn [comp]
 
-        (let [_celsius->fahrenheit!     (u/change-element! (get-celsius-input comp) {:target {:value "5"}})
+        (let [_celsius->fahrenheit!     (-> (u/component-select-id "#Celsius-input" comp)
+                                            (u/change-element!  {:target {:value "5"}}))
               celsius->fahrenheit-value (.-value (get-fahrenheit-input comp))
-              _fahrenheit->celsius!     (u/change-element! (get-fahrenheit-input comp) {:target {:value celsius->fahrenheit-value}})
+              _fahrenheit->celsius!     (-> (u/component-select-id "#Fahrenheit-input" comp)
+                                            (u/change-element! {:target {:value celsius->fahrenheit-value}}))
               fahrenheit->celsius-value (.-value (get-celsius-input comp))]
           (is (= "5" fahrenheit->celsius-value)))))))
