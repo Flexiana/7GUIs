@@ -5,6 +5,7 @@
 (def temperature-start
   {:celsius    nil
    :fahrenheit nil})
+
 (def *temperature
   (r/atom temperature-start))
 
