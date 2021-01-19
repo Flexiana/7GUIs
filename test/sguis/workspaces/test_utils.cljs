@@ -12,6 +12,11 @@
         (r/flush)))
     (rtl/cleanup)))
 
+(defn component-select-id [comp id]
+  (-> comp
+      .-container
+      (.querySelector id)))
+
 (defn click-element! [el]
   (.click rtl/fireEvent el)
   (r/flush))
