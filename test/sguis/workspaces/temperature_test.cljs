@@ -24,8 +24,9 @@
                 (.querySelector "#Fahrenheit-input")))]
     (u/with-mounted-component [temperature-ui (r/atom temperature-start)]
       (fn [comp]
-        (is (= "5" (do (u/change-element! (get-celsius-input comp) {:target {:value "5"}})
-                       (u/change-element! (get-fahrenheit-input comp)  {:target {:value (-> (get-fahrenheit-input comp)
-                                                                                            .-value)}})
-                       (-> (get-celsius-input comp)
-                           .-value))))))))
+
+        (let [_celsius->fahrenheit!     (u/change-element! (get-celsius-input comp) {:target {:value "5"}})
+              celsius->fahrenheit-value (.-value (get-fahrenheit-input comp))
+              _fahrenheit->celsius!     (u/change-element! (get-fahrenheit-input comp) {:target {:value celsius->fahrenheit-value}})
+              fahrenheit->celsius-value (.-value (get-celsius-input comp))]
+          (is (= "5" fahrenheit->celsius-value)))))))
