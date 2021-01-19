@@ -26,7 +26,7 @@
       (fn [comp]
 
         (u/change-element! (get-celsius-input comp) {:target {:value "5"}})
-        (u/change-element! (get-fahrenheit-input comp)  {:targt {:value (-> (get-fahrenheit-input comp)
-                                                                            .-value)}})
+        (u/change-element! (get-fahrenheit-input comp)  {:target {:value (-> (get-fahrenheit-input comp)
+                                                                             .-value)}})
         (is (= "5" (-> (get-celsius-input comp)
                        .-value)))))))
