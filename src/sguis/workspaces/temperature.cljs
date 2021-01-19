@@ -22,8 +22,8 @@
 
 (defn ->fahrenheit [current-state data]
   (assoc current-state
-           :celsius data
-           :fahrenheit (celsius->fahrenheit data)))
+         :celsius data
+         :fahrenheit (celsius->fahrenheit data)))
 
 (defn ->celsius [current-state data]
   (assoc current-state
