@@ -29,17 +29,18 @@
         (isAfter go-flight-parsed today))))
 
 (defn can-book-return-flight?
-  [booker]
-  (apply isAfter
-         ((juxt :return-flight :go-flight)
-          (-> booker
-              (update :go-flight parse-date)
-              (update :return-flight parse-date)))))
+  [booker today]
+  (and (can-book-one-way-flight? booker today)
+       (apply isAfter
+              ((juxt :return-flight :go-flight)
+               (-> booker
+                   (update :go-flight parse-date)
+                   (update :return-flight parse-date))))))
 
 (defn can-book? [{:keys [book-flight] :as booker} today]
   (case book-flight
     :one-way-flight (can-book-one-way-flight? booker today)
-    :return-flight  (can-book-return-flight? booker)))
+    :return-flight  (can-book-return-flight? booker today)))
 
 (defn valid-date-style [form-value style]
   (merge style
