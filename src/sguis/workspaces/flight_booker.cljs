@@ -49,7 +49,7 @@
            {:background-color "red"})))
 
 (defn flight-selector [booker]
-  [:label {:id "book-selector"}
+  [:label
    [:select {:id        "book-selector"
              :on-change #(swap! booker assoc :book-flight (keyword (.. % -target -value)))}
     [:option {:value "one-way-flight"} "one-way flight"]
@@ -58,8 +58,9 @@
 (defn go-flight-input [booker]
   (let [{:keys [go-flight]} @booker]
     [:div
-     [:label {:id "go-flight"}
-      [:input {:type      "text"
+     [:label
+      [:input {:id        "go-flight"
+               :type      "text"
                :style     (valid-date-style go-flight {})
                :on-change #(swap! booker assoc :go-flight  (.. % -target -value))}]]]))
 
@@ -67,8 +68,9 @@
   (let [{:keys [book-flight
                 return-flight]} @booker]
     [:div
-     [:label {:id "return-flight"}
-      [:input {:type      "text"
+     [:label
+      [:input {:id        "return-flight"
+               :type      "text"
                :style     (valid-date-style return-flight {})
                :on-change #(swap! booker assoc :return-flight  (.. % -target -value))
                :disabled  (false? (= :return-flight book-flight))}]]]))
