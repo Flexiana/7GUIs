@@ -3,8 +3,7 @@
             [nubank.workspaces.card-types.react :as ct.react]
             [nubank.workspaces.core :as ws]
             [nubank.workspaces.model :as wsm]
-            [sguis.workspaces.counter :refer [counter-ui
-                                              *counter]]
+            [sguis.workspaces.counter :refer [counter-ui]]
             [sguis.workspaces.counter-test]
             [sguis.workspaces.temperature :refer [temperature-ui
                                                   *temperature]]
@@ -26,8 +25,7 @@
 
 (ws/defcard counter
   (ct.react/react-card
-   *counter
-   (r/as-element [counter-ui *counter])))
+   (r/as-element [counter-ui])))
 
 (ws/defcard temperature
   (ct.react/react-card

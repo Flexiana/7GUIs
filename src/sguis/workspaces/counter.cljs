@@ -1,21 +1,15 @@
 (ns sguis.workspaces.counter
   (:require [reagent.core :as r]))
 
-(def counter-start
-  {:click-count 0})
-
-(def *counter
-  (r/atom counter-start))
-
-(defn counter-ui
-  [counter-state]
-  (let [{:keys [click-count]} @counter-state]
-    [:div {:style {:padding "1em"}}
-     [:fieldset {:id   "counter"
-                 :type "number"} (str click-count)]
-     [:button {:id       "increase"
-               :on-click #(swap! counter-state update :click-count inc)}
-      "Increase"]
-     [:button {:id       "reset"
-               :on-click #(swap! counter-state assoc :click-count 0)}
-      "Reset"]]))
+(defn counter-ui []
+  (r/with-let [*counter-state (r/atom 0)]
+    [:div
+     [:input {:type "text"
+              :data-testid "counter-value"
+              :style {:text-align :center}
+              :disabled true
+              :size 6
+              :value @*counter-state}]
+     [:button
+      {:on-click #(swap! *counter-state inc)}
+      "Count"]]))
