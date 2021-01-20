@@ -55,7 +55,7 @@
 (defn flight-selector [select-booking!]
   [:label
    [:select {:data-testid "flight-selector"
-             :on-change   select-booking!}
+             :on-change   (partial select-booking!)}
     [:option {:value "one-way-flight"} "one-way flight"]
     [:option {:value "return-flight"} "return flight"]]])
 
@@ -102,10 +102,7 @@
      booker-msg]))
 
 (defn reset-booker! [*booker _]
-  (swap! *booker assoc
-         :go-flight     ""
-         :return-flight ""
-         :booker-msg nil))
+  (swap! *booker assoc :booker-msg nil))
 
 (defn reset-button [{:keys [booker-msg]} reset-booker!]
   (when booker-msg
