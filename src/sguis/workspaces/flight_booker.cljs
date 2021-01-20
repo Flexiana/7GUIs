@@ -98,7 +98,8 @@
 
 (defn book-message [{:keys [booker-msg]}]
   (when booker-msg
-    [:div booker-msg]))
+    [:div {:data-testid "book-msg"}
+     booker-msg]))
 
 (defn reset-booker! [*booker _]
   (swap! *booker assoc

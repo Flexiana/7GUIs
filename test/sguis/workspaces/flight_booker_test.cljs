@@ -3,6 +3,7 @@
                                                     booker-start
                                                     parse-date
                                                     can-book?
+                                                    format-msg
                                                     parse-date-format]]
             ["date-fns" :refer [addDays
                                 subDays
@@ -62,8 +63,10 @@
         go-flight-input                    #(.getByTestId % "go-flight")
         book-btn                           #(.getByText % "Book!")
         *booker                            (r/atom booker-start)]
-    (u/with-mounted-component [booker-ui *booker]
+    (u/with-mounted-component [booker-ui *booker today]
       (fn [comp]
-        (u/select-element! (flight-selector comp)  {:value {:option "one-way-flight"}})
-        (u/input-element! (go-flight-input comp) {:target {:value (unparse-date today)}})
-        (js/console.log (.getByText comp "Book!"))))))
+        (testing "Can book today"
+          (u/select-element! (flight-selector comp)  {:value {:option "one-way-flight"}})
+          (u/input-element! (go-flight-input comp) {:target {:value (unparse-date today)}})
+          (u/click-element! (book-btn comp))
+          (is (= (format-msg @*booker) (.-textContent (.getByTestId comp "book-msg")))))))))
