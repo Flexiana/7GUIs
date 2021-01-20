@@ -40,6 +40,34 @@
       (is (true? (today-can-book? {:book-flight :one-way-flight
                                    :go-flight   (unparse-date tomorrow)}))))))
 
+(ws/deftest one-way-flight-ui-test
+  (let [{:keys [today yesterday tomorrow]} testing-dates
+        flight-selector                    #(.getByTestId % "flight-selector")
+        go-flight-input                    #(.getByTestId % "go-flight")
+        book-btn                           #(.getByText % "Book!")
+        reset-btn                          #(.getByText % "Reset!")
+        *booker                            (r/atom booker-start)]
+    (u/with-mounted-component [booker-ui *booker today]
+      (fn [comp]
+        (testing "Cannot book for yesterday"
+          (u/select-element! (flight-selector comp)  {:value {:option "one-way-flight"}})
+          (u/input-element! (go-flight-input comp) {:target {:value (unparse-date yesterday)}})
+          (is (true? (.-disabled (book-btn comp)))))
+
+        (testing "Can book today"
+          (u/select-element! (flight-selector comp)  {:value {:option "one-way-flight"}})
+          (u/input-element! (go-flight-input comp) {:target {:value (unparse-date today)}})
+          (u/click-element! (book-btn comp))
+          (is (= (format-msg @*booker) (.-textContent (.getByTestId comp "book-msg"))))
+          (u/click-element! (reset-btn comp)))
+
+        (testing "Can book tomorrow"
+          (u/select-element! (flight-selector comp)  {:value {:option "one-way-flight"}})
+          (u/input-element! (go-flight-input comp) {:target {:value (unparse-date tomorrow)}})
+          (u/click-element! (book-btn comp))
+          (is (= (format-msg @*booker) (.-textContent (.getByTestId comp "book-msg"))))
+          (u/click-element! (reset-btn comp)))))))
+
 (ws/deftest can-book-return?-test
   (let [{:keys [today yesterday tomorrow future]} testing-dates]
     (letfn [(today-can-book? [booker]
@@ -56,17 +84,3 @@
       (is (true? (today-can-book? {:book-flight   :return-flight
                                    :go-flight     (unparse-date tomorrow)
                                    :return-flight (unparse-date future)}))))))
-
-(ws/deftest one-way-flight-ui
-  (let [{:keys [today yesterday tomorrow]} testing-dates
-        flight-selector                    #(.getByTestId % "flight-selector")
-        go-flight-input                    #(.getByTestId % "go-flight")
-        book-btn                           #(.getByText % "Book!")
-        *booker                            (r/atom booker-start)]
-    (u/with-mounted-component [booker-ui *booker today]
-      (fn [comp]
-        (testing "Can book today"
-          (u/select-element! (flight-selector comp)  {:value {:option "one-way-flight"}})
-          (u/input-element! (go-flight-input comp) {:target {:value (unparse-date today)}})
-          (u/click-element! (book-btn comp))
-          (is (= (format-msg @*booker) (.-textContent (.getByTestId comp "book-msg")))))))))
