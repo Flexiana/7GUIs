@@ -41,10 +41,10 @@
 
 (defn degree-input [{:keys [on-change label value]}]
   [:label {:id label}
-   [:input {:id        (str label "-input")
-            :type      "number"
-            :on-change (partial on-change)
-            :value     value}]
+   [:input {:data-testid label
+            :type        "number"
+            :on-change   (partial on-change)
+            :value       value}]
    label])
 
 (defn temperature-ui [temperature-state]
