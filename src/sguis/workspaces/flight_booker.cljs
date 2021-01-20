@@ -12,7 +12,8 @@
 (def booker-start
   {:book-flight   :one-way-flight
    :go-flight     ""
-   :return-flight ""})
+   :return-flight ""
+   :booker-msg    nil})
 
 (def *booker
   (r/atom booker-start))
@@ -81,10 +82,33 @@
              :on-change   return-flight-change!
              :disabled    (false? (= :return-flight book-flight))}]]])
 
-(defn book-button [booker today]
+(defn booking-message! [*booker msg _]
+  (swap! *booker assoc :booker-msg msg))
+
+(defn format-msg [{:keys [book-flight go-flight return-flight]}]
+  (case book-flight
+    :one-way-flight (str "You have booked a one-way flight on " go-flight)
+    :return-flight  (str "You have booked a return flight for: " go-flight
+                         " to: " return-flight)))
+(defn book-button [booker today booking-message!]
   [:button {:data-testid "book-button"
-            :disabled    (not (can-book? booker today))}
+            :disabled    (not (can-book? booker today))
+            :on-click    (partial booking-message! (format-msg booker))}
    "Book!"])
+
+(defn book-message [{:keys [booker-msg]}]
+  (when booker-msg
+    [:div (str "✅ " booker-msg)]))
+
+(defn reset-booker! [*booker _]
+  (swap! *booker assoc
+         :go-flight     ""
+         :return-flight ""
+         :booker-msg nil))
+
+(defn reset-button [{:keys [booker-msg]} reset-booker!]
+  (when booker-msg
+    [:button {:on-click (partial reset-booker!)} "Reset!"]))
 
 (defn booker-ui [*booker today]
   [:div {:style {:padding "1em"}}
@@ -92,4 +116,6 @@
    [flight-selector (partial select-booking! *booker)]
    [go-flight-input @*booker (partial go-flight-change! *booker)]
    [return-flight-input @*booker (partial return-flight-change! *booker)]
-   [book-button @*booker today]])
+   [book-button @*booker today (partial booking-message! *booker)]
+   [book-message @*booker]
+   [reset-button @*booker (partial reset-booker! *booker)]])
