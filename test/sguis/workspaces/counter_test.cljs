@@ -1,38 +1,20 @@
 (ns sguis.workspaces.counter-test
-  (:require [sguis.workspaces.counter :refer [counter-ui counter-start]]
+  (:require [sguis.workspaces.counter :refer [counter-ui]]
             [cljs.test :as t
              :include-macros true
              :refer [is testing]]
             [nubank.workspaces.core :as ws]
-            [reagent.core :as r]
             [sguis.workspaces.test-utils :as u]))
 
 (ws/deftest counter-tests
-  (let [get-counter-elem (fn [comp]
-                           (-> comp
-                               .-container
-                               (.querySelector "#counter")
-                               .-innerHTML))
-        increase-elem    (fn [comp]
-                           (-> comp
-                               .-container
-                               (.querySelector "#increase")))
-        reset-elem       (fn [comp]
-                           (-> comp
-                               .-container
-                               (.querySelector "#reset")))
-        *state           (r/atom counter-start)]
-
-    (u/with-mounted-component [counter-ui *state]
+  (let [counter-value #(-> % (.getByTestId "counter-value") .-value)
+        count-btn #(.getByText % "Count")]
+    (u/with-mounted-component [counter-ui]
       (fn [comp]
         (testing "Initial render."
-          (is (= "0" (get-counter-elem comp))))
+          (is (= "0" (counter-value comp))))
 
-        (testing "Increase button."
-          (u/click-element! (increase-elem comp))
-          (u/click-element! (increase-elem comp))
-          (is (= "2" (get-counter-elem comp))))
-
-        (testing "Reset button."
-          (u/click-element! (reset-elem comp))
-          (is (= "0" (get-counter-elem comp))))))))
+        (testing "Count button."
+          (u/click-element! (count-btn comp))
+          (u/click-element! (count-btn comp))
+          (is (= "2" (counter-value comp))))))))
