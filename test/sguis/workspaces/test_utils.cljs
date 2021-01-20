@@ -13,18 +13,13 @@
     container))
 
 (defn with-mounted-component [comp f]
-  (let [container (create-tests-container!)
+  (let [container         (create-tests-container!)
         mounted-component (rtl/render (r/as-element comp)
                                       #js {"container" container})]
     (try
       (f mounted-component)
       (finally
         (rtl/cleanup)))))
-
-(defn component-select-id [id comp]
-  (-> comp
-      .-container
-      (.querySelector id)))
 
 (defn click-element! [el]
   (.click rtl/fireEvent el)
