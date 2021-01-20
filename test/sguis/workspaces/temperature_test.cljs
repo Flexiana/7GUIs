@@ -18,7 +18,6 @@
         fahrenheit-input #(.getByTestId % "Fahrenheit")]
     (u/with-mounted-component [temperature-ui (r/atom temperature-start)]
       (fn [comp]
-        (js/console.log (celsius-input comp))
         (let [_celsius->fahrenheit!     (u/change-element! (celsius-input comp) {:target {:value "5"}})
               celsius->fahrenheit-value (.-value (fahrenheit-input comp))
               _fahrenheit->celsius!     (u/change-element! (fahrenheit-input comp) {:target {:value celsius->fahrenheit-value}})
