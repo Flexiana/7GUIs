@@ -81,6 +81,7 @@
       (is (true? (today-can-book? {:book-flight   :return-flight
                                    :go-flight     (unparse-date tomorrow)
                                    :return-flight (unparse-date future)}))))))
+
 (ws/deftest return-flight-ui-test
   (let [{:keys [today yesterday tomorrow future]} testing-dates
         flight-selector                           #(.getByTestId % "flight-selector")
