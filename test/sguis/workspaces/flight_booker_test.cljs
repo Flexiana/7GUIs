@@ -54,3 +54,15 @@
       (is (true? (today-can-book? {:book-flight   :return-flight
                                    :go-flight     (unparse-date tomorrow)
                                    :return-flight (unparse-date future)}))))))
+
+(ws/deftest one-way-flight-ui
+  (let [{:keys [today yesterday tomorrow]} testing-dates
+        flight-selector                    #(.getByTestId % "flight-selector")
+        go-flight-input                    #(.getByTestId % "go-flight")
+        book-btn                           #(.getByText % "Book!")
+        *booker                            (r/atom booker-start)]
+    (u/with-mounted-component [booker-ui *booker]
+      (fn [comp]
+        (u/select-element! (flight-selector comp)  {:value {:option "one-way-flight"}})
+        (u/input-element! (go-flight-input comp) {:target {:value (unparse-date today)}})
+        (js/console.log (.getByText comp "Book!"))))))

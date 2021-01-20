@@ -53,8 +53,8 @@
 
 (defn flight-selector [select-booking!]
   [:label
-   [:select {:id        "flight-selector"
-             :on-change select-booking!}
+   [:select {:data-testid "flight-selector"
+             :on-change   select-booking!}
     [:option {:value "one-way-flight"} "one-way flight"]
     [:option {:value "return-flight"} "return flight"]]])
 
@@ -63,10 +63,10 @@
 (defn go-flight-input [{:keys [go-flight]} go-flight-change!]
   [:div
    [:label
-    [:input {:id        "go-flight"
-             :type      "text"
-             :style     (valid-date-style go-flight {})
-             :on-change go-flight-change!}]]])
+    [:input {:data-testid "go-flight"
+             :type        "text"
+             :style       (valid-date-style go-flight {})
+             :on-change   go-flight-change!}]]])
 
 (defn return-flight-change! [*booker e]
   (swap! *booker assoc :return-flight  (.. e -target -value)))
@@ -75,16 +75,16 @@
                            return-flight-change!]
   [:div
    [:label
-    [:input {:id        "return-flight"
-             :type      "text"
-             :style     (valid-date-style return-flight {})
-             :on-change return-flight-change!
-             :disabled  (false? (= :return-flight book-flight))}]]])
+    [:input {:data-testid "return-flight"
+             :type        "text"
+             :style       (valid-date-style return-flight {})
+             :on-change   return-flight-change!
+             :disabled    (false? (= :return-flight book-flight))}]]])
 
 (defn book-button [booker today]
-  (when (can-book? booker today)
-    [:button {:id "book-button"}
-     "Book!"]))
+  [:button {:data-testid "book-button"
+            :disabled    (not (can-book? booker today))}
+   "Book!"])
 
 (defn booker-ui [*booker today]
   [:div {:style {:padding "1em"}}
