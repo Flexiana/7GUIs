@@ -50,19 +50,16 @@
     (u/with-mounted-component [booker-ui *booker today]
       (fn [comp]
         (testing "Cannot book for yesterday"
-          (u/select-element! (flight-selector comp)  {:value {:option "one-way-flight"}})
           (u/input-element! (go-flight-input comp) {:target {:value (unparse-date yesterday)}})
           (is (true? (.-disabled (book-btn comp)))))
 
         (testing "Can book today"
-          (u/select-element! (flight-selector comp)  {:value {:option "one-way-flight"}})
           (u/input-element! (go-flight-input comp) {:target {:value (unparse-date today)}})
           (u/click-element! (book-btn comp))
           (is (= (format-msg @*booker) (.-textContent (.getByTestId comp "book-msg"))))
           (u/click-element! (reset-btn comp)))
 
         (testing "Can book tomorrow"
-          (u/select-element! (flight-selector comp)  {:value {:option "one-way-flight"}})
           (u/input-element! (go-flight-input comp) {:target {:value (unparse-date tomorrow)}})
           (u/click-element! (book-btn comp))
           (is (= (format-msg @*booker) (.-textContent (.getByTestId comp "book-msg"))))
