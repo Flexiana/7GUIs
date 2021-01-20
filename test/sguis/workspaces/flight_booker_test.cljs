@@ -81,3 +81,42 @@
       (is (true? (today-can-book? {:book-flight   :return-flight
                                    :go-flight     (unparse-date tomorrow)
                                    :return-flight (unparse-date future)}))))))
+(ws/deftest return-flight-ui-test
+  (let [{:keys [today yesterday tomorrow future]} testing-dates
+        flight-selector                           #(.getByTestId % "flight-selector")
+        go-flight-input                           #(.getByTestId % "go-flight")
+        return-flight-input                       #(.getByTestId % "return-flight")
+        book-btn                                  #(.getByText % "Book!")
+        book-msg                                  #(.getByTestId % "book-msg")
+        reset-btn                                 #(.getByText % "Reset!")
+        *booker                                   (r/atom booker-start)]
+    (u/with-mounted-component [booker-ui *booker today]
+      (fn [comp]
+        (testing "Cannot book yesterday"
+          (u/change-element! (flight-selector comp) {:target {:value "return-flight"}})
+          (u/input-element! (go-flight-input comp) {:target {:value (unparse-date yesterday)}})
+          (u/input-element! (return-flight-input comp) {:target {:value (unparse-date tomorrow)}})
+          (is (true? (.-disabled (book-btn comp)))))
+
+
+        (testing "Can book today"
+          (u/change-element! (flight-selector comp) {:target {:value "return-flight"}})
+          (u/input-element! (go-flight-input comp) {:target {:value (unparse-date today)}})
+          (u/input-element! (return-flight-input comp) {:target {:value (unparse-date tomorrow)}})
+          (u/click-element! (book-btn comp))
+          (is (= (format-msg @*booker) (.-textContent (book-msg comp))))
+          (u/click-element! (reset-btn comp)))
+
+        (testing "Cannot book sameday"
+          (u/change-element! (flight-selector comp) {:target {:value "return-flight"}})
+          (u/input-element! (go-flight-input comp) {:target {:value (unparse-date tomorrow)}})
+          (u/input-element! (return-flight-input comp) {:target {:value (unparse-date tomorrow)}})
+          (is (true? (.-disabled (book-btn comp)))))
+
+        (testing "Can book in future."
+          (u/change-element! (flight-selector comp) {:target {:value "return-flight"}})
+          (u/input-element! (go-flight-input comp) {:target {:value (unparse-date tomorrow)}})
+          (u/input-element! (return-flight-input comp) {:target {:value (unparse-date future)}})
+          (u/click-element! (book-btn comp))
+          (is (= (format-msg @*booker) (.-textContent (book-msg comp))))
+          (u/click-element! (reset-btn comp)))))))
