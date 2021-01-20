@@ -25,7 +25,8 @@
   (format date parse-date-format))
 
 (ws/deftest parse-date-specific-format-test
-  (is (= #inst "2020-02-29T03:00:00.000-00:00" (parse-date "2020.02.29"))))
+  (let [{:keys [today]} testing-dates]
+    (is (=  today (parse-date today (unparse-date today))))))
 
 (ws/deftest can-book-one-way?-test
   (let [{:keys [today yesterday tomorrow]} testing-dates]
