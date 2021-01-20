@@ -24,10 +24,6 @@
 (defn unparse-date [date]
   (format date parse-date-format))
 
-(ws/deftest parse-date-specific-format-test
-  (let [{:keys [today]} testing-dates]
-    (is (=  today (parse-date (unparse-date today))))))
-
 (ws/deftest can-book-one-way?-test
   (let [{:keys [today yesterday tomorrow]} testing-dates]
     (letfn [(today-can-book? [booker]
