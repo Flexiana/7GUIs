@@ -24,6 +24,10 @@
 (defn unparse-date [date]
   (format date parse-date-format))
 
+(ws/deftest parse-date-specific-format-test
+  (let [february-idx 1]
+    (is (= (js/Date. 2020 february-idx 29) (parse-date "2020.02.29")))))
+
 (ws/deftest can-book-one-way?-test
   (let [{:keys [today yesterday tomorrow]} testing-dates]
     (letfn [(today-can-book? [booker]
