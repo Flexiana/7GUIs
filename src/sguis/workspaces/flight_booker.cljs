@@ -87,8 +87,8 @@
 
 (defn format-msg [{:keys [book-flight go-flight return-flight]}]
   (case book-flight
-    :one-way-flight (str "You have booked a one-way flight on " go-flight)
-    :return-flight  (str "You have booked a return flight for: " go-flight
+    :one-way-flight (str "✅ You have booked a one-way flight on " go-flight)
+    :return-flight  (str "✅ You have booked a return flight for: " go-flight
                          " to: " return-flight)))
 (defn book-button [booker today booking-message!]
   [:button {:data-testid "book-button"
@@ -98,7 +98,7 @@
 
 (defn book-message [{:keys [booker-msg]}]
   (when booker-msg
-    [:div (str "✅ " booker-msg)]))
+    [:div booker-msg]))
 
 (defn reset-booker! [*booker _]
   (swap! *booker assoc
