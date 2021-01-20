@@ -32,7 +32,3 @@
 (defn change-element! [el action-map]
   (.change rtl/fireEvent el (clj->js action-map))
   (r/flush))
-
-(defn select-element! [el action-map]
-  (.select rtl/fireEvent el (clj->js action-map))
-  (r/flush))
