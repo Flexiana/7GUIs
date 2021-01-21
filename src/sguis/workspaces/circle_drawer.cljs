@@ -63,10 +63,11 @@
 (defn radius-slider [{:keys [x y] :as selected?} update-radius!]
   [:label (str "Changing circle at "
                "(" x ", " y ")")
-   [:input {:type "range"
-            :min  0
-            :max  100
-            :disabled (not selected?)
+   [:input {:data-testid "radius-slider"
+            :type      "range"
+            :min       0
+            :max       100
+            :disabled  (not selected?)
             :on-change (partial update-radius! selected?)}]])
 
 (defn radius-box [{:keys [slider-opened? selection]} update-radius!]
@@ -90,15 +91,16 @@
 
 (defn circle-draw! [*state selected? {:keys [id x y r] :as selection}]
   ^{:key id}
-  [:circle {:cx x
-            :cy y
-            :r r
-            :stroke "black"
+  [:circle {:data-testid  (str "circle-" id)
+            :cx           x
+            :cy           y
+            :r            r
+            :stroke       "black"
             :stroke-width "1"
-            :fill (select-fill selected? selection)
-            :on-click (fn [event]
-                        (.stopPropagation event)
-                        (swap! *state assoc :selection selection))}])
+            :fill         (select-fill selected? selection)
+            :on-click     (fn [event]
+                            (.stopPropagation event)
+                            (swap! *state assoc :selection selection))}])
 
 (defn open-slider! [*state selected? slider-opened? event]
   (if-not (and slider-opened? (not-empty selected?))
