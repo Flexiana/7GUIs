@@ -30,6 +30,10 @@
      (click-fn! el (clj->js action-map)))
    (r/flush)))
 
+(defn click-context-menu! [el]
+  (.contextMenu rtl/fireEvent el)
+  (r/flush))
+
 (defn input-element! [el action-map]
   (.input rtl/fireEvent el (clj->js action-map))
   (r/flush))
