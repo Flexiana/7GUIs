@@ -34,7 +34,6 @@
           (u/change-element! (input comp) {:target {:value 100}})
           (is (= "100" (.-value (input comp))))
           ;(wait 10000 #(js/alert "most"))
-          (wait 1 #(is (= "100" (-> (progress comp) .-style .-cssText)))))))))
+          (is (= "100" (.getPropertyValue (.-style (progress comp)) "width"))))))))
           ;(is (some? (wait 10 (.-value (progress comp)))))
           ;(is (= 100 (wait 100 (.-valueAsNumber (input comp))))))))))
-
