@@ -14,13 +14,8 @@
      :clientY (+ (.-top dim) y)}))
 
 (ws/deftest click-insert-circle-ui-test
-  (let [svg-drawer              #(.getByTestId % "svg-drawer")
-        #_#_go-flight-input     #(.getByTestId % "go-flight")
-        #_#_return-flight-input #(.getByTestId % "return-flight")
-        #_#_book-btn            #(.getByText % "Book!")
-        #_#_book-msg            #(.getByTestId % "book-msg")
-        #_#_reset-btn           #(.getByText % "Reset!")
-        *circles                (r/atom circles-start)]
+  (let [svg-drawer #(.getByTestId % "svg-drawer")
+        *circles   (r/atom circles-start)]
     (u/with-mounted-component [circles-ui *circles]
       (fn [comp]
         (testing "Creating circles"
