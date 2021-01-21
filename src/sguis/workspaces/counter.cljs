@@ -6,7 +6,8 @@
     [:div.field.is-grouped.is-flex.is-justify-content-evenly
      [:div.control
       [:input.input.has-text-centered
-       {:type "text"
+       {:type :text
+        :read-only true
         :data-testid "counter-value"
         :size 6
         :value @*counter-state}]]
