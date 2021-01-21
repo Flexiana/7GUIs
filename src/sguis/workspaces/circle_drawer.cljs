@@ -1,12 +1,16 @@
 (ns sguis.workspaces.circle-drawer
   (:require [reagent.core :as r]))
 
+
+(def circles-start
+  {:slider-opened? nil
+   :current-id     0
+   :circles        []
+   :selection      {}
+   :history        []})
+
 (def *circles
-  (r/atom {:slider-opened? nil
-           :current-id    0
-           :circles       []
-           :selection     {}
-           :history       []}))
+  (r/atom circles-start))
 
 (def svg-style
   {:width "800"
