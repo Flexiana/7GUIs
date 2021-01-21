@@ -1,8 +1,12 @@
 (ns sguis.workspaces.timer
   (:require [reagent.core :as r]))
 
+
+(def timer-start
+  {:elapsed-time 0
+   :duration     0})
 (def *timer
-  (r/atom {}))
+  (r/atom timer-start))
 
 (def container-style
   {:position      "relative"
@@ -39,10 +43,10 @@
 (defn countdown-component [timer-state]
   (let [{:keys [elapsed-time
                 duration]} @timer-state
-        finished? (< elapsed-time duration)]
+        finished?          (< elapsed-time duration)]
     (if finished?
       (r/with-let [timer-fn (js/setInterval #(swap! timer-state update :elapsed-time inc) 1000)]
-        [:div.timer
+        [:div.timer {:data-testid "timer-component"}
          [:div (str (:elapsed-time @timer-state) "s")]]
         (finally (js/clearInterval timer-fn)))
       [:div.timer

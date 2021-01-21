@@ -13,6 +13,7 @@
             [sguis.workspaces.flight-booker-test]
             [sguis.workspaces.timer :refer [timer-ui
                                             *timer]]
+            [sguis.workspaces.timer-test]
             [sguis.workspaces.crud :refer [crud-ui
                                            *crud]]
             [sguis.workspaces.circle-drawer :refer [circles-ui
