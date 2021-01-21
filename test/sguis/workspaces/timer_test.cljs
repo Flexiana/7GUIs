@@ -3,13 +3,27 @@
                                             *timer]]
             [cljs.test :as t
              :include-macros true
-             :refer [is testing]]
+             :refer [are is testing]]
             [nubank.workspaces.core :as ws]
             [reagent.core :as r]
             [sguis.workspaces.test-utils :as u]))
 (ws/deftest
   timer-test
-  (let []
-    (testing "Initialization"
-      true)))
+  (let [reset-button #(.getByText % "Reset!")
+        label #(.getByTestId % "timer")
+        input #(.getByTestId % "range")
+        progress #(.getByTestId % "progress")]
+    (u/with-mounted-component
+      [#(timer-ui *timer)]
+      (fn [comp]
+        (testing "Initialization"
+          (are [expected actual] (= expected actual)
+            js/HTMLButtonElement (type (reset-button comp))
+            js/HTMLDivElement (type (label comp))
+            "0s" (.-innerHTML (label comp))
+            "1" (.-value (input comp))
+            "1" (.-min (input comp))
+            "100" (.-max (input comp))
+            nil (.-width (progress comp))))))))
+
 
