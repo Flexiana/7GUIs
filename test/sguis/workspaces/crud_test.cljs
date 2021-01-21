@@ -28,12 +28,8 @@
       (fn [comp]
 
         (testing "Initial render"
-          (reset! *crud {:next-id           0
-                         :filter-prefix     ""
-                         :person/by-id      {}
-                         :current-id        nil
-                         :name-insertion    nil
-                         :surname-insertion nil}) (is (empty? (.-value (filter-field comp))))
+          (reset-state *crud) 
+          (is (empty? (.-value (filter-field comp))))
           (is (empty? (.-value (name-field comp))))
           (is (empty? (.-value (surname-field comp))))
           (is (= js/HTMLButtonElement (type (create-button comp))))
