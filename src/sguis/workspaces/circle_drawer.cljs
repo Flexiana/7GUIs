@@ -130,9 +130,10 @@
                 open-slider!
                 insert-circle!
                 circle-draw!]
-  [:svg {:style svg-style
+  [:svg {:data-testid "svg-drawer"
+         :style           svg-style
          :on-context-menu (partial open-slider! selection slider-opened?)
-         :on-click (partial insert-circle! current-id)}
+         :on-click        (partial insert-circle! current-id)}
    (->> circles
         last-circles-by-id
         (map (partial circle-draw! selection)))])

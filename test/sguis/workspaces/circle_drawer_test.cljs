@@ -8,20 +8,25 @@
             [reagent.core :as r]
             [sguis.workspaces.test-utils :as u]))
 
+(defn relative-click [svg-comp {:keys [x y]}]
+  (let [dim (.getBoundingClientRect svg-comp)]
+    {:clientX (+ (.-left dim) x)
+     :clientY (+ (.-top dim) y)}))
+
 (ws/deftest click-insert-circle-ui-test
-  let [#_#_flight-selector                           #(.getByTestId % "flight-selector")
-       #_#_go-flight-input                           #(.getByTestId % "go-flight")
-       #_#_return-flight-input                       #(.getByTestId % "return-flight")
-       #_#_book-btn                                  #(.getByText % "Book!")
-       #_#_book-msg                                  #(.getByTestId % "book-msg")
-       #_#_reset-btn                                 #(.getByText % "Reset!")
-       *circles (r/atom circles-start)]
-  (u/with-mounted-component [circles-ui *circles]
-    (fn [comp]
-      #_(testing "Can book in future."
-          (u/change-element! (flight-selector comp) {:target {:value "return-flight"}})
-          (u/input-element! (go-flight-input comp) {:target {:value (unparse-date tomorrow)}})
-          (u/input-element! (return-flight-input comp) {:target {:value (unparse-date future)}})
-          (u/click-element! (book-btn comp))
-          (is (= (format-msg @*booker) (.-textContent (book-msg comp))))
-          (u/click-element! (reset-btn comp))))))
+  (let [svg-drawer              #(.getByTestId % "svg-drawer")
+        #_#_go-flight-input     #(.getByTestId % "go-flight")
+        #_#_return-flight-input #(.getByTestId % "return-flight")
+        #_#_book-btn            #(.getByText % "Book!")
+        #_#_book-msg            #(.getByTestId % "book-msg")
+        #_#_reset-btn           #(.getByText % "Reset!")
+        *circles                (r/atom circles-start)]
+    (u/with-mounted-component [circles-ui *circles]
+      (fn [comp]
+        (testing "Creating circles"
+          (let [circle-pos0 {:x 200
+                             :y 200}
+                svg-comp    (svg-drawer comp)]
+            (u/click-element! svg-comp (relative-click svg-comp circle-pos0))
+            (is (= circle-pos0
+                   (-> @*circles :circles first (select-keys [:x :y]))))))))))
