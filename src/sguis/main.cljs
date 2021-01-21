@@ -15,6 +15,7 @@
                                             *timer]]
             [sguis.workspaces.crud :refer [crud-ui
                                            *crud]]
+            [sguis.workspaces.crud-test]
             [sguis.workspaces.circle-drawer :refer [circles-ui
                                                     *circles]]
             [sguis.workspaces.cells :refer [cells-ui

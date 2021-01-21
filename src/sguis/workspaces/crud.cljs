@@ -14,6 +14,7 @@
   [:div {:padding "1em"}
    [:label "Filter prefix: "]
    [:input {:type      "text"
+            :data-testid "filter"
             :on-change #(swap! *state
                                assoc
                                :filter-prefix
@@ -22,6 +23,7 @@
 (defn text-field [id value label on-change]
   [:label label
    [:input {:type      "text"
+            :data-testid label
             :value     (when value value)
             :on-change (partial on-change id)}]])
 
@@ -53,7 +55,7 @@
 (defn person-list [{:person/keys [by-id]
                     :keys        [filter-prefix]
                     :as          state} select-person!]
-  [:ul {:style {:list-style-type "none", :padding 0, :margin 0}}
+  [:ul {:data-testid "person-list" :style {:list-style-type "none", :padding 0, :margin 0}}
    (->> by-id
         vals
         (filter (partial matching-name? filter-prefix))
