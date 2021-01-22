@@ -31,6 +31,7 @@
         slider-label  #(.getByText % #"Changing circle at")
         radius-slider #(.getByTestId % "radius-slider")
         circle-0      #(.getByTestId % "circle-0")
+        circle-2      #(.getByTestId % "circle-2")
         undo-btn      #(.getByText % "Undo")
         redo-btn      #(.getByText % "Redo")
         *circles      (r/atom circles-start)]
@@ -50,7 +51,17 @@
             (is (and (= circle-pos2
                         (-> @*circles :selection))))
             (u/click-element! (circle-0 comp))
-            (is (= circle-pos0  (-> @*circles :selection))))
+            (is (= circle-pos0  (-> @*circles :selection)))
+            (is (= "red"
+                   (.. (circle-0 comp)
+                       -attributes
+                       -fill
+                       -value)))
+            (is (= "white"
+                   (.. (circle-2 comp)
+                       -attributes
+                       -fill
+                       -value))))
 
 
           (testing "Opening Radius-Box"
