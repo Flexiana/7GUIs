@@ -5,6 +5,7 @@
     },
     "dependencies": {
         "@testing-library/react": "^11.2.3",
+        "@sinonjs/fake-timers": "^7.0.2",
         "date-fns": "^2.16.1",
         "highlight.js": "9.18.5",
         "karma": "^6.0.0",
