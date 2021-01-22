@@ -1,12 +1,10 @@
 (ns sguis.workspaces.temperature-test
   (:require [sguis.workspaces.temperature :refer [temperature-ui
-                                                  temperature-start
                                                   convert]]
             [cljs.test :as t
              :include-macros true
              :refer [is testing]]
             [nubank.workspaces.core :as ws]
-            [reagent.core :as r]
             [sguis.workspaces.test-utils :as u]))
 
 (ws/deftest test-convert
@@ -20,7 +18,7 @@
 (ws/deftest temperature-ui-tests
   (let [celsius-input    #(.getByLabelText % #"(?i)celsius")
         fahrenheit-input #(.getByLabelText % #"(?i)fahrenheit")]
-    (u/with-mounted-component [temperature-ui (r/atom temperature-start)]
+    (u/with-mounted-component [temperature-ui]
       (fn [comp]
         (let [_celsius->fahrenheit!     (u/change-element! (celsius-input comp) {:target {:value "5"}})
               celsius->fahrenheit-value (.-value (fahrenheit-input comp))
