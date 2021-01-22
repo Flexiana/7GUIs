@@ -35,6 +35,7 @@
           (u/input-element! (input comp) {:target {:value "10"}})
           (u/tick fake-timer 5000)
           (is (= {:elapsed-time 5, :duration 10} @*test-timer))
+          (r/flush)
           (is (= "5s" (.-innerHTML (label comp))))
           (is (= "50%" (.getPropertyValue (.-style (progress comp)) "width")))
           (u/uninstall-timer fake-timer))))))
