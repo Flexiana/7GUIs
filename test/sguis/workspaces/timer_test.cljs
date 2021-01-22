@@ -14,7 +14,7 @@
 (ws/deftest
   timer-test
   (let [fake-timer (u/install-timer)
-        *test-timer (atom {})
+        *test-timer (r/atom {})
         reset-button #(.getByText % "Reset!")
         label #(.getByTestId % "timer")
         input #(.getByTestId % "range")
