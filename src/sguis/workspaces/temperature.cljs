@@ -1,57 +1,74 @@
 (ns sguis.workspaces.temperature
   (:require [reagent.core :as r]
-            [sguis.workspaces.validator :as valid]))
+            [sguis.workspaces.utils :as u]
+            [sguis.workspaces.validator :as valid]
+            [clojure.string :as string]))
 
 (def temperature-start
-  {:celsius    nil
-   :fahrenheit nil})
+  {:celsius    {:value nil}
+   :fahrenheit {:value nil}})
 
-(def *temperature
-  (r/atom temperature-start))
+(def other
+  {:celsius    :fahrenheit
+   :fahrenheit :celsius})
 
-(defn celsius->fahrenheit [c]
-  (-> c
-      (* 9.0)
-      (/ 5.0)
-      (+ 32.0)))
+(defmulti convert (fn [from to _] [from to]))
 
-(defn fahrenheit->celsius [f]
-  (-> f
-      (- 32.0)
-      (* 5.0)
-      (/ 9.0)))
+(defmethod convert [:celsius :fahrenheit] [_ _ degrees]
+  (-> degrees (* 9.0) (/ 5.0) (+ 32.0) js/Math.round))
 
-(defn ->fahrenheit [current-state data]
-  (assoc current-state
-         :celsius data
-         :fahrenheit (celsius->fahrenheit data)))
+(defmethod convert [:fahrenheit :celsius] [_ _ degrees]
+  (-> degrees (- 32.0) (* 5.0) (/ 9.0) js/Math.round))
 
-(defn ->celsius [current-state data]
-  (assoc current-state
-         :celsius (fahrenheit->celsius data)
-         :fahrenheit data))
+(defn change-temperature [state from data]
+  (let [to     (other from)
+        state' (assoc state from {:value data})]
+    (if (valid/float? data)
+      (assoc state' to {:value (convert from to data)})
+      (-> state'
+          (assoc-in [from :invalid?] true)
+          (assoc-in [to :unsynced?] true)))))
 
-(defn convert! [temperature-state to field]
-  (let [data (-> field .-target .-valueAsNumber)]
-    (if (valid/numeric? data)
-      (swap! temperature-state to data)
-      (swap! temperature-state assoc
-             :fahrenheit ""
-             :celsius ""))))
+(defn apply-temperature-change [state from data]
+  (if (string/blank? data)
+    temperature-start
+    (change-temperature state from data)))
 
-(defn degree-input [{:keys [on-change label value]}]
-  [:label {:id label}
-   [:input {:data-testid label
-            :type        "number"
-            :on-change   (partial on-change)
-            :value       value}]
-   label])
+(defn change-state! [state field-key field]
+  (let [data (-> field .-target .-value)]
+    (swap! state apply-temperature-change field-key data)))
 
-(defn temperature-ui [temperature-state]
-  [:div {:style {:padding "1em"}}
-   [degree-input {:on-change (partial convert! temperature-state ->fahrenheit)
-                  :label     "Celsius"
-                  :value     (:celsius @temperature-state)}]
-   [degree-input {:on-change (partial convert! temperature-state ->celsius)
-                  :label     "Fahrenheit"
-                  :value     (:fahrenheit @temperature-state)}]])
+(defn degree-input
+  [{:keys [label on-change state]}]
+  (let [field-id                           (gensym)
+        {:keys [value invalid? unsynced?]} state]
+    [:div.field.is-horizontal
+     [:div.field-label.is-normal
+      [:label.label
+       {:for field-id}
+       label]]
+     [:div.field-body.is-flex-grow-1
+      [:div.field
+       [:input.input.has-text-centered
+        {:id        field-id
+         :type      :text
+         :class     (u/classes
+                      (when invalid? :is-danger)
+                      (when unsynced? :is-warning))
+         :size      6
+         :on-change on-change
+         :value     value}]]]]))
+
+(defn temperature-ui
+  ([]
+   (r/with-let [state (r/atom temperature-start)]
+     [temperature-ui state]))
+  ([state]
+   (let [change-temperature (partial change-state! state)]
+     [:div
+      [degree-input {:label     "Celsius"
+                     :state     (:celsius @state)
+                     :on-change (partial change-temperature :celsius)}]
+      [degree-input {:label     "Fahrenheit"
+                     :state     (:fahrenheit @state)
+                     :on-change (partial change-temperature :fahrenheit)}]])))
