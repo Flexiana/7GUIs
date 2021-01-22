@@ -7,9 +7,6 @@
             [reagent.core :as r]
             [sguis.workspaces.test-utils :as u]))
 
-(defn wait [milliseconds f]
-  (js/setTimeout f milliseconds))
-
 (ws/deftest timer-test
   (let [fake-timer   (u/install-timer)
         *test-timer  (r/atom {})
