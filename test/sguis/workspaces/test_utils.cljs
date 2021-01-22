@@ -1,7 +1,8 @@
 (ns sguis.workspaces.test-utils
   (:require [reagent.core :as r]
             [goog.dom :as gdom]
-            ["@testing-library/react" :as rtl]))
+            ["@testing-library/react" :as rtl]
+            ["@testing-library/user-event" :as rtue]))
 
 (def test-container-id "tests-container")
 
@@ -21,8 +22,16 @@
       (finally
         (rtl/cleanup)))))
 
-(defn click-element! [el]
-  (.click rtl/fireEvent el)
+(defn click-element!
+  ([el]
+   (click-element! el #js {}))
+  ([el action-map]
+   (let [click-fn! (.. rtue -default -click)]
+     (click-fn! el (clj->js action-map)))
+   (r/flush)))
+
+(defn click-context-menu! [el]
+  (.contextMenu rtl/fireEvent el)
   (r/flush))
 
 (defn input-element! [el action-map]

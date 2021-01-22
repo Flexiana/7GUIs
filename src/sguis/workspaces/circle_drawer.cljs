@@ -1,12 +1,16 @@
 (ns sguis.workspaces.circle-drawer
   (:require [reagent.core :as r]))
 
+
+(def circles-start
+  {:slider-opened? nil
+   :current-id     0
+   :circles        []
+   :selection      {}
+   :history        []})
+
 (def *circles
-  (r/atom {:slider-opened? nil
-           :current-id    0
-           :circles       []
-           :selection     {}
-           :history       []}))
+  (r/atom circles-start))
 
 (def svg-style
   {:width "800"
@@ -59,10 +63,11 @@
 (defn radius-slider [{:keys [x y] :as selected?} update-radius!]
   [:label (str "Changing circle at "
                "(" x ", " y ")")
-   [:input {:type "range"
-            :min  0
-            :max  100
-            :disabled (not selected?)
+   [:input {:data-testid "radius-slider"
+            :type      "range"
+            :min       0
+            :max       100
+            :disabled  (not selected?)
             :on-change (partial update-radius! selected?)}]])
 
 (defn radius-box [{:keys [slider-opened? selection]} update-radius!]
@@ -86,15 +91,16 @@
 
 (defn circle-draw! [*state selected? {:keys [id x y r] :as selection}]
   ^{:key id}
-  [:circle {:cx x
-            :cy y
-            :r r
-            :stroke "black"
+  [:circle {:data-testid  (str "circle-" id)
+            :cx           x
+            :cy           y
+            :r            r
+            :stroke       "black"
             :stroke-width "1"
-            :fill (select-fill selected? selection)
-            :on-click (fn [event]
-                        (.stopPropagation event)
-                        (swap! *state assoc :selection selection))}])
+            :fill         (select-fill selected? selection)
+            :on-click     (fn [event]
+                            (.stopPropagation event)
+                            (swap! *state assoc :selection selection))}])
 
 (defn open-slider! [*state selected? slider-opened? event]
   (if-not (and slider-opened? (not-empty selected?))
@@ -126,9 +132,10 @@
                 open-slider!
                 insert-circle!
                 circle-draw!]
-  [:svg {:style svg-style
+  [:svg {:data-testid "svg-drawer"
+         :style           svg-style
          :on-context-menu (partial open-slider! selection slider-opened?)
-         :on-click (partial insert-circle! current-id)}
+         :on-click        (partial insert-circle! current-id)}
    (->> circles
         last-circles-by-id
         (map (partial circle-draw! selection)))])

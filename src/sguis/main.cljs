@@ -16,6 +16,7 @@
                                            *crud]]
             [sguis.workspaces.circle-drawer :refer [circles-ui
                                                     *circles]]
+            [sguis.workspaces.circle-drawer-test]
             [sguis.workspaces.cells :refer [cells-ui
                                             *cells]]
             [sguis.workspaces.cells-test]))
