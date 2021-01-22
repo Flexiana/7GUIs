@@ -14,8 +14,7 @@
             [sguis.workspaces.timer-test]
             [sguis.workspaces.crud :refer [crud-ui]]
             [sguis.workspaces.crud-test]
-            [sguis.workspaces.circle-drawer :refer [circles-ui
-                                                    *circles]]
+            [sguis.workspaces.circle-drawer :refer [circles-ui]]
             [sguis.workspaces.circle-drawer-test]
             [sguis.workspaces.cells :refer [cells-ui
                                             *cells]]
@@ -47,8 +46,7 @@
 (ws/defcard circle-drawer
   {::wsm/align       {:justify-content "left"}}
   (ct.react/react-card
-   *circles
-   (r/as-element [circles-ui *circles])))
+   (r/as-element [circles-ui])))
 
 (ws/defcard cells
   {::wsm/align       {:justify-content "left"}}

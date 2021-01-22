@@ -9,18 +9,15 @@
    :selection      {}
    :history        []})
 
-(def *circles
-  (r/atom circles-start))
-
 (def svg-style
-  {:width "800"
-   :height "600"
-   :display "flex"
-   :border "1px solid black"
-   :stroke "#646464"
-   :stroke-width "1px"
+  {:width            "800"
+   :height           "600"
+   :display          "flex"
+   :border           "1px solid black"
+   :stroke           "#646464"
+   :stroke-width     "1px"
    :stroke-dasharray 2.2
-   :stroke-linejoin "round"
+   :stroke-linejoin  "round"
    :background-color "#eee"})
 
 (defn undo-on-click! [*state circles _]
@@ -140,16 +137,19 @@
         last-circles-by-id
         (map (partial circle-draw! selection)))])
 
-(defn circles-ui [*circles]
-  [:div {:style {:padding    "1em"
-                 :text-align "center"}}
-   [:div {:style {:display         "flex"
-                  :justify-content "space-around"}
-          :width "800"}
-    [undo-button @*circles (partial undo-on-click! *circles)]
-    [redo-button @*circles (partial redo-on-click! *circles)]]
-   [svg-draw @*circles
-    (partial open-slider! *circles)
-    (partial insert-circle! *circles)
-    (partial circle-draw! *circles)]
-   [radius-box @*circles (partial update-radius! *circles)]])
+(defn circles-ui
+  ([]
+   (r/with-let [*circles (r/atom circles-start)]))
+  ([*circles]
+   [:div {:style {:padding    "1em"
+                  :text-align "center"}}
+    [:div {:style {:display         "flex"
+                   :justify-content "space-around"}
+           :width "800"}
+     [undo-button @*circles (partial undo-on-click! *circles)]
+     [redo-button @*circles (partial redo-on-click! *circles)]]
+    [svg-draw @*circles
+     (partial open-slider! *circles)
+     (partial insert-circle! *circles)
+     (partial circle-draw! *circles)]
+    [radius-box @*circles (partial update-radius! *circles)]]))
