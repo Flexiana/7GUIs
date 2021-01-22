@@ -5,8 +5,7 @@
             [nubank.workspaces.model :as wsm]
             [sguis.workspaces.counter :refer [counter-ui]]
             [sguis.workspaces.counter-test]
-            [sguis.workspaces.temperature :refer [temperature-ui
-                                                  *temperature]]
+            [sguis.workspaces.temperature :refer [temperature-ui]]
             [sguis.workspaces.temperature-test]
             [sguis.workspaces.flight-booker :refer [booker-ui
                                                     *booker]]
@@ -29,8 +28,7 @@
 
 (ws/defcard temperature
   (ct.react/react-card
-   *temperature
-   (r/as-element [temperature-ui *temperature])))
+    (r/as-element [temperature-ui])))
 
 (ws/defcard flight-booker
   (ct.react/react-card
