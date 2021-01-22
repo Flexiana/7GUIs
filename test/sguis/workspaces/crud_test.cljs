@@ -17,7 +17,7 @@
         person-list   #(.getByTestId % "person-list")
         *crud         (r/atom crud-start)]
     (u/with-mounted-component
-      [crud-ui]
+      [crud-ui *crud]
       (fn [comp]
         (testing "Initial render"
           (is (empty? (.-value (filter-field comp))))
@@ -38,6 +38,7 @@
           (is (= "Doe" (.-value (surname-field comp))))
           (u/click-element! (create-button comp))
           (is (= (mapv #(.-innerHTML %) (.-children (person-list comp))) '("Doe, John"))))
+
         (testing "Update person"
           (reset! *crud crud-start)
           (u/input-element! (name-field comp) {:target {:value "John"}})
