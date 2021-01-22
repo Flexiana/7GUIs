@@ -25,5 +25,4 @@
               _fahrenheit->celsius!     (u/change-element! (fahrenheit-input comp) {:target {:value celsius->fahrenheit-value}})
               fahrenheit->celsius-value (.-value (celsius-input comp))]
           (is (= "41" celsius->fahrenheit-value))
-          (is (= "5" fahrenheit->celsius-value))))))
-  )
+          (is (= "5" fahrenheit->celsius-value)))))))
