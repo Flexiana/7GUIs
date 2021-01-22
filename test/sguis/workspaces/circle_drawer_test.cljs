@@ -63,7 +63,6 @@
                        -fill
                        -value))))
 
-
           (testing "Opening Radius-Box"
             (u/click-context-menu! svg-comp)
             (is (and (-> @*circles :slider-opened? true?)
