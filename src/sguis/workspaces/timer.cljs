@@ -5,8 +5,6 @@
 (def timer-start
   {:elapsed-time 0
    :duration     0})
-(def *timer
-  (r/atom timer-start))
 
 (def container-style
   {:position      "relative"
@@ -37,7 +35,8 @@
   (let [{:keys [elapsed-time
                 duration]} @timer-state]
     [:div {:style container-style}
-     [:div {:style (merge filler-style
+     [:div {:data-testid "progress"
+            :style (merge filler-style
                           {:width (fill-bar elapsed-time duration)})}]]))
 
 (defn countdown-component [timer-state]
@@ -46,8 +45,10 @@
         finished?          (< elapsed-time duration)]
     (if finished?
       (r/with-let [timer-fn (js/setInterval #(swap! timer-state update :elapsed-time inc) 1000)]
-        [:div.timer {:data-testid "timer-component"}
-         [:div (str (:elapsed-time @timer-state) "s")]]
+        [:div.timer
+         [:div
+          {:data-testid "timer"}
+          (str (:elapsed-time @timer-state) "s")]]
         (finally (js/clearInterval timer-fn)))
       [:div.timer
        [:div (str (:elapsed-time @timer-state) "s")]])))
@@ -55,6 +56,7 @@
 (defn duration-change [timer-state]
   [:input {:style        {:width "100%"}
            :type         "range"
+           :data-testid "range"
            :min          "1"
            :max          "100"
            :defaultValue "1"
@@ -70,7 +72,11 @@
             :on-click #(swap! timer-state assoc :elapsed-time 0)}
    "Reset!"])
 
-(defn timer-ui [timer-state]
+(defn timer-ui
+  ([]
+   (r/with-let [*timer-state (r/atom timer-start)]
+     [timer-ui *timer-state]))
+  ([timer-state]
   (r/create-class
    {:component-did-mount (swap! timer-state
                                 assoc
@@ -84,4 +90,4 @@
                        [countdown-component timer-state]
                        [progress-bar timer-state]
                        [duration-change timer-state]
-                       [reset-button-ui timer-state]])}))
+                       [reset-button-ui timer-state]])})))

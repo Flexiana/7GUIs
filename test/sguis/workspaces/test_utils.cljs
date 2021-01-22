@@ -1,7 +1,8 @@
 (ns sguis.workspaces.test-utils
   (:require [reagent.core :as r]
             [goog.dom :as gdom]
-            ["@testing-library/react" :as rtl]))
+            ["@testing-library/react" :as rtl]
+            ["@sinonjs/fake-timers" :as timer]))
 
 (def test-container-id "tests-container")
 
@@ -32,3 +33,12 @@
 (defn change-element! [el action-map]
   (.change rtl/fireEvent el (clj->js action-map))
   (r/flush))
+
+(defn install-timer []
+  (.install timer (.-getTime js/Date.)))
+
+(defn tick [t x]
+  (.tick t x))
+
+(defn uninstall-timer [t]
+  (.uninstall t))

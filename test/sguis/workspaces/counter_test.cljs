@@ -8,7 +8,7 @@
 
 (ws/deftest counter-tests
   (let [counter-value #(-> % (.getByTestId "counter-value") .-value)
-        count-btn #(.getByText % "Count")]
+        count-btn #(.getByText % #"(?i)count")]
     (u/with-mounted-component [counter-ui]
       (fn [comp]
         (testing "Initial render."
