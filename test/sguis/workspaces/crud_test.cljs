@@ -30,6 +30,7 @@
           (is (.-disabled (update-button comp)))
           (is (.-disabled (delete-button comp)))
           (is (= js/HTMLUListElement (type (person-list comp)))))
+
         (testing "Create person"
           (reset! *crud crud-start)
           (u/input-element! (name-field comp) {:target {:value "John"}})
@@ -52,6 +53,7 @@
           (u/input-element! (name-field comp) {:target {:value "Jane"}})
           (u/click-element! (update-button comp))
           (is (= (mapv #(.-innerHTML %) (.-children (person-list comp))) '("Doe, Jane"))))
+
         (testing "Filtering"
           (reset! *crud crud-start)
           (u/input-element! (name-field comp) {:target {:value "John"}})
@@ -62,6 +64,7 @@
           (u/click-element! (create-button comp))
           (u/input-element! (filter-field comp) {:target {:value "F"}})
           (is (= (mapv #(.-innerHTML %) (.-children (person-list comp))) '("Foe, John"))))
+
         (testing "Delete person"
           (reset! *crud crud-start)
           (u/input-element! (name-field comp) {:target {:value "John"}})
@@ -73,6 +76,7 @@
           (u/click-element! (-> (person-list comp) .-children first))
           (u/click-element! (delete-button comp))
           (is (= (mapv #(.-innerHTML %) (.-children (person-list comp))) '("Foe, John"))))
+
         (testing "State"
           (reset! *crud crud-start)
           (u/input-element! (name-field comp) {:target {:value "John"}})
