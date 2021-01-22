@@ -10,8 +10,8 @@
             [sguis.workspaces.flight-booker :refer [booker-ui
                                                     *booker]]
             [sguis.workspaces.flight-booker-test]
-            [sguis.workspaces.timer :refer [timer-ui
-                                            *timer]]
+            [sguis.workspaces.timer :refer [timer-ui]]
+            [sguis.workspaces.timer-test]
             [sguis.workspaces.crud :refer [crud-ui]]
             [sguis.workspaces.crud-test]
             [sguis.workspaces.circle-drawer :refer [circles-ui
@@ -42,8 +42,7 @@
 
 (ws/defcard timer
   (ct.react/react-card
-   *timer
-   (r/as-element [timer-ui *timer])))
+   (r/as-element [timer-ui])))
 
 (ws/defcard circle-drawer
   {::wsm/align       {:justify-content "left"}}
