@@ -12,8 +12,8 @@
             [sguis.workspaces.flight-booker-test]
             [sguis.workspaces.timer :refer [timer-ui
                                             *timer]]
-            [sguis.workspaces.crud :refer [crud-ui
-                                           *crud]]
+            [sguis.workspaces.crud :refer [crud-ui]]
+            [sguis.workspaces.crud-test]
             [sguis.workspaces.circle-drawer :refer [circles-ui
                                                     *circles]]
             [sguis.workspaces.circle-drawer-test]
@@ -38,8 +38,7 @@
 
 (ws/defcard crud
   (ct.react/react-card
-   *crud
-   (r/as-element [crud-ui *crud])))
+   (r/as-element [crud-ui])))
 
 (ws/defcard timer
   (ct.react/react-card
