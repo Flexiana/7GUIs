@@ -1,7 +1,7 @@
 (ns sguis.main
   (:require [reagent.core :as r]
-            [nubank.workspaces.card-types.react :as ct.react]
-            [nubank.workspaces.core :as ws]
+            [nubank.workspaces.card-types.react :refer [react-card]]
+            [nubank.workspaces.core :refer [mount defcard]]
             [nubank.workspaces.model :as wsm]
             [sguis.workspaces.counter :refer [counter-ui]]
             [sguis.workspaces.counter-test]
@@ -15,39 +15,37 @@
             [sguis.workspaces.crud-test]
             [sguis.workspaces.circle-drawer :refer [circles-ui]]
             [sguis.workspaces.circle-drawer-test]
-            [sguis.workspaces.cells :refer [cells-ui
-                                            *cells]]
+            [sguis.workspaces.cells :refer [cells-ui]]
             [sguis.workspaces.cells-test]))
 
-(defonce init (ws/mount))
+(defonce init (mount))
 
-(ws/defcard counter
-  (ct.react/react-card
+(defcard counter
+  (react-card
    (r/as-element [counter-ui])))
 
-(ws/defcard temperature
-  (ct.react/react-card
+(defcard temperature
+  (react-card
     (r/as-element [temperature-ui])))
 
-(ws/defcard flight-booker
-  (ct.react/react-card
+(defcard flight-booker
+  (react-card
    (r/as-element [booker-ui (js/Date.)])))
 
-(ws/defcard crud
-  (ct.react/react-card
+(defcard crud
+  (react-card
    (r/as-element [crud-ui])))
 
-(ws/defcard timer
-  (ct.react/react-card
+(defcard timer
+  (react-card
    (r/as-element [timer-ui])))
 
-(ws/defcard circle-drawer
+(defcard circle-drawer
   {::wsm/align       {:justify-content "left"}}
-  (ct.react/react-card
+  (react-card
    (r/as-element [circles-ui])))
 
-(ws/defcard cells
+(defcard cells
   {::wsm/align       {:justify-content "left"}}
-  (ct.react/react-card
-   *cells
-   (r/as-element [cells-ui *cells])))
+  (react-card
+   (r/as-element [cells-ui])))

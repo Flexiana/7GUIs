@@ -3,10 +3,11 @@
             [reagent.core :as r]
             [sci.core :refer [eval-string]]
             [sguis.workspaces.validator :as valid]))
-(def *cells
-  (r/atom {:focused-cell nil
-           :edition      ""
-           :cells        {}}))
+
+(def cells-start
+  {:focused-cell nil
+   :edition      ""
+   :cells        {}})
 
 (def az-range
   (map char (range 65 91)))
@@ -147,16 +148,20 @@
       l]]
     (map (partial coll-fn cells actions-map l) az-range))])
 
-(defn cells-ui [*cells]
-  [:div {:padding "1em"}
-   [:table {:style table-style}
-    [:thead {:style overflow-style}
-     [:tr {:style light-border-style}
-      (concat [^{:key :n} [:th]]
-              (map header-fn az-range))]]
-    [:tbody {:style overflow-style}
-     (concat [^{:key :n} [:tr (merge light-border-style overflow-style)]]
-             (map (partial row-fn @*cells
-                           {:focus-cell!  (partial focus-cell! *cells)
-                            :submit-cell! (partial submit-cell! *cells)
-                            :change-cell! (partial change-cell! *cells)}) table-lines))]]])
+(defn cells-ui
+  ([]
+   (r/with-let [*cells  (r/atom cells-start)]
+     [cells-ui *cells]))
+  ([*cells]
+   [:div {:padding "1em"}
+    [:table {:style table-style}
+     [:thead {:style overflow-style}
+      [:tr {:style light-border-style}
+       (concat [^{:key :n} [:th]]
+               (map header-fn az-range))]]
+     [:tbody {:style overflow-style}
+      (concat [^{:key :n} [:tr (merge light-border-style overflow-style)]]
+              (map (partial row-fn @*cells
+                            {:focus-cell!  (partial focus-cell! *cells)
+                             :submit-cell! (partial submit-cell! *cells)
+                             :change-cell! (partial change-cell! *cells)}) table-lines))]]]))
