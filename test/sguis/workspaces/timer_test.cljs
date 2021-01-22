@@ -27,6 +27,7 @@
             "1"                  (.-min (input comp))
             "100"                (.-max (input comp))
             "0%"                 (.getPropertyValue (.-style (progress comp)) "width")))
+
         (testing "Run"
           (u/input-element! (input comp) {:target {:value "10"}})
           (is (= "0%" (.getPropertyValue (.-style (progress comp)) "width")))
