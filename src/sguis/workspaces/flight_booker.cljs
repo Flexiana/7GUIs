@@ -15,9 +15,6 @@
    :return-flight ""
    :booker-msg    nil})
 
-(def *booker
-  (r/atom booker-start))
-
 (defn parse-date [date]
   (when (isMatch date parse-date-format)
     (-> date
@@ -108,12 +105,16 @@
   (when booker-msg
     [:button {:on-click (partial reset-booker!)} "Reset!"]))
 
-(defn booker-ui [*booker today]
-  [:div {:style {:padding "1em"}}
-   [:div "Book a flight ✈️"]
-   [flight-selector (partial select-booking! *booker)]
-   [go-flight-input @*booker (partial go-flight-change! *booker)]
-   [return-flight-input @*booker (partial return-flight-change! *booker)]
-   [book-button @*booker today (partial booking-message! *booker)]
-   [book-message @*booker]
-   [reset-button @*booker (partial reset-booker! *booker)]])
+(defn booker-ui
+  ([today]
+   (r/with-let [*booker (r/atom booker-start)]
+     [booker-ui today]))
+  ([*booker today]
+   [:div {:style {:padding "1em"}}
+    [:div "Book a flight ✈️"]
+    [flight-selector (partial select-booking! *booker)]
+    [go-flight-input @*booker (partial go-flight-change! *booker)]
+    [return-flight-input @*booker (partial return-flight-change! *booker)]
+    [book-button @*booker today (partial booking-message! *booker)]
+    [book-message @*booker]
+    [reset-button @*booker (partial reset-booker! *booker)]]))
