@@ -2,13 +2,13 @@
   (:require [clojure.string :as str]
             [reagent.core :as r]))
 
-(def *crud
-  (r/atom {:next-id           0
-           :filter-prefix     ""
-           :person/by-id      {}
-           :current-id        nil
-           :name-insertion    nil
-           :surname-insertion nil}))
+(def crud-start
+  {:next-id           0
+   :filter-prefix     ""
+   :person/by-id      {}
+   :current-id        nil
+   :name-insertion    nil
+   :surname-insertion nil})
 
 (defn filter-field [*state]
   [:div {:padding "1em"}
@@ -158,13 +158,18 @@
             :on-click delete-person!}
    "delete"])
 
-(defn crud-ui [*state]
-  [:div {:style {:display         "flex"
-                 :flex-direction  "column"
-                 :justify-content "space-between"}}
-   [:div {:padding "1em"}
-    [filter-field *state]
-    [people-panel *state]
-    [create-button @*state (partial create-person! *state)]
-    [update-button @*state (partial update-person! *state)]
-    [delete-button @*state (partial delete-person! *state)]]])
+(defn crud-ui
+  ([]
+   (r/with-let [*crud (r/atom crud-start)]
+     [crud-ui *crud]))
+  ([*state]
+
+   [:div {:style {:display         "flex"
+                  :flex-direction  "column"
+                  :justify-content "space-between"}}
+    [:div {:padding "1em"}
+     [filter-field *state]
+     [people-panel *state]
+     [create-button @*state (partial create-person! *state)]
+     [update-button @*state (partial update-person! *state)]
+     [delete-button @*state (partial delete-person! *state)]]]))
