@@ -26,7 +26,7 @@
           (is (= js/HTMLButtonElement (type (create-button comp))))
           (is (= js/HTMLButtonElement (type (update-button comp))))
           (is (= js/HTMLButtonElement (type (delete-button comp))))
-          (is (false? (.-disabled (create-button comp))))
+          (is (not (.-disabled (create-button comp))))
           (is (.-disabled (update-button comp)))
           (is (.-disabled (delete-button comp)))
           (is (= js/HTMLUListElement (type (person-list comp)))))
