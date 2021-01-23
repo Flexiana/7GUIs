@@ -35,12 +35,15 @@
   (.contextMenu rtl/fireEvent el)
   (r/flush))
 
-(defn input-element! [el action-map]
-  (.input rtl/fireEvent el (clj->js action-map))
+(defn action-map [value]
+  (clj->js {:target {:value value}}))
+
+(defn input-element! [el value]
+  (.input rtl/fireEvent el (action-map value))
   (r/flush))
 
-(defn change-element! [el action-map]
-  (.change rtl/fireEvent el (clj->js action-map))
+(defn change-element! [el value]
+  (.change rtl/fireEvent el (action-map value))
   (r/flush))
 
 (defn install-timer []

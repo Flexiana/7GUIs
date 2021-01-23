@@ -70,7 +70,7 @@
 
           (testing "Changing radius from circle0"
             (let [r-test 100]
-              (u/change-element! (radius-slider comp) {:target {:value r-test}})
+              (u/change-element! (radius-slider comp) r-test)
               (is (= r-test (-> @*circles :circles last :r)))))
 
           (testing "Undo button"
