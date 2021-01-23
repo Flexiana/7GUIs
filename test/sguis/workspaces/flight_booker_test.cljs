@@ -33,12 +33,12 @@
   (let [{:keys [today yesterday tomorrow]} testing-dates]
     (letfn [(today-can-book? [booker]
               (can-book? booker today))]
-      (is (false? (today-can-book? {:book-flight :one-way-flight
-                                    :go-flight   (unparse-date yesterday)})))
-      (is (true? (today-can-book? {:book-flight :one-way-flight
-                                   :go-flight   (unparse-date today)})))
-      (is (true? (today-can-book? {:book-flight :one-way-flight
-                                   :go-flight   (unparse-date tomorrow)}))))))
+      (is (not (today-can-book? {:book-flight :one-way-flight
+                                 :go-flight   (unparse-date yesterday)})))
+      (is (today-can-book? {:book-flight :one-way-flight
+                            :go-flight   (unparse-date today)}))
+      (is (today-can-book? {:book-flight :one-way-flight
+                            :go-flight   (unparse-date tomorrow)})))))
 
 (ws/deftest one-way-flight-ui-test
   (let [{:keys [today yesterday tomorrow]} testing-dates
@@ -51,7 +51,7 @@
       (fn [comp]
         (testing "Cannot book for yesterday"
           (u/input-element! (go-flight-input comp) (unparse-date yesterday))
-          (is (true? (.-disabled (book-btn comp)))))
+          (is (.-disabled (book-btn comp))))
 
         (testing "Can book today"
           (u/input-element! (go-flight-input comp) (unparse-date today))
@@ -62,25 +62,25 @@
         (testing "Can book tomorrow"
           (u/input-element! (go-flight-input comp) (unparse-date tomorrow))
           (u/click-element! (book-btn comp))
-          (is (= (format-msg @*booker) (.-textContent (.getByTestId comp "book-msg"))))
-          (u/click-element! (reset-btn comp)))))))
+          (is (= (format-msg @*booker) (.-textContent (.getByTestId comp "book-msg")))))
+        (u/click-element! (reset-btn comp))))))
 
 (ws/deftest can-book-return?-test
   (let [{:keys [today yesterday tomorrow future]} testing-dates]
     (letfn [(today-can-book? [booker]
               (can-book? booker today))]
-      (is (false? (today-can-book? {:book-flight   :return-flight
-                                    :go-flight     (unparse-date yesterday)
-                                    :return-flight (unparse-date tomorrow)})))
-      (is (true? (today-can-book? {:book-flight   :return-flight
-                                   :go-flight     (unparse-date today)
-                                   :return-flight (unparse-date tomorrow)})))
-      (is (false? (today-can-book? {:book-flight   :return-flight
-                                    :go-flight     (unparse-date tomorrow)
-                                    :return-flight (unparse-date tomorrow)})))
-      (is (true? (today-can-book? {:book-flight   :return-flight
-                                   :go-flight     (unparse-date tomorrow)
-                                   :return-flight (unparse-date future)}))))))
+      (is (not (today-can-book? {:book-flight   :return-flight
+                                 :go-flight     (unparse-date yesterday)
+                                 :return-flight (unparse-date tomorrow)})))
+      (is (today-can-book? {:book-flight   :return-flight
+                            :go-flight     (unparse-date today)
+                            :return-flight (unparse-date tomorrow)}))
+      (is (not (today-can-book? {:book-flight   :return-flight
+                                 :go-flight     (unparse-date tomorrow)
+                                 :return-flight (unparse-date tomorrow)})))
+      (is (today-can-book? {:book-flight   :return-flight
+                            :go-flight     (unparse-date tomorrow)
+                            :return-flight (unparse-date future)})))))
 
 (ws/deftest return-flight-ui-test
   (let [{:keys [today yesterday tomorrow future]} testing-dates
@@ -97,27 +97,26 @@
           (u/change-element! (flight-selector comp) "return-flight")
           (u/input-element! (go-flight-input comp) (unparse-date yesterday))
           (u/input-element! (return-flight-input comp) (unparse-date tomorrow))
-          (is (true? (.-disabled (book-btn comp)))))
-
+          (is (.-disabled (book-btn comp))))
 
         (testing "Can book today"
           (u/change-element! (flight-selector comp) "return-flight")
           (u/input-element! (go-flight-input comp) (unparse-date today))
           (u/input-element! (return-flight-input comp) (unparse-date tomorrow))
           (u/click-element! (book-btn comp))
-          (is (= (format-msg @*booker) (.-textContent (book-msg comp))))
-          (u/click-element! (reset-btn comp)))
+          (is (= (format-msg @*booker) (.-textContent (book-msg comp)))))
+        (u/click-element! (reset-btn comp))
 
         (testing "Cannot book sameday"
           (u/change-element! (flight-selector comp) "return-flight")
           (u/input-element! (go-flight-input comp) (unparse-date tomorrow))
           (u/input-element! (return-flight-input comp) (unparse-date tomorrow))
-          (is (true? (.-disabled (book-btn comp)))))
+          (is (.-disabled (book-btn comp))))
 
         (testing "Can book in future."
           (u/change-element! (flight-selector comp) "return-flight")
           (u/input-element! (go-flight-input comp) (unparse-date tomorrow))
           (u/input-element! (return-flight-input comp) (unparse-date future))
           (u/click-element! (book-btn comp))
-          (is (= (format-msg @*booker) (.-textContent (book-msg comp))))
-          (u/click-element! (reset-btn comp)))))))
+          (is (= (format-msg @*booker) (.-textContent (book-msg comp)))))
+        (u/click-element! (reset-btn comp))))))
