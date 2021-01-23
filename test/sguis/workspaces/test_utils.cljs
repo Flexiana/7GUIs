@@ -25,10 +25,15 @@
   (.click rtl/fireEvent el)
   (r/flush))
 
-(defn input-element! [el action-map]
-  (.input rtl/fireEvent el (clj->js action-map))
+(defn ->action-map [v]
+  (clj->js (if (map? v)
+             v
+             {:target {:value v}})))
+
+(defn input-element! [el v-or-m]
+  (.input rtl/fireEvent el (->action-map v-or-m))
   (r/flush))
 
-(defn change-element! [el action-map]
-  (.change rtl/fireEvent el (clj->js action-map))
+(defn change-element! [el v-or-m]
+  (.change rtl/fireEvent el (->action-map v-or-m))
   (r/flush))

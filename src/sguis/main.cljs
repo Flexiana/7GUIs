@@ -7,8 +7,7 @@
             [sguis.workspaces.counter-test]
             [sguis.workspaces.temperature :refer [temperature-ui]]
             [sguis.workspaces.temperature-test]
-            [sguis.workspaces.flight-booker :refer [booker-ui
-                                                    *booker]]
+            [sguis.workspaces.flight-booker :refer [booker-ui]]
             [sguis.workspaces.flight-booker-test]
             [sguis.workspaces.timer :refer [timer-ui
                                             *timer]]
@@ -18,7 +17,8 @@
                                                     *circles]]
             [sguis.workspaces.cells :refer [cells-ui
                                             *cells]]
-            [sguis.workspaces.cells-test]))
+            [sguis.workspaces.cells-test]
+            [date-fns :as dfns]))
 
 (defonce init (ws/mount))
 
@@ -32,8 +32,7 @@
 
 (ws/defcard flight-booker
   (ct.react/react-card
-   *booker
-   (r/as-element [booker-ui *booker (js/Date.)])))
+    (r/as-element [booker-ui])))
 
 (ws/defcard crud
   (ct.react/react-card
