@@ -110,7 +110,8 @@
    (r/with-let [*booker (r/atom booker-start)]
      [booker-ui today]))
   ([*booker today]
-   [:div {:style {:padding "1em"}}
+   [:div.panel.is-primary
+    {:style {:min-width "24em"}}
     [:div "Book a flight ✈️"]
     [flight-selector (partial select-booking! *booker)]
     [go-flight-input @*booker (partial go-flight-change! *booker)]
