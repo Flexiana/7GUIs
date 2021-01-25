@@ -40,7 +40,7 @@
    :color           "black"})
 
 (defn matching-name? [filter-prefix {:keys [surname name]}]
-  (str/starts-with? (str surname "," name) filter-prefix))
+  (str/includes? (str/lower-case (str surname name)) (str/lower-case filter-prefix)))
 
 (defn person-row [{:keys [current-id]} select-person! {:keys [name surname id] :as person}]
   (let [show-name (str surname ", " name)]
