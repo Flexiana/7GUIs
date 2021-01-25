@@ -28,15 +28,19 @@
 (defn change-duration! [timer-state e]
   (swap! timer-state assoc :duration (js/parseInt (.. e -target -value))))
 
-(defn duration-change [{:keys [duration] :as timer-state}]
-  [:div.field
-   [:input.slider.is-fullwidth.is-success.is-circle
-    {:type        :range
-     :data-testid "duration"
-     :min         0
-     :max         max-duration
-     :value       duration
-     :on-input    (partial change-duration! timer-state)}]])
+(defn duration-change [timer-state]
+  (let [duration (:duration @timer-state)]
+    [:div.field
+     [:input.slider.is-fullwidth.is-success.is-circle.has-output
+      {:type        :range
+       :id          "sliderWithValue"
+       :data-testid "duration"
+       :min         0
+       :max         max-duration
+       :value       duration
+       :on-input    (partial change-duration! timer-state)}]
+     [:output {:for "sliderWithValue"
+               } (str duration "s")]]))
 
 (defn reset-button-ui [timer-state]
   [:button.button.is-primary
