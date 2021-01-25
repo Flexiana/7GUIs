@@ -15,6 +15,7 @@
          assoc
          :filter-prefix
          (.. e -target -value)))
+
 (defn filter-field [change-filter-prefix!]
   [:div.control.is-expanded
    [:label "Filter prefix: "]
@@ -73,16 +74,18 @@
          :surname-insertion surname
          :current-id id))
 
-(defn people-panel [*state]
+(defn people-panel [state {:keys [change-filter-prefix!
+                                  select-value!
+                                  insert-value!]}]
   [:div.tile.is-parent
    [:div.columns
     [:div.column.is-half
      [:div.field
-      [filter-field (partial change-filter-prefix! *state)]
-      [person-list @*state (partial select-person! *state)]]]
+      [filter-field change-filter-prefix!]
+      [person-list state select-value!]]]
     [:div.column.is-half
      [:div.field
-      [insert-panel @*state (partial insert-value! *state)]]]]])
+      [insert-panel state insert-value!]]]]])
 
 (defn clear-input-fields! [*state]
   (swap! *state
@@ -172,7 +175,9 @@
     {:style {:min-width "24em"}}
     [:div.panel-heading "CRUD"]
     [:div.panel-block.is-block
-     [people-panel *state]
+     [people-panel @*state {:change-filter-prefix! (partial change-filter-prefix! *state)
+                            :select-value!         (partial select-person! *state)
+                            :insert-value!         (partial insert-value! *state)} ]
      [create-button @*state (partial create-person! *state)]
      [update-button @*state (partial update-person! *state)]
      [delete-button @*state (partial delete-person! *state)]]]))
