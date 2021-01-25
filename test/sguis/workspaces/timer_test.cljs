@@ -36,11 +36,24 @@
           (is (= 5 (.-value (progress comp)))))
 
         (testing "Reset button"
+          (let [duration (:duration @*test-timer)]
+            (u/click-element! (reset-button comp))
+            (is (= {:elapsed-time 0, :duration duration}  @*test-timer))
+            (u/tick fake-timer 10000)
+            (is (= {:elapsed-time 10 :duration duration} @*test-timer))
+            (r/flush)
+            (is (= 10 (.-value (progress comp))))))
+        (testing "Should not overrun"
           (u/click-element! (reset-button comp))
-          (is (= {:elapsed-time 0, :duration 30}  @*test-timer))
+          (u/input-element! (input comp) "5")
+          (is (= {:elapsed-time 0, :duration 5}  @*test-timer))
           (u/tick fake-timer 10000)
-          (is (= {:elapsed-time 10 :duration 30} @*test-timer))
+          (is (= {:elapsed-time 5 :duration 5} @*test-timer))
           (r/flush)
-          (is (= 10 (.-value (progress comp)))))
+          (is (= 5 (.-value (progress comp))))
+          (u/input-element! (input comp) "15")
+          (is (= {:elapsed-time 5 :duration 15} @*test-timer))
+          (r/flush)
+          (is (= 5 (.-value (progress comp)))))
 
         (u/uninstall-timer fake-timer)))))
