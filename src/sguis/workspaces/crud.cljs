@@ -10,28 +10,33 @@
    :name-insertion    nil
    :surname-insertion nil})
 
-(defn filter-field [*state]
-  [:div {:padding "1em"}
+(defn change-filter-prefix! [*state e]
+  (swap! *state
+         assoc
+         :filter-prefix
+         (.. e -target -value)))
+(defn filter-field [change-filter-prefix!]
+  [:div.control.is-expanded
    [:label "Filter prefix: "]
-   [:input {:type      "text"
-            :data-testid "filter"
-            :on-change #(swap! *state
-                               assoc
-                               :filter-prefix
-                               (.. % -target -value))}]])
+   [:div.field.is-fullwidth
+    [:input.input
+     {:type        "text"
+      :data-testid "filter"
+      :on-change   change-filter-prefix!}]]])
 
 (defn text-field [id value label on-change]
   [:label label
-   [:input {:type      "text"
-            :data-testid label
-            :value     (when value value)
-            :on-change (partial on-change id)}]])
+   [:div.field
+    [:input.input {:type        "text"
+                   :data-testid label
+                   :value       (when value value)
+                   :on-change   (partial on-change id)}]]])
 
 (defn insert-value! [*state id event]
   (swap! *state assoc id (-> event .-target .-value)))
 
 (defn insert-panel [{:keys [name-insertion surname-insertion]} insert-value!]
-  [:div {:padding "1em"}
+  [:div.tile.is-child
    [text-field :name-insertion name-insertion "Name: " insert-value!]
    [text-field :surname-insertion surname-insertion "Surname: " insert-value!]])
 
@@ -55,11 +60,12 @@
 (defn person-list [{:person/keys [by-id]
                     :keys        [filter-prefix]
                     :as          state} select-person!]
-  [:ul {:data-testid "person-list" :style {:list-style-type "none", :padding 0, :margin 0}}
-   (->> by-id
-        vals
-        (filter (partial matching-name? filter-prefix))
-        (map (partial person-row state select-person!)))])
+  [:div.tile.is-child
+   [:ul {:data-testid "person-list" :style {:list-style-type "none", :padding 0, :margin 0}}
+    (->> by-id
+         vals
+         (filter (partial matching-name? filter-prefix))
+         (map (partial person-row state select-person!)))]])
 
 (defn select-person! [*state {:keys [name surname id]}]
   (swap! *state assoc
@@ -68,16 +74,15 @@
          :current-id id))
 
 (defn people-panel [*state]
-  [:div {:style {:display "flex" :justify-content "space-between"}}
-   [:div {:style {:width "100%" :height "100%" :border "1px solid gray"}}
-    [person-list @*state (partial select-person! *state)]]
-   [:div {:style {:display "flex" :padding "1em" :flex-direction "column"}}
-    [insert-panel @*state (partial insert-value! *state)]]])
-
-(def button-style
-  {:margin-right  "20px"
-   :cursor        "pointer"
-   :border-radius "50px"})
+  [:div.tile.is-parent
+   [:div.columns
+    [:div.column.is-half
+     [:div.field
+      [filter-field (partial change-filter-prefix! *state)]
+      [person-list @*state (partial select-person! *state)]]]
+    [:div.column.is-half
+     [:div.field
+      [insert-panel @*state (partial insert-value! *state)]]]]])
 
 (defn clear-input-fields! [*state]
   (swap! *state
@@ -115,8 +120,8 @@
 
 (defn create-button [{:keys [name-insertion
                              surname-insertion]} create-person!]
-  [:button {:style    button-style
-            :on-click #(create-person! (empty-inputs? name-insertion surname-insertion))}
+  [:button.button.is-primary
+   {:on-click #(create-person! (empty-inputs? name-insertion surname-insertion))}
    "create"])
 
 (defn update-selection! [*state]
@@ -135,9 +140,9 @@
   (clear-input-fields! *state))
 
 (defn update-button [{:keys [current-id]} update-person!]
-  [:button {:style    button-style
-            :disabled (not current-id)
-            :on-click update-person!}
+  [:button.button.is-success
+   {:disabled (not current-id)
+    :on-click update-person!}
    "update"])
 
 (defn delete-selection! [*state]
@@ -153,9 +158,9 @@
   (clear-input-fields! *state))
 
 (defn delete-button [{:keys [current-id]} delete-person!]
-  [:button {:style    button-style
-            :disabled (not current-id)
-            :on-click delete-person!}
+  [:button.button.is-danger
+   {:disabled (not current-id)
+    :on-click delete-person!}
    "delete"])
 
 (defn crud-ui
@@ -163,12 +168,10 @@
    (r/with-let [*crud (r/atom crud-start)]
      [crud-ui *crud]))
   ([*state]
-
-   [:div {:style {:display         "flex"
-                  :flex-direction  "column"
-                  :justify-content "space-between"}}
-    [:div {:padding "1em"}
-     [filter-field *state]
+   [:div.panel.is-primary
+    {:style {:min-width "24em"}}
+    [:div.panel-heading "CRUD"]
+    [:div.panel-block.is-block
      [people-panel *state]
      [create-button @*state (partial create-person! *state)]
      [update-button @*state (partial update-person! *state)]
