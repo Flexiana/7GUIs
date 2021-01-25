@@ -1,6 +1,7 @@
 (ns sguis.workspaces.crud
   (:require [clojure.string :as str]
-            [reagent.core :as r]))
+            [reagent.core :as r]
+            [sguis.workspaces.utils :as u]))
 
 (def crud-start
   {:next-id           0
@@ -41,32 +42,25 @@
    [text-field :name-insertion name-insertion "Name: " insert-value!]
    [text-field :surname-insertion surname-insertion "Surname: " insert-value!]])
 
-(def read-style
-  {:text-decoration "none"
-   :color           "black"})
-
 (defn matching-name? [filter-prefix {:keys [surname name]}]
   (str/starts-with? (str surname ", " name) filter-prefix))
 
 (defn person-row [{:keys [current-id]} select-person! {:keys [name surname id] :as person}]
   (let [show-name (str surname ", " name)]
-    ^{:key id} [:li {:style    (if (= current-id id)
-                                 (assoc read-style
-                                        :color "white"
-                                        :background-color "blue")
-                                 read-style)
-                     :on-click (partial select-person! person)}
-                show-name]))
-
+    ^{:key id}
+    [:li
+     [:div.input.panel-block
+      {:class    (u/classes (when (= current-id id) :is-danger))
+       :on-click (partial select-person! person)}
+      show-name]]))
 (defn person-list [{:person/keys [by-id]
                     :keys        [filter-prefix]
                     :as          state} select-person!]
-  [:div.tile.is-child
-   [:ul {:data-testid "person-list" :style {:list-style-type "none", :padding 0, :margin 0}}
-    (->> by-id
-         vals
-         (filter (partial matching-name? filter-prefix))
-         (map (partial person-row state select-person!)))]])
+  [:ul.panel {:data-testid "person-list"}
+   (->> by-id
+        vals
+        (filter (partial matching-name? filter-prefix))
+        (map (partial person-row state select-person!)))])
 
 (defn select-person! [*state {:keys [name surname id]}]
   (swap! *state assoc
