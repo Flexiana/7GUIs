@@ -30,7 +30,7 @@
 
 (defn click-element!
   ([el]
-   (click-element! el #js {}))
+   (click-element! el {}))
   ([el v-or-m]
    (let [click-fn! (.. rtue -default -click)]
      (click-fn! el (->action-map v-or-m)))
