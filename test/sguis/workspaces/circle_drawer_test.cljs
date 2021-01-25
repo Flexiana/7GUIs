@@ -3,7 +3,7 @@
                                                     circles-start]]
             [cljs.test :as t
              :include-macros true
-             :refer [is testing]]
+             :refer [are is testing]]
             [nubank.workspaces.core :as ws]
             [reagent.core :as r]
             [sguis.workspaces.test-utils :as u]
@@ -39,9 +39,10 @@
       (fn [comp]
         (let [svg-comp (svg-drawer comp)]
           (testing "Creating circles"
-            (mapv #(u/click-element! svg-comp (relative-click svg-comp %)) [circle-pos0
-                                                                            circle-pos1
-                                                                            circle-pos2])
+            (doseq [c [circle-pos0
+                       circle-pos1
+                       circle-pos2]] (u/click-element! svg-comp (relative-click svg-comp c)))
+
             (is (= [circle-pos0
                     circle-pos1
                     circle-pos2]
@@ -51,17 +52,16 @@
             (is (and (= circle-pos2
                         (-> @*circles :selection))))
             (u/click-element! (circle-0 comp))
-            (is (= circle-pos0  (-> @*circles :selection)))
-            (is (= "red"
-                   (.. (circle-0 comp)
-                       -attributes
-                       -fill
-                       -value)))
-            (is (= "white"
-                   (.. (circle-2 comp)
-                       -attributes
-                       -fill
-                       -value))))
+            (are [expected actual] (= expected actual)
+                 circle-pos0  (-> @*circles :selection)
+                 "red"   (.. (circle-0 comp)
+                             -attributes
+                             -fill
+                             -value)
+                 "white" (.. (circle-2 comp)
+                             -attributes
+                             -fill
+                             -value)))
 
           (testing "Opening Radius-Box"
             (u/click-context-menu! svg-comp)
@@ -70,7 +70,7 @@
 
           (testing "Changing radius from circle0"
             (let [r-test 100]
-              (u/change-element! (radius-slider comp) {:target {:value r-test}})
+              (u/change-element! (radius-slider comp) r-test)
               (is (= r-test (-> @*circles :circles last :r)))))
 
           (testing "Undo button"

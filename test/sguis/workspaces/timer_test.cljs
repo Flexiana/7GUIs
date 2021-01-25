@@ -29,7 +29,7 @@
             "0%"                 (.getPropertyValue (.-style (progress comp)) "width")))
 
         (testing "Run"
-          (u/input-element! (input comp) {:target {:value "10"}})
+          (u/input-element! (input comp) "10")
           (is (= "0%" (.getPropertyValue (.-style (progress comp)) "width")))
           (u/tick fake-timer 5000)
           (is (= {:elapsed-time 5, :duration 10} @*test-timer))
