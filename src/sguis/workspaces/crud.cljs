@@ -105,23 +105,20 @@
             :name    name-insertion
             :surname surname-insertion})))
 
+(defn empty-inputs? [{:keys [name-insertion surname-insertion]}]
+  (and (empty? name-insertion)
+       (empty? surname-insertion)))
 (defn create-person! [*state empty-inputs?]
   (when-not empty-inputs?
     (insert-person! *state)
     (clear-input-fields! *state)
     (increment-id! *state)))
-
-(defn empty-inputs? [name-insertion surname-insertion]
-  (and (empty? name-insertion)
-       (empty? surname-insertion)))
-
-(defn create-button [{:keys [name-insertion
-                             surname-insertion]} create-person!]
+(defn create-button [create-person!]
   [:button.button.is-primary
-   {:on-click #(create-person! (empty-inputs? name-insertion surname-insertion))}
+   {:on-click create-person!}
    "create"])
 
-(defn update-selection! [*state]
+(defn update-person! [*state]
   (let [{:keys [name-insertion
                 surname-insertion
                 current-id]} @*state]
@@ -130,29 +127,22 @@
            [:person/by-id current-id]
            #(assoc %
                    :name name-insertion
-                   :surname surname-insertion))))
-
-(defn update-person! [*state]
-  (update-selection! *state)
-  (clear-input-fields! *state))
-
+                   :surname surname-insertion))
+    (clear-input-fields! *state)))
 (defn update-button [{:keys [current-id]} update-person!]
   [:button.button.is-success
    {:disabled (not current-id)
     :on-click update-person!}
    "update"])
 
-(defn delete-selection! [*state]
+(defn delete-person! [*state]
   (let [{:keys [current-id]} @*state]
     (swap! *state
            update
            :person/by-id
            dissoc
-           current-id)))
-
-(defn delete-person! [*state]
-  (delete-selection! *state)
-  (clear-input-fields! *state))
+           current-id)
+    (clear-input-fields! *state)))
 
 (defn delete-button [{:keys [current-id]} delete-person!]
   [:button.button.is-danger
@@ -172,6 +162,6 @@
      [people-panel @*state {:change-filter-prefix! (partial change-filter-prefix! *state)
                             :select-value!         (partial select-person! *state)
                             :insert-value!         (partial insert-value! *state)} ]
-     [create-button @*state (partial create-person! *state)]
+     [create-button  (partial create-person! *state (empty-inputs? @*state))]
      [update-button @*state (partial update-person! *state)]
      [delete-button @*state (partial delete-person! *state)]]]))
