@@ -23,27 +23,29 @@
       (finally
         (rtl/cleanup)))))
 
+(defn ->action-map [v]
+  (clj->js (if (map? v)
+             v
+             {:target {:value v}})))
+
 (defn click-element!
   ([el]
    (click-element! el #js {}))
-  ([el action-map]
+  ([el v-or-m]
    (let [click-fn! (.. rtue -default -click)]
-     (click-fn! el (clj->js action-map)))
+     (click-fn! el (->action-map v-or-m)))
    (r/flush)))
 
 (defn click-context-menu! [el]
   (.contextMenu rtl/fireEvent el)
   (r/flush))
 
-(defn action-map [value]
-  (clj->js {:target {:value value}}))
-
-(defn input-element! [el value]
-  (.input rtl/fireEvent el (action-map value))
+(defn input-element! [el v-or-m]
+  (.input rtl/fireEvent el (->action-map v-or-m))
   (r/flush))
 
-(defn change-element! [el value]
-  (.change rtl/fireEvent el (action-map value))
+(defn change-element! [el v-or-m]
+  (.change rtl/fireEvent el (->action-map v-or-m))
   (r/flush))
 
 (defn install-timer []
