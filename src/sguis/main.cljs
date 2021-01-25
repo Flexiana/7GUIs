@@ -21,16 +21,19 @@
 (defonce init (mount))
 
 (defcard counter
+  {::wsm/align       {:justify-content "left"}}
   (react-card
    (r/as-element [counter-ui])))
 
 (defcard temperature
+  {::wsm/align       {:justify-content "left"}}
   (react-card
     (r/as-element [temperature-ui])))
 
 (defcard flight-booker
+  {::wsm/align       {:justify-content "left"}}
   (react-card
-   (r/as-element [booker-ui (js/Date.)])))
+   (r/as-element [booker-ui])))
 
 (defcard crud
   (react-card
