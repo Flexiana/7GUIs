@@ -96,19 +96,19 @@
    (r/with-let [today (dfns/startOfToday)
                 *booker (r/atom (booker-start today))]
      [booker-ui *booker today]))
-  ([*booker booking-available-from]
-   (let [{:keys [flight-type go-flight return-flight]} @*booker]
-     [:div.panel.is-primary
-      {:style {:min-width "24em"}}
-      [:div.panel-heading "Book a flight ✈️"]
-      [:div.panel-block.is-block
-       [flight-selector (partial select-booking! *booker)]
-       [flight-input {:testid         "go-flight"
-                      :value          go-flight
-                      :flight-change! (partial go-flight-change! *booker)}]
-       [flight-input {:testid         "return-flight"
-                      :value          return-flight
-                      :disabled       (not= :return-flight flight-type )
-                      :flight-change! (partial return-flight-change! *booker)}]
-       [book-button @*booker booking-available-from (partial booking-message! *booker)]
-       [book-message @*booker (partial reset-booker-msg! *booker)]]])))
+   ([*booker booking-available-from]
+    (let [{:keys [flight-type go-flight return-flight]} @*booker]
+      [:div.panel.is-primary
+       {:style {:min-width "24em"}}
+       [:div.panel-heading "Book a flight ✈️"]
+       [:div.panel-block.is-block
+        [flight-selector (partial select-booking! *booker)]
+        [flight-input {:testid         "go-flight"
+                       :value          go-flight
+                       :flight-change! (partial go-flight-change! *booker)}]
+        [flight-input {:testid         "return-flight"
+                       :value          return-flight
+                       :disabled       (not= :return-flight flight-type )
+                       :flight-change! (partial return-flight-change! *booker)}]
+        [book-button @*booker booking-available-from (partial booking-message! *booker)]
+        [book-message @*booker (partial reset-booker-msg! *booker)]]])))

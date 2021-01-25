@@ -20,10 +20,9 @@
         fahrenheit-input #(.getByLabelText % #"(?i)fahrenheit")]
     (u/with-mounted-component [temperature-ui]
       (fn [comp]
-        (let [_celsius->fahrenheit!     (u/change-element! (celsius-input comp) {:target {:value "5"}})
+        (let [_celsius->fahrenheit!     (u/change-element! (celsius-input comp) "5")
               celsius->fahrenheit-value (.-value (fahrenheit-input comp))
-              _fahrenheit->celsius!     (u/change-element! (fahrenheit-input comp) {:target {:value celsius->fahrenheit-value}})
+              _fahrenheit->celsius!     (u/change-element! (fahrenheit-input comp) celsius->fahrenheit-value)
               fahrenheit->celsius-value (.-value (celsius-input comp))]
           (is (= "41" celsius->fahrenheit-value))
-          (is (= "5" fahrenheit->celsius-value))))))
-  )
+          (is (= "5" fahrenheit->celsius-value)))))))

@@ -2,18 +2,19 @@
   (:require [clojure.string :as str]
             [reagent.core :as r]))
 
-(def *crud
-  (r/atom {:next-id           0
-           :filter-prefix     ""
-           :person/by-id      {}
-           :current-id        nil
-           :name-insertion    nil
-           :surname-insertion nil}))
+(def crud-start
+  {:next-id           0
+   :filter-prefix     ""
+   :person/by-id      {}
+   :current-id        nil
+   :name-insertion    nil
+   :surname-insertion nil})
 
 (defn filter-field [*state]
   [:div {:padding "1em"}
    [:label "Filter prefix: "]
    [:input {:type      "text"
+            :data-testid "filter"
             :on-change #(swap! *state
                                assoc
                                :filter-prefix
@@ -22,6 +23,7 @@
 (defn text-field [id value label on-change]
   [:label label
    [:input {:type      "text"
+            :data-testid label
             :value     (when value value)
             :on-change (partial on-change id)}]])
 
@@ -53,7 +55,7 @@
 (defn person-list [{:person/keys [by-id]
                     :keys        [filter-prefix]
                     :as          state} select-person!]
-  [:ul {:style {:list-style-type "none", :padding 0, :margin 0}}
+  [:ul {:data-testid "person-list" :style {:list-style-type "none", :padding 0, :margin 0}}
    (->> by-id
         vals
         (filter (partial matching-name? filter-prefix))
@@ -156,13 +158,18 @@
             :on-click delete-person!}
    "delete"])
 
-(defn crud-ui [*state]
-  [:div {:style {:display         "flex"
-                 :flex-direction  "column"
-                 :justify-content "space-between"}}
-   [:div {:padding "1em"}
-    [filter-field *state]
-    [people-panel *state]
-    [create-button @*state (partial create-person! *state)]
-    [update-button @*state (partial update-person! *state)]
-    [delete-button @*state (partial delete-person! *state)]]])
+(defn crud-ui
+  ([]
+   (r/with-let [*crud (r/atom crud-start)]
+     [crud-ui *crud]))
+  ([*state]
+
+   [:div {:style {:display         "flex"
+                  :flex-direction  "column"
+                  :justify-content "space-between"}}
+    [:div {:padding "1em"}
+     [filter-field *state]
+     [people-panel *state]
+     [create-button @*state (partial create-person! *state)]
+     [update-button @*state (partial update-person! *state)]
+     [delete-button @*state (partial delete-person! *state)]]]))

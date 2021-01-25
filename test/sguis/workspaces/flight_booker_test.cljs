@@ -49,16 +49,13 @@
           (is (can-not-book? comp)))
 
         (testing "Can book today"
-          (u/input-element! (go-flight-input comp) (format-date today))
-          (u/click-element! (book-btn comp))
-          (is (= (format-msg @*booker) (.-textContent (.getByTestId comp "book-msg"))))
-          (u/click-element! (reset-btn comp)))
+          (u/input-element! (go-flight-input comp) (format-date today)))
 
         (testing "Can book tomorrow"
           (u/input-element! (go-flight-input comp) tomorrow)
           (u/click-element! (book-btn comp))
-          (is (= (format-msg @*booker) (.-textContent (.getByTestId comp "book-msg"))))
-          (u/click-element! (reset-btn comp)))))))
+          (is (= (format-msg @*booker) (.-textContent (.getByTestId comp "book-msg")))))
+        (u/click-element! (reset-btn comp))))))
 
 (ws/deftest can-book-return?-test
   (let [{:keys [today yesterday tomorrow future]} testing-dates]
@@ -76,7 +73,6 @@
       (is (true? (today-can-book? {:flight-type   :return-flight
                                    :go-flight     tomorrow
                                    :return-flight future}))))))
-
 (ws/deftest return-flight-ui-test
   (let [{:keys [today yesterday tomorrow future]} testing-dates
         flight-selector                           #(.getByTestId % "flight-selector")
@@ -100,8 +96,8 @@
           (u/input-element! (go-flight-input comp) (format-date today))
           (u/input-element! (return-flight-input comp) tomorrow)
           (u/click-element! (book-btn comp))
-          (is (= (format-msg @*booker) (.-textContent (book-msg comp))))
-          (u/click-element! (reset-btn comp)))
+          (is (= (format-msg @*booker) (.-textContent (book-msg comp)))))
+        (u/click-element! (reset-btn comp))
 
         (testing "Can book sameday"
           (u/change-element! (flight-selector comp) "return-flight")
@@ -116,5 +112,5 @@
           (u/input-element! (go-flight-input comp) tomorrow)
           (u/input-element! (return-flight-input comp) future)
           (u/click-element! (book-btn comp))
-          (is (= (format-msg @*booker) (.-textContent (book-msg comp))))
-          (u/click-element! (reset-btn comp)))))))
+          (is (= (format-msg @*booker) (.-textContent (book-msg comp)))))
+        (u/click-element! (reset-btn comp))))))

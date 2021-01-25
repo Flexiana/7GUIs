@@ -1,7 +1,7 @@
 (ns sguis.main
   (:require [reagent.core :as r]
-            [nubank.workspaces.card-types.react :as ct.react]
-            [nubank.workspaces.core :as ws]
+            [nubank.workspaces.card-types.react :refer [react-card]]
+            [nubank.workspaces.core :refer [mount defcard]]
             [nubank.workspaces.model :as wsm]
             [sguis.workspaces.counter :refer [counter-ui]]
             [sguis.workspaces.counter-test]
@@ -9,49 +9,43 @@
             [sguis.workspaces.temperature-test]
             [sguis.workspaces.flight-booker :refer [booker-ui]]
             [sguis.workspaces.flight-booker-test]
-            [sguis.workspaces.timer :refer [timer-ui
-                                            *timer]]
-            [sguis.workspaces.crud :refer [crud-ui
-                                           *crud]]
-            [sguis.workspaces.circle-drawer :refer [circles-ui
-                                                    *circles]]
-            [sguis.workspaces.cells :refer [cells-ui
-                                            *cells]]
-            [sguis.workspaces.cells-test]
-            [date-fns :as dfns]))
+            [sguis.workspaces.timer :refer [timer-ui]]
+            [sguis.workspaces.timer-test]
+            [sguis.workspaces.crud :refer [crud-ui]]
+            [sguis.workspaces.crud-test]
+            [sguis.workspaces.circle-drawer :refer [circles-ui]]
+            [sguis.workspaces.circle-drawer-test]
+            [sguis.workspaces.cells :refer [cells-ui]]
+            [sguis.workspaces.cells-test]))
 
-(defonce init (ws/mount))
+(defonce init (mount))
 
-(ws/defcard counter
-  (ct.react/react-card
+(defcard counter
+  (react-card
    (r/as-element [counter-ui])))
 
-(ws/defcard temperature
-  (ct.react/react-card
+(defcard temperature
+  (react-card
     (r/as-element [temperature-ui])))
 
-(ws/defcard flight-booker
-  (ct.react/react-card
-    (r/as-element [booker-ui])))
+(defcard flight-booker
+  (react-card
+   (r/as-element [booker-ui (js/Date.)])))
 
-(ws/defcard crud
-  (ct.react/react-card
-   *crud
-   (r/as-element [crud-ui *crud])))
+(defcard crud
+  (react-card
+   (r/as-element [crud-ui])))
 
-(ws/defcard timer
-  (ct.react/react-card
-   *timer
-   (r/as-element [timer-ui *timer])))
+(defcard timer
+  (react-card
+   (r/as-element [timer-ui])))
 
-(ws/defcard circle-drawer
+(defcard circle-drawer
   {::wsm/align       {:justify-content "left"}}
-  (ct.react/react-card
-   *circles
-   (r/as-element [circles-ui *circles])))
+  (react-card
+   (r/as-element [circles-ui])))
 
-(ws/defcard cells
+(defcard cells
   {::wsm/align       {:justify-content "left"}}
-  (ct.react/react-card
-   *cells
-   (r/as-element [cells-ui *cells])))
+  (react-card
+   (r/as-element [cells-ui])))
