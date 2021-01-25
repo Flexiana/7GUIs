@@ -30,16 +30,18 @@
 
 (defn duration-change [timer-state]
   (let [duration (:duration @timer-state)]
-    [:div.field
-     [:input.slider.is-fullwidth.is-success.is-circle.has-output
-      {:type        :range
-       :id          "sliderWithValue"
-       :data-testid "duration"
-       :min         0
-       :max         max-duration
-       :value       duration
-       :on-input    (partial change-duration! timer-state)}]
-     [:output {:for "sliderWithValue"} (str duration "s")]]))
+    (let [field-id (gensym)]
+      [:div.field
+       [:input.slider.is-fullwidth.is-success.is-circle.has-output
+        {:type        :range
+         :id          field-id
+         :data-testid "duration"
+         :min         0
+         :max         max-duration
+         :value       duration
+         :on-input    (partial change-duration! timer-state)}]
+       [:output {:for field-id
+                 :style {:margin-top "1rem"}} (str duration "s")]])))
 
 (defn reset-button-ui [timer-state]
   [:button.button.is-primary
