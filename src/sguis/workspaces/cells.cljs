@@ -87,8 +87,8 @@
   (let [low-cased (some-> s str/lower-case)]
     (cond (nil? s) ""
           (str/ends-with? low-cased "=") (some-> (parse env low-cased)
-                                           (eval-string {:allow (vals kw->op)})
-                                           str)
+                                                 (eval-string {:allow (vals kw->op)})
+                                                 str)
           :else s)))
 
 ;; UI impl
@@ -129,13 +129,13 @@
   (let [cell-id (keyword (str c l))]
     ^{:key cell-id}
     [:td {:style           light-border-style
-          :data-testid cell-id
+          :data-testid     cell-id
           :on-double-click (partial focus-cell! cell-id)}
      (if (= cell-id focused-cell)
-       [:form {:style     {:border "1px solid #ccc"}
-               :id        cell-id
+       [:form {:style       {:border "1px solid #ccc"}
+               :id          cell-id
                :data-testid (str "form_" cell-id)
-               :on-submit (partial submit-cell! env cell-id)}
+               :on-submit   (partial submit-cell! env cell-id)}
         [:input {:style         light-border-style
                  :type          "text"
                  :data-testid   (str "input_" cell-id)
@@ -159,17 +159,17 @@
      [cells-ui *cells]))
   ([*cells]
    [:div {:padding "1em"}
-    [:table {:style table-style
+    [:table {:style       table-style
              :data-testid "table"}
-     [:thead {:style overflow-style
+     [:thead {:style       overflow-style
               :data-testid "thead"}
       [:tr {:style light-border-style}
        (concat [^{:key :n} [:th]]
-         (map header-fn az-range))]]
-     [:tbody {:style overflow-style
+               (map header-fn az-range))]]
+     [:tbody {:style       overflow-style
               :data-testid "tbody"}
       (concat [^{:key :n} [:tr (merge light-border-style overflow-style)]]
         (map (partial row-fn @*cells
-               {:focus-cell!  (partial focus-cell! *cells)
-                :submit-cell! (partial submit-cell! *cells)
-                :change-cell! (partial change-cell! *cells)}) table-lines))]]]))
+                      {:focus-cell!  (partial focus-cell! *cells)
+                       :submit-cell! (partial submit-cell! *cells)
+                       :change-cell! (partial change-cell! *cells)}) table-lines))]]]))

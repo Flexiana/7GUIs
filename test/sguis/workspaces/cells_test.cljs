@@ -20,6 +20,8 @@
     "a" (eval-cell {} "a")
     "20" (eval-cell {:cells {:A7 "10"
                              :G0 "10"}} "Add A7 and G0 =")
+    "NaN" (eval-cell {:cells {:B1 "Elephant"
+                              :B2 "10"}} "Sum of B1 and B2 =")
     "" (eval-cell {} nil)))
 
 (defn texts-on-field [field]

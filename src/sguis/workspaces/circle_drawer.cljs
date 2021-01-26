@@ -27,7 +27,8 @@
     (swap! *state update :history conj (last circles))))
 
 (defn undo-button [{:keys [circles]} undo-on-click!]
-  [:button {:on-click (partial undo-on-click! circles)} "Undo"])
+  [:div.panel-block.is-block
+   [:button.button.is-primary {:on-click (partial undo-on-click! circles)} "Undo"]])
 
 (defn redo-on-click! [*state history _]
   (when-not (empty? history)
@@ -36,7 +37,8 @@
     (swap! *state update :history pop)))
 
 (defn redo-button [{:keys [history]} redo-on-click!]
-  [:button {:on-click (partial redo-on-click! history)} "Redo"])
+  [:div.panel-block.is-block
+   [:button.button.is-primary {:on-click (partial redo-on-click! history)} "Redo"]])
 
 (def radius-box-style
   {:position "absolute"
@@ -60,17 +62,18 @@
 (defn radius-slider [{:keys [x y] :as selected?} update-radius!]
   [:label (str "Changing circle at "
                "(" x ", " y ")")
-   [:input {:data-testid "radius-slider"
-            :type      "range"
-            :min       0
-            :max       100
-            :disabled  (not selected?)
-            :on-change (partial update-radius! selected?)}]])
+   [:input.slider.is-primary.is-circle
+    {:data-testid "radius-slider"
+     :type        "range"
+     :min         0
+     :max         100
+     :disabled    (not selected?)
+     :on-change   (partial update-radius! selected?)}]])
 
 (defn radius-box [{:keys [slider-opened? selection]} update-radius!]
-    (when slider-opened?
-      [:div.slider {:style radius-box-style}
-       [radius-slider selection update-radius!]]))
+  (when slider-opened?
+    [:modal.modal-content {:style radius-box-style}
+     [radius-slider selection update-radius!]]))
 
 (defn last-circles-by-id [circles]
   (->> circles
@@ -139,17 +142,18 @@
 
 (defn circles-ui
   ([]
-   (r/with-let [*circles (r/atom circles-start)]))
+   (r/with-let [*circles (r/atom circles-start)]
+     [circles-ui *circles]))
   ([*circles]
-   [:div {:style {:padding    "1em"
-                  :text-align "center"}}
-    [:div {:style {:display         "flex"
-                   :justify-content "space-around"}
-           :width "800"}
+   [:div.panel.is-primary
+    {:style {:min-width "24em"}}
+    [:div.panel-heading "🔴 Drawer"]
+    [:div.panel-block.is-justify-content-space-evenly
      [undo-button @*circles (partial undo-on-click! *circles)]
      [redo-button @*circles (partial redo-on-click! *circles)]]
-    [svg-draw @*circles
-     (partial open-slider! *circles)
-     (partial insert-circle! *circles)
-     (partial circle-draw! *circles)]
+    [:div.panel-block
+     [svg-draw @*circles
+      (partial open-slider! *circles)
+      (partial insert-circle! *circles)
+      (partial circle-draw! *circles)]]
     [radius-box @*circles (partial update-radius! *circles)]]))
