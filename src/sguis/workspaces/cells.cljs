@@ -113,9 +113,9 @@
 (defn focus-cell! [*state cell-id _]
   (swap! *state assoc :focused-cell cell-id))
 
-(defn submit-cell! [*state {:keys [edition] :as env} cell-id event]
+(defn submit-cell! [*state {:keys [edition]} cell-id event]
   (.preventDefault event)
-  (swap! *state assoc-in [:cells cell-id] (eval-cell env edition))
+  (swap! *state assoc-in [:cells cell-id] edition)
   (swap! *state dissoc :focused-cell)
   (swap! *state dissoc :edition))
 
@@ -140,7 +140,7 @@
                  :auto-focus    true
                  :default-value (get cells cell-id)
                  :on-change     (partial change-cell!)}]]
-       (get cells cell-id))]))
+       (eval-cell env (get cells cell-id)))]))
 
 (defn row-fn [cells actions-map l]
   ^{:key l}

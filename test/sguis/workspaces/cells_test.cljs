@@ -54,15 +54,18 @@
           (testing "Sum of Elephant and 4 is NaN"
             (insert comp "B1" "Elephant")
             (insert comp "B2" "4")
-            (insert comp "B3" "Add B1 and B2 =")
+            (insert comp "B3" "add B1 and B2 =")
             (is (= "NaN" (.-innerText (cell comp "B3")))))
-          (testing "Updates field updates dependent field"
+          (testing "Cell update updates dependent cells"
             (insert comp "B1" "3")
             (insert comp "B2" "4")
             (insert comp "B3" "Add B1 and B2 =")
+            (insert comp "B4" "Mul B1 and B2 =")
             (is (= "7" (.-innerText (cell comp "B3"))))
+            (is (= "12" (.-innerText (cell comp "B4"))))
             (insert comp "B1" "5")
-            (is (= "9" (.-innerText (cell comp "B3"))))))))))
+            (is (= "9" (.-innerText (cell comp "B3"))))
+            (is (= "20" (.-innerText (cell comp "B4"))))))))))
 
 
 
