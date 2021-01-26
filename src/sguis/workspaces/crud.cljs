@@ -94,29 +94,17 @@
          :next-id
          inc))
 
-(defn insert-person! [*state]
-  (let [{:keys [name-insertion
-                surname-insertion
-                next-id]} @*state]
+(defn create-person! [*state {:keys [name-insertion surname-insertion next-id]}]
+  (when-not (and (empty? name-insertion)
+                 (empty? surname-insertion))
     (swap! *state
            assoc-in
            [:person/by-id next-id]
            {:id      next-id
             :name    name-insertion
-            :surname surname-insertion})))
-
-(defn empty-inputs? [{:keys [name-insertion surname-insertion]}]
-  (and (empty? name-insertion)
-       (empty? surname-insertion)))
-(defn create-person! [*state empty-inputs?]
-  (when-not empty-inputs?
-    (insert-person! *state)
+            :surname surname-insertion})
     (clear-input-fields! *state)
     (increment-id! *state)))
-(defn create-button [create-person!]
-  [:button.button.is-primary
-   {:on-click create-person!}
-   "create"])
 
 (defn update-person! [*state]
   (let [{:keys [name-insertion
@@ -129,11 +117,6 @@
                    :name name-insertion
                    :surname surname-insertion))
     (clear-input-fields! *state)))
-(defn update-button [{:keys [current-id]} update-person!]
-  [:button.button.is-success
-   {:disabled (not current-id)
-    :on-click update-person!}
-   "update"])
 
 (defn delete-person! [*state]
   (let [{:keys [current-id]} @*state]
@@ -144,11 +127,23 @@
            current-id)
     (clear-input-fields! *state)))
 
-(defn delete-button [{:keys [current-id]} delete-person!]
-  [:button.button.is-danger
-   {:disabled (not current-id)
-    :on-click delete-person!}
-   "delete"])
+(defn btn-type->color [btn-type]
+  (case btn-type
+    :create :is-primary
+    :update :is-success
+    :delete :is-danger))
+
+(defn crud-button [{:keys [current-id] :as state} btn-type action]
+  [:button.button {:data-testid (name btn-type)
+                   :class (u/classes (btn-type->color btn-type))
+                   :disabled (if (or (= btn-type :update)
+                                     (= btn-type :delete))
+                               (not current-id)
+                               false)
+                   :on-click (if (= btn-type :create)
+                               (partial action state)
+                               action)}
+   (name btn-type)])
 
 (defn crud-ui
   ([]
@@ -161,7 +156,8 @@
     [:div.panel-block.is-block
      [people-panel @*state {:change-filter-prefix! (partial change-filter-prefix! *state)
                             :select-value!         (partial select-person! *state)
-                            :insert-value!         (partial insert-value! *state)} ]
-     [create-button  (partial create-person! *state (empty-inputs? @*state))]
-     [update-button @*state (partial update-person! *state)]
-     [delete-button @*state (partial delete-person! *state)]]]))
+                            :insert-value!         (partial insert-value! *state)}]
+
+     [crud-button @*state :create (partial create-person! *state)]
+     [crud-button @*state :update (partial update-person! *state)]
+     [crud-button @*state :delete (partial delete-person! *state)]]]))
