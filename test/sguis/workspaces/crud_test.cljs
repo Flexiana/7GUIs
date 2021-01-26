@@ -5,8 +5,7 @@
              :refer [are is testing]]
             [nubank.workspaces.core :as ws]
             [sguis.workspaces.test-utils :as u]
-            [reagent.core :as r]
-            [clojure.string :as str]))
+            [reagent.core :as r]))
 
 (defn texts-on-field [field]
   (mapv #(.-innerText %) (.-children field)))
