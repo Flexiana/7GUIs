@@ -113,13 +113,17 @@
 (defn focus-cell! [*state cell-id _]
   (swap! *state assoc :focused-cell cell-id))
 
-(defn submit-cell! [*state {:keys [edition]} cell-id event]
+(defn submit-cell! [*state {:keys [edition]}
+                    cell-id
+                    event]
   (.preventDefault event)
-  (swap! *state assoc-in [:cells cell-id] (if (str/ends-with? edition "=")
-                                            (str/lower-case edition)
-                                            edition))
-  (swap! *state dissoc :focused-cell)
-  (swap! *state dissoc :edition))
+  (swap! *state
+         #(-> %
+              (assoc-in [:cells cell-id]
+                        (if (str/ends-with? edition "=")
+                          (str/lower-case edition)
+                          edition))
+              (dissoc :focused-cell :edition))))
 
 (defn change-cell! [*state event]
   (swap! *state assoc :edition (.. event -target -value)))

@@ -12,32 +12,31 @@
 
 (ws/deftest eval-cell-test
   (are [expected actual] (= expected actual)
-    "10" (eval-cell {:cells {:A2 "2" :B8 "8"}} "Sum of A2:B8 =")
-    "0" (eval-cell {} "Sum of A2:B8 =")
-    "4" (eval-cell {} "Sum of 4 and A2:B8 =")
-    "3" (eval-cell {} "Add 1 and 2 =")
+    "10"  (eval-cell {:cells {:A2 "2" :B8 "8"}} "Sum of A2:B8 =")
+    "0"   (eval-cell {} "Sum of A2:B8 =")
+    "4"   (eval-cell {} "Sum of 4 and A2:B8 =")
+    "3"   (eval-cell {} "Add 1 and 2 =")
     "NaN" (eval-cell {} "Div of B5 and C5 =")
-    "a" (eval-cell {} "a")
-    "20" (eval-cell {:cells {:A7 "10"
-                             :G0 "10"}} "Add A7 and G0 =")
+    "a"   (eval-cell {} "a")
     "NaN" (eval-cell {:cells {:B1 "Elephant"
                               :B2 "10"}} "Sum of B1 and B2 =")
-    "" (eval-cell {} nil)))
+    "20"  (eval-cell {:cells {:A7 "10"
+                              :G0 "10"}} "Add A7 and G0 =")
+    ""    (eval-cell {} nil)))
 
 (defn texts-on-field [field]
   (mapv #(.-innerText %) (.-children field)))
-
 
 (ws/deftest ui-tests
   (let [*test-state (r/atom cells-start)]
     (u/with-mounted-component
       [cells-ui *test-state]
       (fn [comp]
-        (let [tbody #(.getByTestId % "tbody")
-              thead #(.getByTestId % "thead")
-              cell (fn [comp id] (.getByTestId comp id))
-              input (fn [comp id] (.getByTestId comp (str "input_:" id)))
-              form (fn [comp id] (.getByTestId comp (str "form_:" id)))
+        (let [tbody  #(.getByTestId % "tbody")
+              thead  #(.getByTestId % "thead")
+              cell   (fn [comp id] (.getByTestId comp id))
+              input  (fn [comp id] (.getByTestId comp (str "input_:" id)))
+              form   (fn [comp id] (.getByTestId comp (str "form_:" id)))
               insert (fn [comp id value]
                        (u/double-click-element! (cell comp id))
                        (u/input-element! (input comp id) value)
@@ -68,7 +67,3 @@
             (insert comp "B1" "5")
             (is (= "9" (.-innerText (cell comp "B3"))))
             (is (= "20" (.-innerText (cell comp "B4"))))))))))
-
-
-
-
