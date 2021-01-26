@@ -29,20 +29,19 @@
   (swap! timer-state assoc :duration (js/parseInt (.. e -target -value))))
 
 (defn duration-change [timer-state]
-  (let [duration (:duration @timer-state)]
-    (let [field-id (gensym)]
-      [:div.field.is-flex.is-flex-direction-column
-       [:div.is-align-self-center.has-text-success-dark
-        [:output {:for field-id} (str duration "s")]]
-       [:input.slider.is-fullwidth.is-success.is-circle.has-output-tooltip
-        {:type        :range
-         :id          field-id
-         :data-testid "duration"
-         :min         0
-         :max         max-duration
-         :value       duration
-         :on-input    (partial change-duration! timer-state)}]
-       ])))
+  (let [duration (:duration @timer-state)
+        field-id (gensym)]
+    [:div.field.is-flex.is-flex-direction-column
+     [:div.is-align-self-center.has-text-success-dark
+      [:output {:for field-id} (str duration "s")]]
+     [:input.slider.is-fullwidth.is-success.is-circle.has-output-tooltip
+      {:type        :range
+       :id          field-id
+       :data-testid "duration"
+       :min         0
+       :max         max-duration
+       :value       duration
+       :on-input    (partial change-duration! timer-state)}]]))
 
 (defn reset-button-ui [timer-state]
   [:button.button.is-primary
