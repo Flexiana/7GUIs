@@ -131,8 +131,7 @@
                       clear-input-fields)))
 
 (defn crud-button [{:keys [current-id] :as state} btn-type action]
-  [:button.button {:data-testid (name btn-type)
-                   :class (u/classes (case btn-type
+  [:button.button {:class (u/classes (case btn-type
                                        :create :is-primary
                                        :update :is-success
                                        :delete :is-danger))
