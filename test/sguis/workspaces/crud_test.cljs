@@ -11,19 +11,30 @@
 (defn texts-on-field [field]
   (mapv #(.-innerText %) (.-children field)))
 
+(def selectors-map
+  {:filter-field  #(.getByTestId % "filter")
+   :name-field    #(.getByTestId % "Name:")
+   :surname-field #(.getByTestId % "Surname:")
+   :create-button #(.getByText % "create")
+   :update-button #(.getByText % "update")
+   :delete-button #(.getByText % "delete")
+   :person-list   #(.getByTestId % "person-list")})
+
 (ws/deftest crud-tests
-  (let [filter-field      #(.getByTestId % "filter")
-        name-field        #(.getByTestId % "Name:")
-        surname-field     #(.getByTestId % "Surname:")
-        create-button     #(.getByText % "create")
-        update-button     #(.getByText % "update")
-        delete-button     #(.getByText % "delete")
-        person-list       #(.getByTestId % "person-list")
-        first-person-list #(-> % person-list .-children first)
-        *crud             (r/atom crud-start)]
+  (let [{:keys [filter-field
+                name-field
+                surname-field
+                create-button
+                update-button
+                delete-button
+                person-list]} selectors-map
+        first-person-list     #(-> % person-list .-children first)
+        *crud                 (r/atom crud-start)]
     (u/with-mounted-component
       [crud-ui *crud]
       (fn [comp]
+
+        ;; TODO discuss if we need this render
         (testing "Initial render"
           (is (empty? (.-value (filter-field comp))))
           (is (empty? (.-value (name-field comp))))
