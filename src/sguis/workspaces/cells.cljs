@@ -33,17 +33,17 @@
 
 (defn can-parse-numeric? [parsed-exp]
   (and (re-matches #"^[+-]?\d+(\.\d+)?$" parsed-exp)
-    (valid/numeric? (js/parseFloat parsed-exp))))
+       (valid/numeric? (js/parseFloat parsed-exp))))
 
 (defn is-cell? [parsed-exp]
   (and (= 2 (count parsed-exp))
-    (possible-cells (keyword (str/upper-case parsed-exp)))))
+       (possible-cells (keyword (str/upper-case parsed-exp)))))
 
 (defn is-range-cells? [parsed-exp]
   (and (= 5 (count parsed-exp))
-    (->> (str/split parsed-exp #":")
-      (map (comp boolean possible-cells keyword str/upper-case))
-      (every? true?))))
+       (->> (str/split parsed-exp #":")
+            (map (comp boolean possible-cells keyword str/upper-case))
+            (every? true?))))
 
 (defn range-cells-get [[fst snd]]
   (let [[collmin min] (name fst)
@@ -57,17 +57,17 @@
 
 (defn parse-cell [{:keys [cells]} parsed-exp]
   (->> parsed-exp
-    str/upper-case
-    keyword
-    (#(get cells % 0))
-    js/parseFloat))
+       str/upper-case
+       keyword
+       (#(get cells % 0))
+       js/parseFloat))
 
 (defn parse-range-cells [{:keys [cells]} parsed-exp]
   (map (comp js/parseFloat #(get cells % 0) keyword)
-    (-> parsed-exp
-      (str/upper-case)
-      (str/split #":")
-      range-cells-get)))
+       (-> parsed-exp
+           (str/upper-case)
+           (str/split #":")
+           range-cells-get)))
 
 (defn tokenizer [env parsed-exp]
   (cond
@@ -78,17 +78,17 @@
 
 (defn parse [env s]
   (some->> (str/split s #" ")
-    (map (partial tokenizer env))
-    (remove nil?)
-    flatten
-    str))
+           (map (partial tokenizer env))
+           (remove nil?)
+           flatten
+           str))
 
 (defn eval-cell [env s]
   (let [low-cased (some-> s str/lower-case)]
     (cond (nil? s) ""
           (str/ends-with? low-cased "=") (some-> (parse env low-cased)
-                                           (eval-string {:allow (vals kw->op)})
-                                           str)
+                                                 (eval-string {:allow (vals kw->op)})
+                                                 str)
           :else s)))
 
 ;; UI impl
@@ -129,13 +129,13 @@
   (let [cell-id (keyword (str c l))]
     ^{:key cell-id}
     [:td {:style           light-border-style
-          :data-testid cell-id
+          :data-testid     cell-id
           :on-double-click (partial focus-cell! cell-id)}
      (if (= cell-id focused-cell)
-       [:form {:style     {:border "1px solid #ccc"}
-               :id        cell-id
+       [:form {:style       {:border "1px solid #ccc"}
+               :id          cell-id
                :data-testid (str "form_" cell-id)
-               :on-submit (partial submit-cell! env cell-id)}
+               :on-submit   (partial submit-cell! env cell-id)}
         [:input {:style         light-border-style
                  :type          "text"
                  :data-testid   (str "input_" cell-id)
@@ -156,20 +156,20 @@
 (defn cells-ui
   ([]
    (r/with-let [*cells (r/atom cells-start)]
-     [cells-ui *cells]))
+               [cells-ui *cells]))
   ([*cells]
    [:div {:padding "1em"}
-    [:table {:style table-style
+    [:table {:style       table-style
              :data-testid "table"}
-     [:thead {:style overflow-style
+     [:thead {:style       overflow-style
               :data-testid "thead"}
       [:tr {:style light-border-style}
        (concat [^{:key :n} [:th]]
-         (map header-fn az-range))]]
-     [:tbody {:style overflow-style
+               (map header-fn az-range))]]
+     [:tbody {:style       overflow-style
               :data-testid "tbody"}
       (concat [^{:key :n} [:tr (merge light-border-style overflow-style)]]
-        (map (partial row-fn @*cells
-               {:focus-cell!  (partial focus-cell! *cells)
-                :submit-cell! (partial submit-cell! *cells)
-                :change-cell! (partial change-cell! *cells)}) table-lines))]]]))
+              (map (partial row-fn @*cells
+                            {:focus-cell!  (partial focus-cell! *cells)
+                             :submit-cell! (partial submit-cell! *cells)
+                             :change-cell! (partial change-cell! *cells)}) table-lines))]]]))
