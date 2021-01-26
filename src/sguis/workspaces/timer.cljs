@@ -26,7 +26,7 @@
     (str (capped-value timer-state) "s")]])
 
 (defn change-duration! [timer-state e]
-  (swap! timer-state assoc :duration (js/parseInt (.. e -target -value))))
+  (swap! timer-state assoc :duration (.. e -target -valueAsNumber)))
 
 (defn duration-change [timer-state]
   (let [duration (:duration @timer-state)
