@@ -22,6 +22,10 @@
                              :G0 "10"}} "Add A7 and G0 =")
     "" (eval-cell {} nil)))
 
+(defn texts-on-field [field]
+  (mapv #(.-innerText %) (.-children field)))
+
+
 (ws/deftest ui-tests
   (let [*test-state (r/atom cells-start)]
     (u/with-mounted-component
@@ -31,12 +35,35 @@
               thead #(.getByTestId % "thead")
               cell (fn [comp id] (.getByTestId comp id))
               input (fn [comp id] (.getByTestId comp (str "input_:" id)))
-              form (fn [comp id] (.getByTestId comp (str "form_:" id)))]
+              form (fn [comp id] (.getByTestId comp (str "form_:" id)))
+              insert (fn [comp id value]
+                       (u/double-click-element! (cell comp id))
+                       (u/input-element! (input comp id) value)
+                       (u/submit! (form comp id)))]
           (testing "Initial render"
-            (is (= (into [""] (map str (range 0 100))) (mapv str/trim (mapv #(.-innerText %) (.-children (tbody comp))))))
-            (is (= (conj (map char (range 65 91)) "") (str/split (first (mapv #(.-innerText %) (.-children (thead comp)))) #"\t"))))
+            (is (= (into [""] (map str (range 0 100))) (mapv str/trim (texts-on-field (tbody comp)))))
+            (is (= (into [""] (map char (range 65 91))) (str/split (first (texts-on-field (thead comp))) #"\t"))))
           (testing "Change value"
-            (u/double-click-element! (cell comp "A1"))
-            (u/input-element! (input comp "A1") "Elephant")
-            (u/submit (form comp "A1"))
-            (is (= "Elephant" (.-innerText (cell comp "A1"))))))))))
+            (insert comp "A1" "Elephant")
+            (is (= "Elephant" (.-innerText (cell comp "A1")))))
+          (testing "Sum of 3 and 4 = 7"
+            (insert comp "B1" "3")
+            (insert comp "B2" "4")
+            (insert comp "B3" "Add B1 and B2 =")
+            (is (= "7" (.-innerText (cell comp "B3")))))
+          (testing "Sum of Elephant and 4 is NaN"
+            (insert comp "B1" "Elephant")
+            (insert comp "B2" "4")
+            (insert comp "B3" "Add B1 and B2 =")
+            (is (= "NaN" (.-innerText (cell comp "B3")))))
+          (testing "Updates field updates dependent field"
+            (insert comp "B1" "3")
+            (insert comp "B2" "4")
+            (insert comp "B3" "Add B1 and B2 =")
+            (is (= "7" (.-innerText (cell comp "B3"))))
+            (insert comp "B1" "5")
+            (is (= "9" (.-innerText (cell comp "B3"))))))))))
+
+
+
+

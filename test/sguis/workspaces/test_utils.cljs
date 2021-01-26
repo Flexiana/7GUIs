@@ -42,7 +42,7 @@
      (click-fn! el {}))
    (r/flush)))
 
-(defn submit [el]
+(defn submit! [el]
   (.submit rtl/fireEvent el)
   (r/flush))
 
