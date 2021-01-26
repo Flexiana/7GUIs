@@ -31,8 +31,10 @@
 (defn duration-change [timer-state]
   (let [duration (:duration @timer-state)]
     (let [field-id (gensym)]
-      [:div.field
-       [:input.slider.is-fullwidth.is-success.is-circle.has-output
+      [:div.field.is-flex.is-flex-direction-column
+       [:div.is-align-self-center.has-text-success-dark
+        [:output {:for field-id} (str duration "s")]]
+       [:input.slider.is-fullwidth.is-success.is-circle.has-output-tooltip
         {:type        :range
          :id          field-id
          :data-testid "duration"
@@ -40,8 +42,7 @@
          :max         max-duration
          :value       duration
          :on-input    (partial change-duration! timer-state)}]
-       [:output {:for field-id
-                 :style {:margin-top "1rem"}} (str duration "s")]])))
+       ])))
 
 (defn reset-button-ui [timer-state]
   [:button.button.is-primary
