@@ -49,12 +49,16 @@
    {:on-click #(swap! timer-state assoc :elapsed-time 0)}
    "Reset!"])
 
+(defn update-elapsed-time! [*timer-state]
+  (when (< (:elapsed-time @*timer-state) (:duration @*timer-state))
+    (swap! *timer-state update :elapsed-time inc)))
+
 (defn timer-ui
   ([]
    (r/with-let [*timer-state (r/atom timer-start)]
      [timer-ui *timer-state]))
   ([*timer-state]
-   (r/with-let [interval (js/setInterval #(when (< (:elapsed-time @*timer-state) (:duration @*timer-state)) (swap! *timer-state update :elapsed-time inc)) 1000)]
+   (r/with-let [interval (js/setInterval (partial update-elapsed-time! *timer-state) 1000)]
      [:div.panel.is-primary
       {:style {:min-width "24em"}}
       [:div.panel-heading "Timer ⏲️"]
