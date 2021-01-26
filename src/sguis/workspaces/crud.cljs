@@ -81,51 +81,54 @@
      [:div.field
       [insert-panel state insert-value!]]]]])
 
-(defn clear-input-fields! [*state]
-  (swap! *state
-         dissoc
+(defn clear-input-fields [state]
+  (dissoc state
          :name-insertion
          :surname-insertion
          :current-id))
 
-(defn increment-id! [*state]
-  (swap! *state
-         update
+(defn increment-id [state]
+  (update state
          :next-id
          inc))
 
-(defn create-person! [*state {:keys [name-insertion surname-insertion next-id]}]
-  (when-not (and (empty? name-insertion)
-                 (empty? surname-insertion))
-    (swap! *state
-           assoc-in
+(defn create-person [{:keys [name-insertion surname-insertion next-id]}
+                     state]
+  (assoc-in state
            [:person/by-id next-id]
            {:id      next-id
             :name    name-insertion
-            :surname surname-insertion})
-    (clear-input-fields! *state)
-    (increment-id! *state)))
+            :surname surname-insertion}))
 
-(defn update-person! [*state]
-  (let [{:keys [name-insertion
-                surname-insertion
-                current-id]} @*state]
-    (swap! *state
-           update-in
-           [:person/by-id current-id]
-           #(assoc %
-                   :name name-insertion
-                   :surname surname-insertion))
-    (clear-input-fields! *state)))
+(defn create-person! [*state {:keys [name-insertion surname-insertion] :as state}]
+  (when-not (and (empty? name-insertion)
+                 (empty? surname-insertion))
+    (swap! *state (comp (partial create-person state)
+                        clear-input-fields
+                        increment-id))))
 
-(defn delete-person! [*state]
-  (let [{:keys [current-id]} @*state]
-    (swap! *state
-           update
-           :person/by-id
-           dissoc
-           current-id)
-    (clear-input-fields! *state)))
+
+(defn update-person [{:keys [name-insertion surname-insertion current-id]}
+                     state]
+  (update-in state
+             [:person/by-id current-id]
+             #(assoc %
+                    :name name-insertion
+                    :surname surname-insertion)))
+(defn update-person! [*state state]
+  (swap! *state (comp (partial update-person state)
+                      clear-input-fields)))
+
+(defn delete-person [{:keys [current-id]}
+                     state]
+  (update state
+          :person/by-id
+          dissoc
+          current-id))
+
+(defn delete-person! [*state state]
+  (swap! *state (comp (partial delete-person state)
+                      clear-input-fields)))
 
 (defn crud-button [{:keys [current-id] :as state} btn-type action]
   [:button.button {:data-testid (name btn-type)
@@ -137,9 +140,7 @@
                                      (= btn-type :delete))
                                (not current-id)
                                false)
-                   :on-click (if (= btn-type :create)
-                               (partial action state)
-                               action)}
+                   :on-click (partial action state)}
    (name btn-type)])
 
 (defn crud-ui
