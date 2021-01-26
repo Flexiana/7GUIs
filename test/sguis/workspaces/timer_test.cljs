@@ -43,6 +43,7 @@
             (is (= {:elapsed-time 10 :duration duration} @*test-timer))
             (r/flush)
             (is (= 10 (.-value (progress comp))))))
+
         (testing "Should not overrun"
           (u/click-element! (reset-button comp))
           (u/input-element! (input comp) "5")
