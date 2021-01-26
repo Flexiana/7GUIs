@@ -37,57 +37,10 @@
           (is (= js/HTMLUListElement (type (person-list comp)))))
 
         (testing "Create person"
-          (reset! *crud crud-start)
-          (u/input-element! (name-field comp) "John")
-          (is (= "John" (.-value (name-field comp))))
-          (u/input-element! (surname-field comp) "Doe")
-          (is (= "Doe" (.-value (surname-field comp))))
-          (u/click-element! (create-button comp))
-          (is (= (texts-on-field (person-list comp)) ["Doe, John"])))
-
-        (testing "Update person"
-          (reset! *crud crud-start)
           (u/input-element! (name-field comp) "John")
           (u/input-element! (surname-field comp) "Doe")
-          (u/click-element! (create-button comp))
-          (is (empty? (.-value (name-field comp))))
-          (is (empty? (.-value (surname-field comp))))
-          (u/click-element! (first-person-list comp))
           (is (= "John" (.-value (name-field comp))))
           (is (= "Doe" (.-value (surname-field comp))))
-          (u/input-element! (name-field comp) "Jane")
-          (u/click-element! (update-button comp))
-          (is (= ["Doe, Jane"]
-                 (texts-on-field (person-list comp)))))
-
-        (testing "Filtering"
-          (reset! *crud crud-start)
-          (u/input-element! (name-field comp) "John")
-          (u/input-element! (surname-field comp) "Doe")
-          (u/click-element! (create-button comp))
-          (u/input-element! (name-field comp) "John")
-          (u/input-element! (surname-field comp) "Foe")
-          (u/click-element! (create-button comp))
-          (u/input-element! (filter-field comp) "F")
-          (is (= ["Foe, John"] (texts-on-field (person-list comp)))))
-
-        (testing "Delete person"
-          (reset! *crud crud-start)
-          (u/input-element! (name-field comp) "John")
-          (u/input-element! (surname-field comp) "Doe")
-          (u/click-element! (create-button comp))
-          (u/input-element! (name-field comp) "John")
-          (u/input-element! (surname-field comp) "Foe")
-          (u/click-element! (create-button comp))
-          (u/click-element! (first-person-list comp))
-          (u/click-element! (delete-button comp))
-          (is (= ["Foe, John"]
-                 (texts-on-field (person-list comp)))))
-
-        (testing "State"
-          (reset! *crud crud-start)
-          (u/input-element! (name-field comp) "John")
-          (u/input-element! (surname-field comp) "Doe")
           (are [expected actual] (= expected actual)
             "John" (:name-insertion @*crud)
             "Doe"  (:surname-insertion @*crud))
@@ -96,18 +49,40 @@
             nil                                       (:name-insertion @*crud)
             nil                                       (:surname-insertion @*crud)
             {0 {:id 0, :name "John", :surname "Doe"}} (:person/by-id @*crud))
+          (is (= (texts-on-field (person-list comp)) ["Doe, John"])))
+
+        (testing "Update person"
           (u/click-element! (first-person-list comp))
           (are [expected actual] (= expected actual)
             "John" (:name-insertion @*crud)
             "Doe"  (:surname-insertion @*crud))
-          (u/input-element! (surname-field comp) "Foe")
+          (is (= "John" (.-value (name-field comp))))
+          (is (= "Doe" (.-value (surname-field comp))))
+          (u/input-element! (name-field comp) "Jane")
           (u/click-element! (update-button comp))
-          (u/click-element! (first-person-list comp))
           (are [expected actual] (= expected actual)
-            "John" (:name-insertion @*crud)
-            "Foe"  (:surname-insertion @*crud))
+            nil                                       (:name-insertion @*crud)
+            nil                                       (:surname-insertion @*crud)
+            {0 {:id 0, :name "Jane", :surname "Doe"}} (:person/by-id @*crud))
+          (is (= ["Doe, Jane"]
+                 (texts-on-field (person-list comp)))))
+
+        (testing "Filtering"
+          (u/input-element! (name-field comp) "John")
+          (u/input-element! (surname-field comp) "Foe")
+          (u/click-element! (create-button comp))
+          (u/input-element! (filter-field comp) "F")
+          (are [expected actual] (= expected actual)
+            "F"                                       (:filter-prefix @*crud)
+            {0 {:id 0, :name "Jane", :surname "Doe"}
+             1 {:id 1, :name "John", :surname "Foe"}} (:person/by-id @*crud))
+          (is (= ["Foe, John"] (texts-on-field (person-list comp)))))
+
+        (testing "Delete person"
+          (u/click-element! (first-person-list comp))
           (u/click-element! (delete-button comp))
           (are [expected actual] (= expected actual)
-            nil (:name-insertion @*crud)
-            nil (:surname-insertion @*crud)
-            {}  (:person/by-id @*crud)))))))
+            {0 {:id 0, :name "Jane", :surname "Doe"}} (:person/by-id @*crud))
+          (u/input-element! (filter-field comp) "")
+          (is (= ["Doe, Jane"]
+                 (texts-on-field (person-list comp)))))))))
