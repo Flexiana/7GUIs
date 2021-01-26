@@ -1,93 +1,69 @@
 (ns sguis.workspaces.timer
   (:require [reagent.core :as r]))
 
+;; all times are in seconds
+
+(def max-duration 60)
 
 (def timer-start
   {:elapsed-time 0
-   :duration     0})
+   :duration     (/ max-duration 2)})
 
-(def container-style
-  {:position      "relative"
-   :width         "100%"
-   :height        "0.5em"
-   :border-radius "50px"
-   :padding       0
-   :border        "1px solid #333"})
+(defn capped-value [{:keys [elapsed-time duration]}]
+  (min elapsed-time duration))
 
-(def filler-style
-  {:position "relative"
-   :border-radius "50px"
-   :box-shadow "0 0 10px 0"
-   :height "0.5em"
-   :opacity 1
-   :color "rgb(178, 34, 34)"
-   :background-color "rgb(178, 34, 34)"})
-
-(defn fill-bar [elapsed-time duration]
-  (when (< elapsed-time duration)
-    (-> elapsed-time
-        (/  duration)
-        (* 100)
-        (str "%"))))
-
-(defn progress-bar
-  [timer-state]
-  (let [{:keys [elapsed-time
-                duration]} @timer-state]
-    [:div {:style container-style}
-     [:div {:data-testid "progress"
-            :style (merge filler-style
-                          {:width (fill-bar elapsed-time duration)})}]]))
+(defn progress-bar [{:keys [duration] :as timer-state}]
+  [:div.field
+   [:progress.progress.is-full-width.is-primary
+    {:data-testid "elapsed-seconds-progress"
+     :value       (capped-value timer-state)
+     :max         duration}]])
 
 (defn countdown-component [timer-state]
-  (let [{:keys [elapsed-time
-                duration]} @timer-state
-        finished?          (< elapsed-time duration)]
-    (if finished?
-      (r/with-let [timer-fn (js/setInterval #(swap! timer-state update :elapsed-time inc) 1000)]
-        [:div.timer
-         [:div
-          {:data-testid "timer"}
-          (str (:elapsed-time @timer-state) "s")]]
-        (finally (js/clearInterval timer-fn)))
-      [:div.timer
-       [:div (str (:elapsed-time @timer-state) "s")]])))
+  [:div.field
+   [:label.label
+    {:data-testid "elapsed-seconds"}
+    (str (capped-value timer-state) "s")]])
+
+(defn change-duration! [timer-state e]
+  (swap! timer-state assoc :duration (.. e -target -valueAsNumber)))
 
 (defn duration-change [timer-state]
-  [:input {:style        {:width "100%"}
-           :type         "range"
-           :data-testid "range"
-           :min          "1"
-           :max          "100"
-           :defaultValue "1"
-           :on-input     #(swap! timer-state
-                                 assoc
-                                 :duration
-                                 (.. %
-                                     -target
-                                     -valueAsNumber))}])
+  (let [duration (:duration @timer-state)
+        field-id (gensym)]
+    [:div.field.is-flex.is-flex-direction-column
+     [:div.is-align-self-center.has-text-success-dark
+      [:output {:for field-id} (str duration "s")]]
+     [:input.slider.is-fullwidth.is-success.is-circle.has-output-tooltip
+      {:type        :range
+       :id          field-id
+       :data-testid "duration"
+       :min         0
+       :max         max-duration
+       :value       duration
+       :on-input    (partial change-duration! timer-state)}]]))
 
 (defn reset-button-ui [timer-state]
-  [:button {:class "reset-timer"
-            :on-click #(swap! timer-state assoc :elapsed-time 0)}
+  [:button.button.is-primary
+   {:on-click #(swap! timer-state assoc :elapsed-time 0)}
    "Reset!"])
+
+(defn update-elapsed-time! [*timer-state]
+  (when (< (:elapsed-time @*timer-state) (:duration @*timer-state))
+    (swap! *timer-state update :elapsed-time inc)))
 
 (defn timer-ui
   ([]
    (r/with-let [*timer-state (r/atom timer-start)]
      [timer-ui *timer-state]))
-  ([timer-state]
-  (r/create-class
-   {:component-did-mount (swap! timer-state
-                                assoc
-                                :elapsed-time 0
-                                :duration 1)
-    :reagent-render (fn []
-                      [:div {:style {:padding "1em"
-                                     :width "10vw"}}
-                       [:div {:style {:padding "0.5em"}}
-                        "Timer ⏲️"]
-                       [countdown-component timer-state]
-                       [progress-bar timer-state]
-                       [duration-change timer-state]
-                       [reset-button-ui timer-state]])})))
+  ([*timer-state]
+   (r/with-let [interval (js/setInterval (partial update-elapsed-time! *timer-state) 1000)]
+     [:div.panel.is-primary
+      {:style {:min-width "24em"}}
+      [:div.panel-heading "Timer ⏲️"]
+      [:div.panel-block.is-block
+       [countdown-component @*timer-state]
+       [progress-bar @*timer-state]
+       [duration-change *timer-state]
+       [reset-button-ui *timer-state]]]
+     (finally (js/clearInterval interval)))))
