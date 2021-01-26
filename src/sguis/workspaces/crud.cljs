@@ -127,15 +127,12 @@
            current-id)
     (clear-input-fields! *state)))
 
-(defn btn-type->color [btn-type]
-  (case btn-type
-    :create :is-primary
-    :update :is-success
-    :delete :is-danger))
-
 (defn crud-button [{:keys [current-id] :as state} btn-type action]
   [:button.button {:data-testid (name btn-type)
-                   :class (u/classes (btn-type->color btn-type))
+                   :class (u/classes (case btn-type
+                                       :create :is-primary
+                                       :update :is-success
+                                       :delete :is-danger))
                    :disabled (if (or (= btn-type :update)
                                      (= btn-type :delete))
                                (not current-id)
