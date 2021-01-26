@@ -57,7 +57,8 @@
           (is (= "Doe" (.-value (surname-field comp))))
           (u/input-element! (name-field comp) "Jane")
           (u/click-element! (update-button comp))
-          (is (= (texts-on-field (person-list comp)) ["Doe, Jane"])))
+          (is (= ["Doe, Jane"]
+                 (texts-on-field (person-list comp)))))
 
         (testing "Filtering"
           (reset! *crud crud-start)
@@ -68,7 +69,7 @@
           (u/input-element! (surname-field comp) "Foe")
           (u/click-element! (create-button comp))
           (u/input-element! (filter-field comp) "F")
-          (is (= (texts-on-field (person-list comp)) ["Foe, John"])))
+          (is (= ["Foe, John"] (texts-on-field (person-list comp)))))
 
         (testing "Delete person"
           (reset! *crud crud-start)
@@ -80,7 +81,8 @@
           (u/click-element! (create-button comp))
           (u/click-element! (first-person-list comp))
           (u/click-element! (delete-button comp))
-          (is (= (texts-on-field (person-list comp)) ["Foe, John"])))
+          (is (= ["Foe, John"]
+                 (texts-on-field (person-list comp)))))
 
         (testing "State"
           (reset! *crud crud-start)
