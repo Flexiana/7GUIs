@@ -35,8 +35,8 @@
         (let [tbody  #(.getByTestId % "tbody")
               thead  #(.getByTestId % "thead")
               cell   (fn [comp id] (.getByTestId comp id))
-              input  (fn [comp id] (.getByTestId comp (str "input_:" id)))
-              form   (fn [comp id] (.getByTestId comp (str "form_:" id)))
+              input  (fn [comp id] (.getByTestId comp (str "input-" id)))
+              form   (fn [comp id] (.getByTestId comp (str "form-" id)))
               insert (fn [comp id value]
                        (u/double-click-element! (cell comp id))
                        (u/input-element! (input comp id) value)

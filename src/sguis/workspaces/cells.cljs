@@ -138,11 +138,11 @@
      (if (= cell-id focused-cell)
        [:form {:style       {:border "1px solid #ccc"}
                :id          cell-id
-               :data-testid (str "form_" cell-id)
+               :data-testid (str "form-" (name cell-id))
                :on-submit   (partial submit-cell! env cell-id)}
         [:input {:style         light-border-style
                  :type          "text"
-                 :data-testid   (str "input_" cell-id)
+                 :data-testid   (str "input-" (name cell-id))
                  :auto-focus    true
                  :default-value (get cells cell-id)
                  :on-change     (partial change-cell!)}]]
