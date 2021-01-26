@@ -68,19 +68,6 @@
          :surname-insertion surname
          :current-id id))
 
-(defn people-panel [state {:keys [change-filter-prefix!
-                                  select-value!
-                                  insert-value!]}]
-  [:div.tile.is-parent
-   [:div.columns
-    [:div.column.is-half
-     [:div.field
-      [filter-field change-filter-prefix!]
-      [person-list state select-value!]]]
-    [:div.column.is-half
-     [:div.field
-      [insert-panel state insert-value!]]]]])
-
 (defn clear-input-fields [state]
   (dissoc state
          :name-insertion
@@ -141,6 +128,19 @@
                                false)
                    :on-click (partial action state)}
    (name btn-type)])
+
+(defn people-panel [state {:keys [change-filter-prefix!
+                                  select-value!
+                                  insert-value!]}]
+  [:div.tile.is-parent
+   [:div.columns
+    [:div.column.is-half
+     [:div.field
+      [filter-field change-filter-prefix!]
+      [person-list state select-value!]]]
+    [:div.column.is-half
+     [:div.field
+      [insert-panel state insert-value!]]]]])
 
 (defn crud-ui
   ([]
