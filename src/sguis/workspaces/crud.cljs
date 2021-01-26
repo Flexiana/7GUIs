@@ -48,11 +48,11 @@
 (defn person-row [{:keys [current-id]} select-person! {:keys [name surname id] :as person}]
   (let [show-name (str surname ", " name)]
     ^{:key id}
-    [:li
-     [:div.input.panel-block
+     [:li.input.panel-block
       {:class    (u/classes (when (= current-id id) :is-danger))
        :on-click (partial select-person! person)}
-      show-name]]))
+      show-name]))
+
 (defn person-list [{:person/keys [by-id]
                     :keys        [filter-prefix]
                     :as          state} select-person!]
