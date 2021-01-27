@@ -65,7 +65,8 @@
      [temperature-ui state]))
   ([state]
    (let [change-temperature (partial change-state! state)]
-     [:div
+     [:div.panel.is-primary
+      [:div.panel-heading "Temperature converter"]
       [degree-input {:label     "Celsius"
                      :state     (:celsius @state)
                      :on-change (partial change-temperature :celsius)}]
