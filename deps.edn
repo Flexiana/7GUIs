@@ -8,7 +8,9 @@
          thheller/shadow-cljs         {:mvn/version "2.11.15"}
          clj-kondo/clj-kondo          {:mvn/version "2021.01.20"}}
 
- :aliases {:build-cljs {:exec-fn core/release-prod}
+ :aliases {:style {:extra-deps {mvxcvi/cljstyle {:mvn/version "0.14.0"}}
+                   :main-opts ["-m" "cljstyle.main" "fix"]}
+           :build-cljs {:exec-fn core/release-prod}
            :build {:extra-deps {seancorfield/depstar {:mvn/version "2.0.165"}}
                    :ns-default   hf.depstar
                    :exec-args    {:sync-pom    true
