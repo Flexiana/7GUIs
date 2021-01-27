@@ -3,8 +3,9 @@
 .idea
 target/
 /pom*
-.clj-kondo/.cache/*
+.clj-kondo/cache/
 .shadow-cljs/
 package-lock.json
 node_modules/
 resources/public/js/
+resources/production/js/
