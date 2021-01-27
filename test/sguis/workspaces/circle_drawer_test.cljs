@@ -6,8 +6,7 @@
              :refer [are is testing]]
             [nubank.workspaces.core :as ws]
             [reagent.core :as r]
-            [sguis.workspaces.test-utils :as u]
-            ["@testing-library/react" :as rtl]))
+            [sguis.workspaces.test-utils :as u]))
 
 (defn relative-click [svg-comp {:keys [x y]}]
   (let [dim (.getBoundingClientRect svg-comp)]
@@ -49,19 +48,19 @@
                    (->> @*circles :circles))))
 
           (testing "Change circle selection"
-            (is (and (= circle-pos2
-                        (-> @*circles :selection))))
+            (is (= circle-pos2
+                   (-> @*circles :selection)))
             (u/click-element! (circle-0 comp))
             (are [expected actual] (= expected actual)
-                 circle-pos0  (-> @*circles :selection)
-                 "red"   (.. (circle-0 comp)
-                             -attributes
-                             -fill
-                             -value)
-                 "white" (.. (circle-2 comp)
-                             -attributes
-                             -fill
-                             -value)))
+              circle-pos0 (-> @*circles :selection)
+              "red"       (.. (circle-0 comp)
+                              -attributes
+                              -fill
+                              -value)
+              "white"     (.. (circle-2 comp)
+                              -attributes
+                              -fill
+                              -value)))
 
           (testing "Opening Radius-Box"
             (u/click-context-menu! svg-comp)
