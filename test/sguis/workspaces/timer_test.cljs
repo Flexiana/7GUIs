@@ -1,12 +1,13 @@
 (ns sguis.workspaces.timer-test
-  (:require [sguis.workspaces.timer :refer [timer-ui
-                                            timer-start]]
-            [cljs.test :as t
-             :include-macros true
-             :refer [are is testing]]
-            [nubank.workspaces.core :as ws]
-            [reagent.core :as r]
-            [sguis.workspaces.test-utils :as u]))
+  (:require
+    [cljs.test :as t
+     :include-macros true
+     :refer [are is testing]]
+    [nubank.workspaces.core :as ws]
+    [reagent.core :as r]
+    [sguis.workspaces.test-utils :as u]
+    [sguis.workspaces.timer :refer [timer-ui
+                                    timer-start]]))
 
 (ws/deftest timer-test
   (let [fake-timer   (u/install-timer)

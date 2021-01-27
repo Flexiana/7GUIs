@@ -1,8 +1,9 @@
 (ns sguis.workspaces.temperature
-  (:require [reagent.core :as r]
-            [sguis.workspaces.utils :as u]
-            [sguis.workspaces.validator :as valid]
-            [clojure.string :as string]))
+  (:require
+    [clojure.string :as string]
+    [reagent.core :as r]
+    [sguis.workspaces.utils :as u]
+    [sguis.workspaces.validator :as valid]))
 
 (def temperature-start
   {:celsius    {:value nil}
@@ -20,7 +21,8 @@
 (defmethod convert [:fahrenheit :celsius] [_ _ degrees]
   (-> degrees (- 32.0) (* 5.0) (/ 9.0) js/Math.round))
 
-(defn change-temperature [state from data]
+(defn change-temperature
+  [state from data]
   (let [to     (other from)
         state' (assoc state from {:value data})]
     (if (valid/float? data)
@@ -29,12 +31,14 @@
           (assoc-in [from :invalid?] true)
           (assoc-in [to :unsynced?] true)))))
 
-(defn apply-temperature-change [state from data]
+(defn apply-temperature-change
+  [state from data]
   (if (string/blank? data)
     temperature-start
     (change-temperature state from data)))
 
-(defn change-state! [state field-key field]
+(defn change-state!
+  [state field-key field]
   (let [data (-> field .-target .-value)]
     (swap! state apply-temperature-change field-key data)))
 
@@ -62,7 +66,7 @@
 (defn temperature-ui
   ([]
    (r/with-let [state (r/atom temperature-start)]
-     [temperature-ui state]))
+               [temperature-ui state]))
   ([state]
    (let [change-temperature (partial change-state! state)]
      [:div
