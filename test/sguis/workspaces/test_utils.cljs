@@ -36,6 +36,16 @@
      (click-fn! el (->action-map v-or-m)))
    (r/flush)))
 
+(defn double-click-element!
+  ([el]
+   (let [click-fn! (.. rtue -default -dblClick)]
+     (click-fn! el {}))
+   (r/flush)))
+
+(defn submit! [el]
+  (.submit rtl/fireEvent el)
+  (r/flush))
+
 (defn click-context-menu! [el]
   (.contextMenu rtl/fireEvent el)
   (r/flush))

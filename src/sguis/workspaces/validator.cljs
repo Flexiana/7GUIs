@@ -9,5 +9,5 @@
 
 (comment
   (false? (numeric? (js/parseFloat "a")))
-  (true? (numeric? (js/parseFloat "1")))
-  )
+  (true? (numeric? (js/parseFloat "1"))))
+
