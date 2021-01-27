@@ -21,7 +21,7 @@
        ::http/resource-path "production"
        ::http/file-path "production/js"
        ::http/secure-headers nil ;;{:content-security-policy-settings {:object-src "none"}}
-       ::http/port   80
+       ::http/port   3000
        ::http/routes routes
        ::http/join?  false}
       http/default-interceptors
