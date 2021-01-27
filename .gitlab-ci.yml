@@ -1,10 +1,11 @@
 image: raffinate/cljs-ci
 
 before_script:
+  - apt instal clojure
   - npm install
 
 test:
   script:
-    - clj -M:style
-    - clj -M:lint
+    - clojure -M:style
+    - clojure -M:lint
     - npm run tests
