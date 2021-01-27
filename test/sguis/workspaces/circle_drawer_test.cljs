@@ -1,14 +1,16 @@
 (ns sguis.workspaces.circle-drawer-test
-  (:require [sguis.workspaces.circle-drawer :refer [circles-ui
-                                                    circles-start]]
-            [cljs.test :as t
-             :include-macros true
-             :refer [are is testing]]
-            [nubank.workspaces.core :as ws]
-            [reagent.core :as r]
-            [sguis.workspaces.test-utils :as u]))
+  (:require
+    [cljs.test :as t
+     :include-macros true
+     :refer [are is testing]]
+    [nubank.workspaces.core :as ws]
+    [reagent.core :as r]
+    [sguis.workspaces.circle-drawer :refer [circles-ui
+                                            circles-start]]
+    [sguis.workspaces.test-utils :as u]))
 
-(defn relative-click [svg-comp {:keys [x y]}]
+(defn relative-click
+  [svg-comp {:keys [x y]}]
   (let [dim (.getBoundingClientRect svg-comp)]
     {:clientX (+ (.-left dim) x)
      :clientY (+ (.-top dim) y)}))
@@ -35,56 +37,56 @@
         redo-btn      #(.getByText % "Redo")
         *circles      (r/atom circles-start)]
     (u/with-mounted-component [circles-ui *circles]
-      (fn [comp]
-        (let [svg-comp (svg-drawer comp)]
-          (testing "Creating circles"
-            (doseq [c [circle-pos0
-                       circle-pos1
-                       circle-pos2]] (u/click-element! svg-comp (relative-click svg-comp c)))
+                              (fn [comp]
+                                (let [svg-comp (svg-drawer comp)]
+                                  (testing "Creating circles"
+                                    (doseq [c [circle-pos0
+                                               circle-pos1
+                                               circle-pos2]] (u/click-element! svg-comp (relative-click svg-comp c)))
 
-            (is (= [circle-pos0
-                    circle-pos1
-                    circle-pos2]
-                   (->> @*circles :circles))))
+                                    (is (= [circle-pos0
+                                            circle-pos1
+                                            circle-pos2]
+                                           (->> @*circles :circles))))
 
-          (testing "Change circle selection"
-            (is (= circle-pos2
-                   (-> @*circles :selection)))
-            (u/click-element! (circle-0 comp))
-            (are [expected actual] (= expected actual)
-              circle-pos0 (-> @*circles :selection)
-              "red"       (.. (circle-0 comp)
-                              -attributes
-                              -fill
-                              -value)
-              "white"     (.. (circle-2 comp)
-                              -attributes
-                              -fill
-                              -value)))
+                                  (testing "Change circle selection"
+                                    (is (= circle-pos2
+                                           (-> @*circles :selection)))
+                                    (u/click-element! (circle-0 comp))
+                                    (are [expected actual] (= expected actual)
+                                      circle-pos0 (-> @*circles :selection)
+                                      "red"       (.. (circle-0 comp)
+                                                      -attributes
+                                                      -fill
+                                                      -value)
+                                      "white"     (.. (circle-2 comp)
+                                                      -attributes
+                                                      -fill
+                                                      -value)))
 
-          (testing "Opening Radius-Box"
-            (u/click-context-menu! svg-comp)
-            (is (and (-> @*circles :slider-opened? true?)
-                     (slider-label comp))))
+                                  (testing "Opening Radius-Box"
+                                    (u/click-context-menu! svg-comp)
+                                    (is (and (-> @*circles :slider-opened? true?)
+                                             (slider-label comp))))
 
-          (testing "Changing radius from circle0"
-            (let [r-test 100]
-              (u/change-element! (radius-slider comp) r-test)
-              (is (= r-test (-> @*circles :circles last :r)))))
+                                  (testing "Changing radius from circle0"
+                                    (let [r-test 100]
+                                      (u/change-element! (radius-slider comp) r-test)
+                                      (is (= r-test (-> @*circles :circles last :r)))))
 
-          (testing "Undo button"
-            (u/click-element! (undo-btn comp))
-            (u/click-element! (undo-btn comp))
-            (is (= [(assoc circle-pos0 :r 100)
-                    circle-pos2]
-                   (-> @*circles :history)))
-            (is (= [circle-pos0 circle-pos1]
-                   (-> @*circles :circles))))
+                                  (testing "Undo button"
+                                    (u/click-element! (undo-btn comp))
+                                    (u/click-element! (undo-btn comp))
+                                    (is (= [(assoc circle-pos0 :r 100)
+                                            circle-pos2]
+                                           (-> @*circles :history)))
+                                    (is (= [circle-pos0 circle-pos1]
+                                           (-> @*circles :circles))))
 
-          (testing "Redo button"
-            (u/click-element! (redo-btn comp))
-            (is (= [(assoc circle-pos0 :r 100)]
-                   (-> @*circles :history)))
-            (is (= [circle-pos0
-                    circle-pos1
-                    circle-pos2] (-> @*circles :circles)))))))))
+                                  (testing "Redo button"
+                                    (u/click-element! (redo-btn comp))
+                                    (is (= [(assoc circle-pos0 :r 100)]
+                                           (-> @*circles :history)))
+                                    (is (= [circle-pos0
+                                            circle-pos1
+                                            circle-pos2] (-> @*circles :circles)))))))))

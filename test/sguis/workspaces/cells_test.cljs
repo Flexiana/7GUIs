@@ -1,14 +1,15 @@
 (ns sguis.workspaces.cells-test
-  (:require [sguis.workspaces.cells :refer [eval-cell
-                                            cells-ui
-                                            cells-start]]
-            [cljs.test :as t
-             :include-macros true
-             :refer [are is testing]]
-            [nubank.workspaces.core :as ws]
-            [reagent.core :as r]
-            [sguis.workspaces.test-utils :as u]
-            [clojure.string :as str]))
+  (:require
+    [cljs.test :as t
+     :include-macros true
+     :refer [are is testing]]
+    [clojure.string :as str]
+    [nubank.workspaces.core :as ws]
+    [reagent.core :as r]
+    [sguis.workspaces.cells :refer [eval-cell
+                                    cells-ui
+                                    cells-start]]
+    [sguis.workspaces.test-utils :as u]))
 
 (ws/deftest eval-cell-test
   (are [expected actual] (= expected actual)
@@ -24,7 +25,8 @@
                               :G0 "10"}} "Add A7 and G0 =")
     ""    (eval-cell {} nil)))
 
-(defn texts-on-field [field]
+(defn texts-on-field
+  [field]
   (mapv #(.-innerText %) (.-children field)))
 
 (ws/deftest ui-tests
