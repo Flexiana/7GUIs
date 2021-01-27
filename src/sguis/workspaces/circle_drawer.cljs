@@ -139,7 +139,8 @@
 
 (defn circles-ui
   ([]
-   (r/with-let [*circles (r/atom circles-start)]))
+   (r/with-let [*circles (r/atom circles-start)]
+     [circles-ui *circles]))
   ([*circles]
    [:div {:style {:padding    "1em"
                   :text-align "center"}}
