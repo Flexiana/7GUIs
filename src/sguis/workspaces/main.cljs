@@ -1,4 +1,4 @@
-(ns sguis.main
+(ns sguis.workspaces.main
   (:require [reagent.core :as r]
             [nubank.workspaces.card-types.react :refer [react-card]]
             [nubank.workspaces.core :refer [mount defcard]]
