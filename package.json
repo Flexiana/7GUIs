@@ -1,7 +1,6 @@
 {
     "scripts": {
         "clean": "rm -rf node_modules/ && rm -rf package-lock.json && rm -rf .shadow-cljs/ && rm -rf resources/public/js resources/production/js && rm -rf .lsp/",
-        "lint": "shadow-cljs run clj-kondo.main --lint src test",
         "tests": "shadow-cljs compile ci && npx karma start --single-run",
         "production-build": "shadow-cljs release sguis"
     },

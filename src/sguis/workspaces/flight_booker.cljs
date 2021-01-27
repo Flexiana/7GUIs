@@ -109,7 +109,7 @@
   ([]
    (r/with-let [today (dfns/startOfToday)
                 *booker (r/atom (booker-start today))]
-               [booker-ui *booker today]))
+     [booker-ui *booker today]))
   ([*booker booking-available-from]
    (let [{:keys [flight-type go-flight return-flight]} @*booker]
      [:div.panel.is-primary

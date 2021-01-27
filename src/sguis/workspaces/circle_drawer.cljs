@@ -156,7 +156,7 @@
 (defn circles-ui
   ([]
    (r/with-let [*circles (r/atom circles-start)]
-               [circles-ui *circles]))
+     [circles-ui *circles]))
   ([*circles]
    [:div.panel.is-primary
     {:style {:min-width "24em"}}

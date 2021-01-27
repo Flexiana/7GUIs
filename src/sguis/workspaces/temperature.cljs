@@ -66,7 +66,7 @@
 (defn temperature-ui
   ([]
    (r/with-let [state (r/atom temperature-start)]
-               [temperature-ui state]))
+     [temperature-ui state]))
   ([state]
    (let [change-temperature (partial change-state! state)]
      [:div.panel.is-primary

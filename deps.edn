@@ -5,11 +5,12 @@
          nubank/workspaces            {:mvn/version "1.0.15"}
          binaryage/devtools           {:mvn/version "1.0.2"}
          borkdude/sci                 {:mvn/version "0.2.1-alpha.1"}
-         thheller/shadow-cljs         {:mvn/version "2.11.15"}
-         clj-kondo/clj-kondo          {:mvn/version "2021.01.20"}}
+         thheller/shadow-cljs         {:mvn/version "2.11.15"}}
 
  :aliases {:style {:extra-deps {mvxcvi/cljstyle {:mvn/version "0.14.0"}}
                    :main-opts ["-m" "cljstyle.main" "fix"]}
+           :lint {:extra-deps {clj-kondo/clj-kondo {:mvn/version "2021.01.20"}}
+                  :main-opts ["-m" "clj-kondo.main" "--lint" "src" "test"]}
            :build-cljs {:exec-fn core/release-prod}
            :build {:extra-deps {seancorfield/depstar {:mvn/version "2.0.165"}}
                    :ns-default   hf.depstar
