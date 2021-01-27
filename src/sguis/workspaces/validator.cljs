@@ -1,10 +1,12 @@
 (ns sguis.workspaces.validator
   (:refer-clojure :exclude [float?]))
 
-(defn numeric? [x]
+(defn numeric?
+  [x]
   (and (number? x) (not (js/Number.isNaN x))))
 
-(defn float? [s]
+(defn float?
+  [s]
   (re-matches #"[+-]?(\d*\.)?\d+" s))
 
 (comment

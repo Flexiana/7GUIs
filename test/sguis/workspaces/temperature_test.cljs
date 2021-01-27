@@ -1,11 +1,12 @@
 (ns sguis.workspaces.temperature-test
-  (:require [sguis.workspaces.temperature :refer [temperature-ui
-                                                  convert]]
-            [cljs.test :as t
-             :include-macros true
-             :refer [is testing]]
-            [nubank.workspaces.core :as ws]
-            [sguis.workspaces.test-utils :as u]))
+  (:require
+    [cljs.test :as t
+     :include-macros true
+     :refer [is testing]]
+    [nubank.workspaces.core :as ws]
+    [sguis.workspaces.temperature :refer [temperature-ui
+                                          convert]]
+    [sguis.workspaces.test-utils :as u]))
 
 (ws/deftest test-convert
   (testing "fahrenheit <-> celsius"
@@ -19,10 +20,10 @@
   (let [celsius-input    #(.getByLabelText % #"(?i)celsius")
         fahrenheit-input #(.getByLabelText % #"(?i)fahrenheit")]
     (u/with-mounted-component [temperature-ui]
-      (fn [comp]
-        (let [_celsius->fahrenheit!     (u/change-element! (celsius-input comp) "5")
-              celsius->fahrenheit-value (.-value (fahrenheit-input comp))
-              _fahrenheit->celsius!     (u/change-element! (fahrenheit-input comp) celsius->fahrenheit-value)
-              fahrenheit->celsius-value (.-value (celsius-input comp))]
-          (is (= "41" celsius->fahrenheit-value))
-          (is (= "5" fahrenheit->celsius-value)))))))
+                              (fn [comp]
+                                (let [_celsius->fahrenheit!     (u/change-element! (celsius-input comp) "5")
+                                      celsius->fahrenheit-value (.-value (fahrenheit-input comp))
+                                      _fahrenheit->celsius!     (u/change-element! (fahrenheit-input comp) celsius->fahrenheit-value)
+                                      fahrenheit->celsius-value (.-value (celsius-input comp))]
+                                  (is (= "41" celsius->fahrenheit-value))
+                                  (is (= "5" fahrenheit->celsius-value)))))))

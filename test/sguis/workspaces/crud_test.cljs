@@ -1,13 +1,15 @@
 (ns sguis.workspaces.crud-test
-  (:require [sguis.workspaces.crud :refer [crud-ui crud-start]]
-            [cljs.test :as t
-             :include-macros true
-             :refer [are is testing]]
-            [nubank.workspaces.core :as ws]
-            [sguis.workspaces.test-utils :as u]
-            [reagent.core :as r]))
+  (:require
+    [cljs.test :as t
+     :include-macros true
+     :refer [are is testing]]
+    [nubank.workspaces.core :as ws]
+    [reagent.core :as r]
+    [sguis.workspaces.crud :refer [crud-ui crud-start]]
+    [sguis.workspaces.test-utils :as u]))
 
-(defn texts-on-field [field]
+(defn texts-on-field
+  [field]
   (mapv #(.-innerText %) (.-children field)))
 
 (def selectors-map
