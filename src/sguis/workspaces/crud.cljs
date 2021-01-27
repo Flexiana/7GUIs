@@ -5,7 +5,7 @@
 
 (def crud-start
   {:next-id           0
-   :filter            ""
+   :filter-field            ""
    :person/by-id      {}
    :current-id        nil
    :name-insertion    nil
@@ -14,7 +14,7 @@
 (defn change-filter! [*state e]
   (swap! *state
          assoc
-         :filter
+         :filter-field
          (.. e -target -value)))
 
 (defn filter-field [change-filter-prefix!]
@@ -42,8 +42,8 @@
    [text-field :name-insertion name-insertion "Name: " insert-value!]
    [text-field :surname-insertion surname-insertion "Surname: " insert-value!]])
 
-(defn matching-name? [filter-prefix {:keys [surname name]}]
-  (str/includes? (str/lower-case (str surname name)) (str/lower-case filter-prefix)))
+(defn matching-name? [filter-field {:keys [surname name]}]
+  (str/includes? (str/lower-case (str surname name)) (str/lower-case filter-field)))
 
 (defn person-row [{:keys [current-id]} select-person! {:keys [name surname id] :as person}]
   (let [show-name (str surname ", " name)]
@@ -54,12 +54,12 @@
       show-name]))
 
 (defn person-list [{:person/keys [by-id]
-                    :keys        [filter]
+                    :keys        [filter-field]
                     :as          state} select-person!]
   [:ul.panel {:data-testid "person-list"}
    (->> by-id
         vals
-        (filter (partial matching-name? filter))
+        (filter (partial matching-name? filter-field))
         (map (partial person-row state select-person!)))])
 
 (defn select-person! [*state {:keys [name surname id]}]
