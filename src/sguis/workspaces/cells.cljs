@@ -177,7 +177,7 @@
 (defn cells-ui
   ([]
    (r/with-let [*cells (r/atom cells-start)]
-               [cells-ui *cells]))
+     [cells-ui *cells]))
   ([*cells]
    [:div.panel.is-primary
     {:style {:min-width "24em"}}

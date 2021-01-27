@@ -1,18 +1,17 @@
-{:source-paths ["src" "test"]
- :dependencies [[reagent "1.0.0-rc1"]
-                [nubank/workspaces "1.0.15"]
-                [binaryage/devtools "1.0.2"]
-                [borkdude/sci "0.2.1-alpha.1"]
-                [clj-kondo "RELEASE"]]
- :builds       {:workspaces {:target     :browser
-                             :output-dir "resources/public/js/workspaces"
-                             :asset-path "/js/workspaces"
-                             :devtools   {:http-root          "resources/public"
-                                          :http-port          8080
-                                          :http-resource-root "."
-                                          :preloads           [devtools.preload]}
-                             :modules    {:main {:entries [sguis.main]}}}
-                :ci         {:target           :karma
-                             :compiler-options {:output-feature-set :es6}
-                             :ns-regexp        "-test$"
-                             :output-to        "target/ci.js"}}}
+{:deps   true
+ :builds {:sguis      {:target     :browser
+                       :output-dir "resources/production/js/sguis"
+                       :asset-path "/js/sguis"
+                       :modules    {:main {:init-fn main/run}}}
+          :workspaces {:target     :browser
+                       :output-dir "resources/public/js/workspaces"
+                       :asset-path "/js/workspaces"
+                       :devtools   {:http-root          "resources/public"
+                                    :http-port          8080
+                                    :http-resource-root "."
+                                    :preloads           [devtools.preload]}
+                       :modules    {:main {:entries [sguis.workspaces.main]}}}
+          :ci         {:target           :karma
+                       :compiler-options {:output-feature-set :es6}
+                       :ns-regexp        "-test$"
+                       :output-to        "target/ci.js"}}}

@@ -165,7 +165,7 @@
 (defn crud-ui
   ([]
    (r/with-let [*crud (r/atom crud-start)]
-               [crud-ui *crud]))
+     [crud-ui *crud]))
   ([*state]
    [:div.panel.is-primary
     {:style {:min-width "24em"}}

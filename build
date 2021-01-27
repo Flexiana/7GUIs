@@ -1,0 +1,2 @@
+#!/bin/bash
+clj -X:build-cljs && clj -X:build

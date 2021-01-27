@@ -1,9 +1,11 @@
 image: raffinate/cljs-ci
 
 before_script:
+  - apt install -y curl && curl -O https://download.clojure.org/install/linux-install-1.10.2.774.sh && chmod +x linux-install-1.10.2.774.sh && ./linux-install-1.10.2.774.sh
   - npm install
 
 test:
   script:
-    - npm run lint
+    - clojure -M:style
+    - clojure -M:lint
     - npm run tests
