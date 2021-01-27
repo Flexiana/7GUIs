@@ -1,7 +1,7 @@
 image: raffinate/cljs-ci
 
 before_script:
-  - apt install -y clojure
+  - apt update && apt upgrade && apt install -y clojure
   - npm install
 
 test:
