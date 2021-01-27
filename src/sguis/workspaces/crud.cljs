@@ -5,16 +5,16 @@
 
 (def crud-start
   {:next-id           0
-   :filter-prefix     ""
+   :filter            ""
    :person/by-id      {}
    :current-id        nil
    :name-insertion    nil
    :surname-insertion nil})
 
-(defn change-filter-prefix! [*state e]
+(defn change-filter! [*state e]
   (swap! *state
          assoc
-         :filter-prefix
+         :filter
          (.. e -target -value)))
 
 (defn filter-field [change-filter-prefix!]
@@ -54,12 +54,12 @@
       show-name]))
 
 (defn person-list [{:person/keys [by-id]
-                    :keys        [filter-prefix]
+                    :keys        [filter]
                     :as          state} select-person!]
   [:ul.panel {:data-testid "person-list"}
    (->> by-id
         vals
-        (filter (partial matching-name? filter-prefix))
+        (filter (partial matching-name? filter))
         (map (partial person-row state select-person!)))])
 
 (defn select-person! [*state {:keys [name surname id]}]
@@ -151,7 +151,7 @@
     {:style {:min-width "24em"}}
     [:div.panel-heading "CRUD"]
     [:div.panel-block.is-block
-     [people-panel @*state {:change-filter-prefix! (partial change-filter-prefix! *state)
+     [people-panel @*state {:change-filter-prefix! (partial change-filter! *state)
                             :select-value!         (partial select-person! *state)
                             :insert-value!         (partial insert-value! *state)}]
 

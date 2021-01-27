@@ -83,7 +83,7 @@
           (u/click-element! (create-button comp))
           (u/input-element! (filter-field comp) "F")
           (are [expected actual] (= expected actual)
-            "F"                                       (:filter-prefix @*crud)
+            "F"                                       (:filter @*crud)
             {0 {:id 0, :name "Jane", :surname "Doe"}
              1 {:id 1, :name "John", :surname "Foe"}} (:person/by-id @*crud))
           (is (= ["Foe, John"] (texts-on-field (person-list comp)))))
