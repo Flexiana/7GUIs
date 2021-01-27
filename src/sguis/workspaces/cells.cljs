@@ -162,7 +162,9 @@
    (r/with-let [*cells (r/atom cells-start)]
      [cells-ui *cells]))
   ([*cells]
-   [:div {:padding "1em"}
+   [:div.panel.is-primary
+    {:style {:min-width "24em"}}
+    [:div.panel-heading "Spreadsheets"]
     [:table {:style       table-style
              :data-testid "table"}
      [:thead {:style       overflow-style
