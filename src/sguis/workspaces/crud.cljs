@@ -32,11 +32,10 @@
 (defn text-field
   [id value label on-change]
   [:label label
-   [:div.field
     [:input.input {:type        "text"
                    :data-testid label
                    :value       (when value value)
-                   :on-change   (partial on-change id)}]]])
+                   :on-change   (partial on-change id)}]])
 
 (defn insert-value!
   [*state id event]
