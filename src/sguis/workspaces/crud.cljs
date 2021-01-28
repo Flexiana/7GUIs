@@ -136,18 +136,19 @@
 
 (defn crud-button
   [{:keys [current-id] :as state} btn-type action]
-  [:button.button {:class (u/classes (case btn-type
-                                       :create :is-primary
-                                       :update :is-success
-                                       :delete :is-danger))
-                   :disabled (if (or (= btn-type :update)
-                                     (= btn-type :delete))
-                               (not current-id)
-                               false)
-                   :on-click (partial action state)}
-   ((fn [[f & rest]] (str (str/upper-case f)
-                         (str/join rest)))
-    (name btn-type))])
+  [:div.column
+   [:button.button {:class    (u/classes (case btn-type
+                                           :create :is-primary
+                                           :update :is-success
+                                           :delete :is-danger))
+                    :disabled (if (or (= btn-type :update)
+                                      (= btn-type :delete))
+                                (not current-id)
+                                false)
+                    :on-click (partial action state)}
+    (let [[f & rest] (name btn-type)]
+      (str (str/upper-case f)
+           (str/join rest)))]])
 
 (defn people-panel
   [state {:keys [change-filter-prefix!
@@ -176,6 +177,7 @@
                             :select-value!         (partial select-person! *state)
                             :insert-value!         (partial insert-value! *state)}]
 
-     [crud-button @*state :create (partial create-person! *state)]
-     [crud-button @*state :update (partial update-person! *state)]
-     [crud-button @*state :delete (partial delete-person! *state)]]]))
+     [:div.columns
+      [crud-button @*state :create (partial create-person! *state)]
+      [crud-button @*state :update (partial update-person! *state)]
+      [crud-button @*state :delete (partial delete-person! *state)]]]]))
