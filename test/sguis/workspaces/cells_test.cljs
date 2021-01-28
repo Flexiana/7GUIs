@@ -13,16 +13,25 @@
 
 (ws/deftest eval-cell-test
   (are [expected actual] (= expected actual)
-    "10"  (eval-cell {:cells {:A2 "2" :B8 "8"}} "Sum of A2:B8 =")
-    "0"   (eval-cell {} "Sum of A2:B8 =")
-    "4"   (eval-cell {} "Sum of 4 and A2:B8 =")
+    "10"  (eval-cell {:cells {:A2 "2" :B8 "8"}
+                      :columns      10
+                      :rows         10} "Sum of A2:B8 =")
+    "0"   (eval-cell {:columns      10
+                      :rows         10} "Sum of A2:B8 =")
+    "4"   (eval-cell {:columns      10
+                      :rows         10} "Sum of 4 and A2:B8 =")
     "3"   (eval-cell {} "Add 1 and 2 =")
-    "NaN" (eval-cell {} "Div of B5 and C5 =")
+    "NaN" (eval-cell {:columns      10
+                      :rows         10} "Div of B5 and C5 =")
     "a"   (eval-cell {} "a")
     "NaN" (eval-cell {:cells {:B1 "Elephant"
-                              :B2 "10"}} "Sum of B1 and B2 =")
+                              :B2 "10"}
+                      :columns      10
+                      :rows         10} "Sum of B1 and B2 =")
     "20"  (eval-cell {:cells {:A7 "10"
-                              :G0 "10"}} "Add A7 and G0 =")
+                              :G0 "10"}
+                      :columns      10
+                      :rows         10} "Add A7 and G0 =")
     ""    (eval-cell {} nil)))
 
 (defn texts-on-field
@@ -30,7 +39,11 @@
   (mapv #(.-innerText %) (.-children field)))
 
 (ws/deftest ui-tests
-  (let [*test-state (r/atom cells-start)]
+  (let [*test-state (r/atom {:focused-cell nil
+                             :edition      ""
+                             :cells        {}
+                             :columns      26
+                             :rows         100})]
     (u/with-mounted-component
       [cells-ui *test-state]
       (fn [comp]
@@ -44,8 +57,8 @@
                        (u/input-element! (input comp id) value)
                        (u/submit! (form comp id)))]
           (testing "Initial render"
-            (is (= (into [""] (map str (range 0 100))) (mapv str/trim (texts-on-field (tbody comp)))))
-            (is (= (into [""] (map char (range 65 91))) (str/split (first (texts-on-field (thead comp))) #"\t"))))
+            (is (= (flatten [[""] (map str (range 0 100)) "Add row"])     (mapv str/trim (texts-on-field (tbody comp)))))
+            (is (= (flatten [[""] (map char (range 65 91)) "Add column"]) (str/split (first (texts-on-field (thead comp))) #"\t"))))
           (testing "Change value"
             (insert comp "A1" "Elephant")
             (is (= "Elephant" (.-innerText (cell comp "A1")))))

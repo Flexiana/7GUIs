@@ -16,9 +16,9 @@
   {:filter-field  #(.getByTestId % "filter")
    :name-field    #(.getByTestId % "Name:")
    :surname-field #(.getByTestId % "Surname:")
-   :create-button #(.getByText % "create")
-   :update-button #(.getByText % "update")
-   :delete-button #(.getByText % "delete")
+   :create-button #(.getByText % "Create")
+   :update-button #(.getByText % "Update")
+   :delete-button #(.getByText % "Delete")
    :person-list   #(.getByTestId % "person-list")})
 
 (ws/deftest crud-tests
