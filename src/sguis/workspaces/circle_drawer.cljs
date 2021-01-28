@@ -76,10 +76,11 @@
      :on-change   (partial update-radius! selected?)}]])
 
 (defn radius-box
-  [{:keys [slider-opened? selection]} update-radius!]
-  (when slider-opened?
-    [:modal.modal-content {:style radius-box-style}
-     [radius-slider selection update-radius!]]))
+  [{:keys [slider-opened? selection circles]} update-radius!]
+  (when (and slider-opened? (not-empty circles))
+    [:div.container.is-child
+     [:modal.modal-content {:style radius-box-style}
+      [radius-slider selection update-radius!]]]))
 
 (defn last-circles-by-id
   [circles]
