@@ -8,17 +8,22 @@
 (def cells-start
   {:focused-cell nil
    :edition      ""
-   :cells        {}})
+   :cells        {}
+   :columns      10
+   :rows         5})
 
-(def az-range
-  (map char (range 65 91)))
+(defn az-range
+  [columns]
+  (map char (take columns (range 65 91))))
 
-(def table-lines
-  (range 0 100))
+(defn table-lines
+  [rows]
+  (take rows (range 0 100)))
 
-(def possible-cells
-  (set (for [s az-range
-             n table-lines]
+(defn possible-cells
+  [{:keys [rows columns]}]
+  (set (for [s (az-range columns)
+             n (table-lines rows)]
          (keyword (str s n)))))
 
 ;; Parser Impl
@@ -38,15 +43,15 @@
        (valid/numeric? (js/parseFloat parsed-exp))))
 
 (defn is-cell?
-  [parsed-exp]
+  [env parsed-exp]
   (and (= 2 (count parsed-exp))
-       (possible-cells (keyword (str/upper-case parsed-exp)))))
+       (get (possible-cells env) (keyword (str/upper-case parsed-exp)))))
 
 (defn is-range-cells?
-  [parsed-exp]
+  [env parsed-exp]
   (and (= 5 (count parsed-exp))
        (->> (str/split parsed-exp #":")
-            (map (comp boolean possible-cells keyword str/upper-case))
+            (map (comp boolean (possible-cells env) keyword str/upper-case))
             (every? true?))))
 
 (defn range-cells-get
@@ -81,8 +86,8 @@
   [env parsed-exp]
   (cond
     (can-parse-numeric? parsed-exp) (js/parseFloat parsed-exp)
-    (is-cell? parsed-exp) (parse-cell env parsed-exp)
-    (is-range-cells? parsed-exp) (parse-range-cells env parsed-exp)
+    (is-cell? env parsed-exp) (parse-cell env parsed-exp)
+    (is-range-cells? env parsed-exp) (parse-range-cells env parsed-exp)
     (is-op? parsed-exp) (get kw->op (keyword parsed-exp))))
 
 (defn parse
@@ -166,9 +171,8 @@
   [:tr
    (concat
      [^{:key l}
-      [:td {:style (light-border-style cell-width)}
-       l]]
-     (map (partial coll-fn cells actions-map l) az-range))])
+      [:td {:style (light-border-style 42)} l]
+      (map (partial coll-fn cells actions-map l) (az-range (:columns cells)))])])
 
 (defn change-width
   [state]
@@ -181,15 +185,15 @@
   ([*cells]
    (.addEventListener js/window "resize" #(change-width *cells))
    (change-width *cells)
-   (let [width   (:window-width @*cells)
-         columns (count az-range)
+   (let [width      (:window-width @*cells)
+         columns    (:columns @*cells)
          cell-width (/ width columns)]
      [:div.panel.is-primary
       {:style {:margin "auto"
                :width  width}}
       [:div.panel-heading {:style {:width width}} "Spreadsheets"]
-      [:div {:style {:width width
-                     :height (* 0.5 (.-innerHeight js/window))
+      [:div {:style {:width    width
+                     :height   (* 0.5 (.-innerHeight js/window))
                      :overflow :scroll}}
        [:table {:id          "table"
                 :data-testid "table"}
@@ -197,7 +201,11 @@
                  :data-testid "thead"}
          [:tr {:style (light-border-style cell-width)}
           (concat [^{:key :n} [:th]]
-                  (map (partial header-fn cell-width) az-range))]]
+                  (map (partial header-fn cell-width) (az-range (:columns @*cells)))
+                  [^{:key :n} [:th
+                               [:button.button.is-primary
+                                {:on-click #(swap! *cells update :columns (partial (fn [x] (min (inc x) 26))))}
+                                "Add column"]]])]]
         [:tbody {:style       overflow-style
                  :data-testid "tbody"}
          (concat [^{:key :n} [:tr (merge (light-border-style cell-width) overflow-style)]]
@@ -205,4 +213,8 @@
                                {:focus-cell!  (partial focus-cell! *cells)
                                 :submit-cell! (partial submit-cell! *cells)
                                 :change-cell! (partial change-cell! *cells)}
-                               cell-width) table-lines))]]]])))
+                               cell-width) (table-lines (:rows @*cells)))
+                 [^{:key "add row"}
+                  [:td [:button.button.is-primary
+                        {:on-click #(swap! *cells update :rows (partial (fn [x] (min (inc x) 100))))}
+                        "Add row"]]])]]]])))
