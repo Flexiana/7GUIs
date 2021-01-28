@@ -1,7 +1,6 @@
 (ns sguis.workspaces.circle-drawer
   (:require
-   [reagent.core :as r]
-   [sguis.workspaces.utils :as u]))
+   [reagent.core :as r]))
 
 (def circles-start
   {:slider-opened? nil
@@ -142,6 +141,7 @@
   (swap! *state assoc :slider-opened? false)
   (swap! *state update :current-id inc))
 
+#_:clj-kondo/ignore
 (defn svg-draw
   [{:keys [circles selection slider-opened? current-id slider-opened?]}
    open-slider!
@@ -149,7 +149,7 @@
    circle-draw!
    update-radius!]
   [:<>
-   [:svg {:data-testid "svg-drawer"
+   [:svg {:data-testid     "svg-drawer"
           :style           svg-style
           :on-context-menu (partial open-slider! selection slider-opened?)
           :on-click        (partial insert-circle! current-id)}
