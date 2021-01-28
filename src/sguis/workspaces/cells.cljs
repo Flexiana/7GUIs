@@ -202,10 +202,10 @@
          [:tr {:style (light-border-style cell-width)}
           (concat [^{:key :n} [:th]]
                   (map (partial header-fn cell-width) (az-range (:columns @*cells)))
-                  [^{:key :n} [:th
-                               [:button.button.is-primary
-                                {:on-click #(swap! *cells update :columns (partial (fn [x] (min (inc x) 26))))}
-                                "Add column"]]])]]
+                  [^{:key "btn-col"} [:th
+                                      [:button.button.is-primary
+                                       {:on-click #(swap! *cells update :columns (partial (fn [x] (min (inc x) 26))))}
+                                       "Add column"]]])]]
         [:tbody {:style       overflow-style
                  :data-testid "tbody"}
          (concat [^{:key :n} [:tr (merge (light-border-style cell-width) overflow-style)]]
@@ -214,7 +214,8 @@
                                 :submit-cell! (partial submit-cell! *cells)
                                 :change-cell! (partial change-cell! *cells)}
                                cell-width) (table-lines (:rows @*cells)))
-                 [^{:key "add row"}
-                  [:td [:button.button.is-primary
-                        {:on-click #(swap! *cells update :rows (partial (fn [x] (min (inc x) 100))))}
-                        "Add row"]]])]]]])))
+                 [^{:key "btn-row"}
+                  [:tr [:td [:button.button.is-primary
+                             {:on-click #(swap! *cells update :rows (partial (fn [x] (min (inc x) 100))))}
+                             "Add row"]]]])]]]])))
+
