@@ -189,6 +189,7 @@
                :width  width}}
       [:div.panel-heading {:style {:width width}} "Spreadsheets"]
       [:div {:style {:width width
+                     :height (* 0.5 (.-innerHeight js/window))
                      :overflow :scroll}}
        [:table {:id          "table"
                 :data-testid "table"}
