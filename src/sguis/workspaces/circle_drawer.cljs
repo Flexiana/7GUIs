@@ -1,6 +1,7 @@
 (ns sguis.workspaces.circle-drawer
   (:require
-    [reagent.core :as r]))
+   [reagent.core :as r]
+   [sguis.workspaces.utils :as u]))
 
 (def circles-start
   {:slider-opened? nil
@@ -10,11 +11,11 @@
    :history        []})
 
 (def svg-style
-  {:margin "auto"
-   :width "100%"
-   :height "600px"
-   :padding "1em"
-   :text-align "center"
+  {:margin           "auto"
+   :width            "100%"
+   :height           "600px"
+   :padding          "1em"
+   :text-align       "center"
    :display          "flex"
    :border           "1px solid black"
    :stroke           "#646464"
@@ -50,13 +51,15 @@
    [:button.button.is-primary {:on-click (partial redo-on-click! history)} "Redo"]])
 
 (def radius-box-style
-  {:position "fixed"
+  {:position "sticky"
    :width "80%"
+   :height "10%"
    :top "50%"
    :left "50%"
-   :transform "translate(-50%,-50%)"
+   :transform "translate(-10%,-500%)"
    :padding "1em"
    :text-align "center"
+   :overflow "hidden"
    :background-color "rgba(255,255,255,0.5)"})
 
 (defn update-radius!
@@ -79,13 +82,6 @@
      :max         100
      :disabled    (not selected?)
      :on-change   (partial update-radius! selected?)}]])
-
-(defn radius-box
-  [{:keys [slider-opened? selection circles]} update-radius!]
-  (when (and slider-opened? (not-empty circles))
-    [:div.container.is-child
-     [:modal.modal-content {:style radius-box-style}
-      [radius-slider selection update-radius!]]]))
 
 (defn last-circles-by-id
   [circles]
@@ -140,24 +136,29 @@
   (let [circle-pos (-> event
                        get-circle-dim
                        (assoc :id current-id
-                         :r 50))]
+                              :r 50))]
     (swap! *state update :circles conj circle-pos)
     (swap! *state assoc :selection circle-pos))
   (swap! *state assoc :slider-opened? false)
   (swap! *state update :current-id inc))
 
 (defn svg-draw
-  [{:keys [circles selection slider-opened? current-id]}
+  [{:keys [circles selection slider-opened? current-id slider-opened?]}
    open-slider!
    insert-circle!
-   circle-draw!]
-  [:svg {:data-testid "svg-drawer"
-         :style           svg-style
-         :on-context-menu (partial open-slider! selection slider-opened?)
-         :on-click        (partial insert-circle! current-id)}
-   (->> circles
-        last-circles-by-id
-        (map (partial circle-draw! selection)))])
+   circle-draw!
+   update-radius!]
+  [:<>
+   [:svg {:data-testid "svg-drawer"
+          :style           svg-style
+          :on-context-menu (partial open-slider! selection slider-opened?)
+          :on-click        (partial insert-circle! current-id)}
+    (->> circles
+         last-circles-by-id
+         (map (partial circle-draw! selection)))]
+   (when (and slider-opened? (not-empty circles))
+     [:div {:style radius-box-style}
+      [radius-slider selection update-radius!]])])
 
 (defn circles-ui
   ([]
@@ -170,9 +171,9 @@
     [:div.panel-block.is-justify-content-space-evenly
      [undo-button @*circles (partial undo-on-click! *circles)]
      [redo-button @*circles (partial redo-on-click! *circles)]]
-    [:div.panel-block
+    [:div.container.is-parent
      [svg-draw @*circles
       (partial open-slider! *circles)
       (partial insert-circle! *circles)
-      (partial circle-draw! *circles)]]
-    [radius-box @*circles (partial update-radius! *circles)]]))
+      (partial circle-draw! *circles)
+      (partial update-radius! *circles)]]]))
