@@ -165,15 +165,15 @@
    (r/with-let [*circles (r/atom circles-start)]
      [circles-ui *circles]))
   ([*circles]
-   [:div.panel.is-primary
-    {:style {:min-width "24em"}}
-    [:div.panel-heading "🔴 Drawer"]
-    [:div.panel-block.is-justify-content-space-evenly
-     [undo-button @*circles (partial undo-on-click! *circles)]
-     [redo-button @*circles (partial redo-on-click! *circles)]]
-    [:div.container.is-parent
-     [svg-draw @*circles
-      (partial open-slider! *circles)
-      (partial insert-circle! *circles)
-      (partial circle-draw! *circles)
-      (partial update-radius! *circles)]]]))
+   [:div
+    [:div.panel
+     {:style {:min-width "24em"}}
+     [:div.panel-heading {:style {:background-color "#00d1b2"}} "🔴 Drawer"]
+     [:div.panel-block.is-justify-content-space-evenly
+      [undo-button @*circles (partial undo-on-click! *circles)]
+      [redo-button @*circles (partial redo-on-click! *circles)]]]
+    [svg-draw @*circles
+     (partial open-slider! *circles)
+     (partial insert-circle! *circles)
+     (partial circle-draw! *circles)
+     (partial update-radius! *circles)]]))
