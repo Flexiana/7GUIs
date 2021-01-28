@@ -23,9 +23,10 @@
 (defn undo-on-click!
   [*state circles _]
   (when-not (empty? circles)
-    (swap! *state assoc :slider-opened? false)
-    (swap! *state update :circles pop)
-    (swap! *state update :history conj (last circles))))
+    (swap! *state #(-> %
+                       (assoc :slider-opened? false)
+                       (update :circles pop)
+                       (update :history conj (last circles))))))
 
 (defn undo-button
   [{:keys [circles]} undo-on-click!]
@@ -35,9 +36,10 @@
 (defn redo-on-click!
   [*state history _]
   (when-not (empty? history)
-    (swap! *state assoc :slider-opened? false)
-    (swap! *state update :circles conj (last history))
-    (swap! *state update :history pop)))
+    (swap! *state #(-> %
+                       (assoc :slider-opened? false)
+                       (update :circles conj (last history))
+                       (update :history pop)))))
 
 (defn redo-button
   [{:keys [history]} redo-on-click!]
