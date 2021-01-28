@@ -89,7 +89,7 @@
    {:data-testid "book-button"
     :disabled    (not (can-book? booker booking-available-from))
     :on-click    #(booking-message! (format-msg booker))}
-   "Book!"])
+   "Book"])
 
 (defn reset-booker-msg!
   [*booker _]

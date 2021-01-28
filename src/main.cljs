@@ -11,14 +11,28 @@
 
 (defn main-component
   []
-  [:<>
-   [counter-ui]
-   [temperature-ui]
-   [booker-ui]
-   [timer-ui]
-   [crud-ui]
-   [circles-ui]
-   [cells-ui]])
+  [:div.panel
+   [:div.panel-block.is-block
+    [:div.container
+     [counter-ui]]]
+   [:div.panel-block.is-block
+    [:div.container
+     [temperature-ui]]]
+   [:div.panel-block.is-block
+    [:div.container
+     [booker-ui]]]
+   [:div.panel-block.is-block
+    [:div.container
+     [timer-ui]]]
+   [:div.panel-block.is-block
+    [:div.container
+     [crud-ui]]]
+   [:div.panel-block.is-block
+    [:div.container
+     [circles-ui]]]
+   [:div.panel-block.is-block
+    [:div.container
+     [cells-ui]]]])
 
 (defn run
   []

@@ -53,7 +53,7 @@
   [timer-state]
   [:button.button.is-primary
    {:on-click #(swap! timer-state assoc :elapsed-time 0)}
-   "Reset!"])
+   "Reset"])
 
 (defn update-elapsed-time!
   [*timer-state]
