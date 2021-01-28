@@ -1,15 +1,14 @@
 (ns sguis.workspaces.cells-test
   (:require
-    [cljs.test :as t
-     :include-macros true
-     :refer [are is testing]]
-    [clojure.string :as str]
-    [nubank.workspaces.core :as ws]
-    [reagent.core :as r]
-    [sguis.workspaces.cells :refer [eval-cell
-                                    cells-ui
-                                    cells-start]]
-    [sguis.workspaces.test-utils :as u]))
+   [cljs.test :as t
+    :include-macros true
+    :refer [are is testing]]
+   [clojure.string :as str]
+   [nubank.workspaces.core :as ws]
+   [reagent.core :as r]
+   [sguis.workspaces.cells :refer [eval-cell
+                                   cells-ui]]
+   [sguis.workspaces.test-utils :as u]))
 
 (ws/deftest eval-cell-test
   (are [expected actual] (= expected actual)

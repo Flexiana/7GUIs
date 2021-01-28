@@ -165,6 +165,7 @@
                  :on-change     (partial change-cell!)}]]
        (eval-cell env (get cells cell-id)))]))
 
+#_:clj-kondo/ignore
 (defn row-fn
   [cells actions-map cell-width l]
   ^{:key l}
