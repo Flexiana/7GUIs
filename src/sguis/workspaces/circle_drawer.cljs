@@ -45,7 +45,7 @@
    [:button.button.is-primary {:on-click (partial redo-on-click! history)} "Redo"]])
 
 (def radius-box-style
-  {:position "absolute"
+  {:position "fixed"
    :width "80%"
    :top "50%"
    :left "50%"
