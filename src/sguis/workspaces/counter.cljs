@@ -16,5 +16,6 @@
          :size        6
          :value       @*counter-state}]]
       [:button.button.is-info
-       {:on-click #(swap! *counter-state inc)}
+       {:style    {:margin-top "0.5em"}
+        :on-click #(swap! *counter-state inc)}
        "Count"]]]))
