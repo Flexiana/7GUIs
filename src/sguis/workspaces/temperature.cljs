@@ -46,19 +46,19 @@
   [{:keys [label on-change state]}]
   (let [field-id                           (gensym)
         {:keys [value invalid? unsynced?]} state]
-    [:div.field.is-horizontal
+    [:div.field.is-horizontal {:style {:margin-top "0.5em"}}
      [:div.field-label.is-normal
       [:label.label
        {:for field-id}
        label]]
-     [:div.field-body.is-flex-grow-1
-      [:div.field
+     [:div.field-body.is-flex-grow-2
+      [:div.field {:style {:margin-bottom "0.5em"}}
        [:input.input.has-text-centered
         {:id        field-id
          :type      :text
          :class     (u/classes
-                      (when invalid? :is-danger)
-                      (when unsynced? :is-warning))
+                     (when invalid? :is-danger)
+                     (when unsynced? :is-warning))
          :size      6
          :on-change on-change
          :value     value}]]]]))
