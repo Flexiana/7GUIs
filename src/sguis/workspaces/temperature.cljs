@@ -57,8 +57,8 @@
         {:id        field-id
          :type      :text
          :class     (u/classes
-                     (when invalid? :is-danger)
-                     (when unsynced? :is-warning))
+                      (when invalid? :is-danger)
+                      (when unsynced? :is-warning))
          :size      6
          :on-change on-change
          :value     value}]]]]))
