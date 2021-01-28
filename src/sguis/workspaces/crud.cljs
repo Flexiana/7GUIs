@@ -145,7 +145,9 @@
                                (not current-id)
                                false)
                    :on-click (partial action state)}
-   (name btn-type)])
+   ((fn [[f & rest]] (str (str/upper-case f)
+                         (str/join rest)))
+    (name btn-type))])
 
 (defn people-panel
   [state {:keys [change-filter-prefix!

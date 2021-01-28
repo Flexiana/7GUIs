@@ -12,7 +12,7 @@
 (ws/deftest timer-test
   (let [fake-timer   (u/install-timer)
         *test-timer  (r/atom timer-start)
-        reset-button #(.getByText % "Reset!")
+        reset-button #(.getByText % "Reset")
         label        #(.getByTestId % "elapsed-seconds")
         input        #(.getByTestId % "duration")
         progress     #(.getByTestId % "elapsed-seconds-progress")]
