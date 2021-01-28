@@ -104,12 +104,6 @@
 
 ;; UI impl
 
-(def table-style
-  {:border          "1px solid black"
-   :border-collapse "collapse"
-   :width           "100%"
-   :overflow        "auto"})
-
 (def overflow-style
   {:overflow "auto"})
 
@@ -194,9 +188,9 @@
       {:style {:margin "auto"
                :width  width}}
       [:div.panel-heading {:style {:width width}} "Spreadsheets"]
-      [:div.panel-block.is-justify-content-space-evenly
-       [:table {:style       table-style
-                :id          "table"
+      [:div {:style {:width width
+                     :overflow :scroll}}
+       [:table {:id          "table"
                 :data-testid "table"}
         [:thead {:style       overflow-style
                  :data-testid "thead"}
