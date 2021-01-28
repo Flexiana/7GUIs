@@ -54,7 +54,7 @@
   (let [[collmin min] (name fst)
         [collmax max] (name snd)]
     (for [collv (range (.charCodeAt collmin) (inc (.charCodeAt collmax)))
-          v (range (int min) (inc (int max)))]
+          v     (range (int min) (inc (int max)))]
       (keyword (str (char collv) v)))))
 
 (defn is-op?
@@ -113,14 +113,16 @@
 (def overflow-style
   {:overflow "auto"})
 
-(def light-border-style
+(defn light-border-style
+  [width]
   {:border  "1px solid #ccc"
+   :width   width
    :padding "0.5em"})
 
 (defn header-fn
-  [chars]
+  [width chars]
   ^{:key chars}
-  [:td {:style light-border-style} chars])
+  [:td {:style (light-border-style width)} chars])
 
 (defn focus-cell!
   [*state cell-id _]
@@ -144,11 +146,11 @@
   (swap! *state assoc :edition (.. event -target -value)))
 
 (defn coll-fn
-  [{:keys [focused-cell cells] :as env}
+  [{:keys [focused-cell cells cell-width] :as env}
    {:keys [focus-cell! submit-cell! change-cell!]} l c]
   (let [cell-id (keyword (str c l))]
     ^{:key cell-id}
-    [:td {:style           light-border-style
+    [:td {:style           (light-border-style cell-width)
           :data-testid     cell-id
           :on-double-click (partial focus-cell! cell-id)}
      (if (= cell-id focused-cell)
@@ -156,7 +158,7 @@
                :id          cell-id
                :data-testid (str "form-" (name cell-id))
                :on-submit   (partial submit-cell! env cell-id)}
-        [:input {:style         light-border-style
+        [:input {:style         (light-border-style cell-width)
                  :type          "text"
                  :data-testid   (str "input-" (name cell-id))
                  :auto-focus    true
@@ -165,34 +167,47 @@
        (eval-cell env (get cells cell-id)))]))
 
 (defn row-fn
-  [cells actions-map l]
+  [cells actions-map cell-width l]
   ^{:key l}
   [:tr
    (concat
      [^{:key l}
-      [:td {:style light-border-style}
+      [:td {:style (light-border-style cell-width)}
        l]]
      (map (partial coll-fn cells actions-map l) az-range))])
+
+(defn change-width
+  [state]
+  (swap! state assoc :window-width (* 0.9 (.-innerWidth js/window))))
 
 (defn cells-ui
   ([]
    (r/with-let [*cells (r/atom cells-start)]
      [cells-ui *cells]))
   ([*cells]
-   [:div.panel.is-primary
-    {:style {:min-width "24em"}}
-    [:div.panel-heading "Spreadsheets"]
-    [:table {:style       table-style
-             :data-testid "table"}
-     [:thead {:style       overflow-style
-              :data-testid "thead"}
-      [:tr {:style light-border-style}
-       (concat [^{:key :n} [:th]]
-               (map header-fn az-range))]]
-     [:tbody {:style       overflow-style
-              :data-testid "tbody"}
-      (concat [^{:key :n} [:tr (merge light-border-style overflow-style)]]
-              (map (partial row-fn @*cells
-                            {:focus-cell!  (partial focus-cell! *cells)
-                             :submit-cell! (partial submit-cell! *cells)
-                             :change-cell! (partial change-cell! *cells)}) table-lines))]]]))
+   (.addEventListener js/window "resize" #(change-width *cells))
+   (change-width *cells)
+   (let [width   (:window-width @*cells)
+         columns (count az-range)
+         cell-width (/ width columns)]
+     [:div.panel.is-primary
+      {:style {:margin "auto"
+               :width  width}}
+      [:div.panel-heading {:style {:width width}} "Spreadsheets"]
+      [:div.panel-block.is-justify-content-space-evenly
+       [:table {:style       table-style
+                :id          "table"
+                :data-testid "table"}
+        [:thead {:style       overflow-style
+                 :data-testid "thead"}
+         [:tr {:style (light-border-style cell-width)}
+          (concat [^{:key :n} [:th]]
+                  (map (partial header-fn cell-width) az-range))]]
+        [:tbody {:style       overflow-style
+                 :data-testid "tbody"}
+         (concat [^{:key :n} [:tr (merge (light-border-style cell-width) overflow-style)]]
+                 (map (partial row-fn @*cells
+                               {:focus-cell!  (partial focus-cell! *cells)
+                                :submit-cell! (partial submit-cell! *cells)
+                                :change-cell! (partial change-cell! *cells)}
+                               cell-width) table-lines))]]]])))
