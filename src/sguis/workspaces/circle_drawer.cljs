@@ -10,8 +10,11 @@
    :history        []})
 
 (def svg-style
-  {:width            "800"
-   :height           "600"
+  {:margin "auto"
+   :width "100%"
+   :height "600px"
+   :padding "1em"
+   :text-align "center"
    :display          "flex"
    :border           "1px solid black"
    :stroke           "#646464"
