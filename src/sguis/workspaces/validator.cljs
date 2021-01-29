@@ -7,7 +7,7 @@
 
 (defn float?
   [s]
-  (re-matches #"[+-]?(\d*\.)?\d+" s))
+  (when s (re-matches #"[+-]?(\d*\.)?\d+" s)))
 
 (comment
   (false? (numeric? (js/parseFloat "a")))

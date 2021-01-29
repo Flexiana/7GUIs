@@ -39,13 +39,16 @@
 
 (defn can-parse-numeric?
   [parsed-exp]
-  (and (re-matches #"^[+-]?\d+(\.\d+)?$" parsed-exp)
+  (and (string? parsed-exp)
+       (re-matches #"^[+-]?\d+(\.\d+)?$" parsed-exp)
        (valid/numeric? (js/parseFloat parsed-exp))))
 
 (defn is-cell?
   [env parsed-exp]
-  (and (= 2 (count parsed-exp))
-       (get (possible-cells env) (keyword (str/upper-case parsed-exp)))))
+  (when parsed-exp
+    (and (string? parsed-exp)
+         (= 2 (count parsed-exp))
+         (get (possible-cells env) (keyword (str/upper-case parsed-exp))))))
 
 (defn is-range-cells?
   [env parsed-exp]
@@ -60,52 +63,58 @@
         [collmax max] (name snd)]
     (for [collv (range (.charCodeAt collmin) (inc (.charCodeAt collmax)))
           v     (range (int min) (inc (int max)))]
-      (keyword (str (char collv) v)))))
+      (str (char collv) v))))
 
 (defn is-op?
   [parsed-exp]
   (contains? (set (keys kw->op)) (keyword parsed-exp)))
 
-(defn parse-cell
-  [{:keys [cells]} parsed-exp]
-  (->> parsed-exp
-       str/upper-case
-       keyword
-       (#(get cells % 0))
-       js/parseFloat))
+(defn parse-float-if
+  [s]
+  (if (can-parse-numeric? s)
+    (js/parseFloat s)
+    s))
+
+(declare eval-cell)
 
 (defn parse-range-cells
-  [{:keys [cells]} parsed-exp]
-  (map (comp js/parseFloat #(get cells % 0) keyword)
-       (-> parsed-exp
-           (str/upper-case)
-           (str/split #":")
-           range-cells-get)))
+  [env parsed-exp]
+  (let [r (-> parsed-exp
+              (str/upper-case)
+              (str/split #":")
+              range-cells-get)]
+    (->> r
+         (map (partial eval-cell env))
+         (map parse-float-if))))
 
 (defn tokenizer
   [env parsed-exp]
   (cond
     (can-parse-numeric? parsed-exp) (js/parseFloat parsed-exp)
-    (is-cell? env parsed-exp) (parse-cell env parsed-exp)
+    (is-cell? env parsed-exp) (eval-cell env parsed-exp)
     (is-range-cells? env parsed-exp) (parse-range-cells env parsed-exp)
     (is-op? parsed-exp) (get kw->op (keyword parsed-exp))))
 
-(defn parse
-  [env s]
-  (some->> (str/split s #" ")
-           (map (partial tokenizer env))
-           (remove nil?)
-           flatten
-           str))
-
 (defn eval-cell
-  [env s]
-  (let [low-cased (some-> s str/lower-case)]
-    (cond (nil? s) ""
-          (str/ends-with? low-cased "=") (some-> (parse env low-cased)
-                                                 (eval-string {:allow (vals kw->op)})
-                                                 str)
-          :else s)))
+  [{:keys [cells] :as env} s]
+  (cond
+    (nil? s) ""
+    (can-parse-numeric? s) s
+    (is-cell? env s) (eval-cell env (->> s
+                                         str/upper-case
+                                         keyword
+                                         (#(get cells % 0))))
+    (is-op? s) (get kw->op (keyword s))
+    (and (string? s) (str/ends-with? s "=")) (let [tokenized (->>
+                                                               (str/split (str/lower-case s) #" ")
+                                                               (map (partial tokenizer env))
+                                                               (remove nil?)
+                                                               (map parse-float-if)
+                                                               flatten)]
+                                               (str (if (valid/numeric? (first tokenized))
+                                                      (apply str tokenized)
+                                                      (eval-string (str tokenized)))))
+    :else s))
 
 ;; UI impl
 
@@ -135,7 +144,8 @@
   (swap! *state
     #(-> %
          (assoc-in [:cells cell-id]
-           (if (str/ends-with? edition "=")
+           (if
+             (str/ends-with? edition "=")
              (str/lower-case edition)
              edition))
          (dissoc :focused-cell :edition))))
@@ -145,8 +155,8 @@
   (swap! *state assoc :edition (.. event -target -value)))
 
 (defn coll-fn
-  [{:keys [focused-cell cells cell-width] :as env}
-   {:keys [focus-cell! submit-cell! change-cell!]} l c]
+  [{:keys [focused-cell cells] :as env}
+   {:keys [focus-cell! submit-cell! change-cell!]} cell-width l  c]
   (let [cell-id (keyword (str c l))]
     ^{:key cell-id}
     [:td {:style           (light-border-style cell-width)
@@ -166,6 +176,7 @@
        (eval-cell env (get cells cell-id)))]))
 
 #_:clj-kondo/ignore
+
 (defn row-fn
   [cells actions-map cell-width l]
   ^{:key l}
@@ -173,26 +184,29 @@
    (concat
      [^{:key l}
       [:td {:style (light-border-style 42)} l]
-      (map (partial coll-fn cells actions-map l) (az-range (:columns cells)))])])
+      (map (partial coll-fn cells actions-map cell-width l) (az-range (:columns cells)))])])
 
 (defn change-width!
   [state]
   (.addEventListener
-   js/window "resize"
-   (swap! state assoc :window-width (* 0.9 (.-innerWidth js/window)))))
+    js/window "resize"
+    (swap! state assoc :window-width (* 0.9 (.-innerWidth js/window)))))
 
-(defn add-row! [*cells]
+(defn add-row!
+  [*cells]
   (swap! *cells update :rows #(min (inc %) 100)))
 
-(defn row-btn [add-row!]
-   [^{:key "btn-row"}
+(defn row-btn
+  [add-row!]
+  [^{:key "btn-row"}
    [:tr
     [:td
      [:button.button.is-primary
       {:on-click add-row!}
       "Add row"]]]])
 
-(defn add-col! [*cells]
+(defn add-col!
+  [*cells]
   (swap! *cells update :columns #(min (inc %) 26)))
 
 (defn coll-btn [add-col!]
@@ -208,20 +222,17 @@
            :data-testid "thead"}
    [:tr {:style (light-border-style cell-width)}
     (concat [^{:key :n} [:th]]
-             (map (partial header-fn cell-width) (az-range (:columns cells)))
-             (coll-btn add-col!))]])
+            (map (partial header-fn cell-width) (az-range (:columns cells)))
+            (coll-btn add-col!))]])
 
-(defn table-body [{:keys [rows] :as cells}
-                  cell-width
-                  actions-map
-                  add-row!]
+(defn table-body
+  [{:keys [rows] :as cells} cell-width actions-map add-row!]
   [:tbody {:style       overflow-style
            :data-testid "tbody"}
-   (concat [^{:key :n}
-           [:tr (merge (light-border-style cell-width) overflow-style)]]
-          (map (partial row-fn cells actions-map cell-width)
-               (table-lines rows))
-          (row-btn add-row!))])
+   (concat [^{:key :n} [:tr (merge (light-border-style cell-width) overflow-style)]]
+           (map (partial row-fn cells actions-map cell-width)
+                (table-lines rows))
+           (row-btn add-row!))])
 
 (defn cells-ui
   ([]
