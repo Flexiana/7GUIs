@@ -175,17 +175,60 @@
       [:td {:style (light-border-style 42)} l]
       (map (partial coll-fn cells actions-map l) (az-range (:columns cells)))])])
 
-(defn change-width
+(defn change-width!
   [state]
-  (swap! state assoc :window-width (* 0.9 (.-innerWidth js/window))))
+  (.addEventListener
+   js/window "resize"
+   (swap! state assoc :window-width (* 0.9 (.-innerWidth js/window)))))
+
+(defn add-row! [*cells]
+  (swap! *cells update :rows #(min (inc %) 100)))
+
+(defn row-btn [add-row!]
+   [^{:key "btn-row"}
+   [:tr
+    [:td
+     [:button.button.is-primary
+      {:on-click add-row!}
+      "Add row"]]]])
+
+(defn add-col! [*cells]
+  (swap! *cells update :columns #(min (inc %) 26)))
+
+(defn coll-btn [add-col!]
+  [^{:key "btn-col"}
+   [:th
+    [:button.button.is-primary
+     {:on-click add-col!}
+     "Add column"]]])
+(defn table-head [cells
+                  cell-width
+                  add-col!]
+  [:thead {:style       overflow-style
+           :data-testid "thead"}
+   [:tr {:style (light-border-style cell-width)}
+    (concat [^{:key :n} [:th]]
+             (map (partial header-fn cell-width) (az-range (:columns cells)))
+             (coll-btn add-col!))]])
+
+(defn table-body [{:keys [rows] :as cells}
+                  cell-width
+                  actions-map
+                  add-row!]
+  [:tbody {:style       overflow-style
+           :data-testid "tbody"}
+   (concat [^{:key :n}
+           [:tr (merge (light-border-style cell-width) overflow-style)]]
+          (map (partial row-fn cells actions-map cell-width)
+               (table-lines rows))
+          (row-btn add-row!))])
 
 (defn cells-ui
   ([]
    (r/with-let [*cells (r/atom cells-start)]
      [cells-ui *cells]))
   ([*cells]
-   (.addEventListener js/window "resize" #(change-width *cells))
-   (change-width *cells)
+   (change-width! *cells)
    (let [width      (:window-width @*cells)
          columns    (:columns @*cells)
          cell-width (/ width columns)]
@@ -198,24 +241,8 @@
                      :overflow :scroll}}
        [:table {:id          "table"
                 :data-testid "table"}
-        [:thead {:style       overflow-style
-                 :data-testid "thead"}
-         [:tr {:style (light-border-style cell-width)}
-          (concat [^{:key :n} [:th]]
-                  (map (partial header-fn cell-width) (az-range (:columns @*cells)))
-                  [^{:key "btn-col"} [:th
-                                      [:button.button.is-primary
-                                       {:on-click #(swap! *cells update :columns (partial (fn [x] (min (inc x) 26))))}
-                                       "Add column"]]])]]
-        [:tbody {:style       overflow-style
-                 :data-testid "tbody"}
-         (concat [^{:key :n} [:tr (merge (light-border-style cell-width) overflow-style)]]
-                 (map (partial row-fn @*cells
-                               {:focus-cell!  (partial focus-cell! *cells)
-                                :submit-cell! (partial submit-cell! *cells)
-                                :change-cell! (partial change-cell! *cells)}
-                               cell-width) (table-lines (:rows @*cells)))
-                 [^{:key "btn-row"}
-                  [:tr [:td [:button.button.is-primary
-                             {:on-click #(swap! *cells update :rows (partial (fn [x] (min (inc x) 100))))}
-                             "Add row"]]]])]]]])))
+        [table-head @*cells cell-width (partial add-col! *cells)]
+        [table-body @*cells cell-width {:focus-cell!  (partial focus-cell! *cells)
+                                        :submit-cell! (partial submit-cell! *cells)
+                                        :change-cell! (partial change-cell! *cells)}
+          (partial add-row! *cells)]]]])))
