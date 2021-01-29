@@ -209,15 +209,18 @@
   [*cells]
   (swap! *cells update :columns #(min (inc %) 26)))
 
-(defn coll-btn [add-col!]
+(defn coll-btn
+  [add-col!]
   [^{:key "btn-col"}
    [:th
     [:button.button.is-primary
      {:on-click add-col!}
      "Add column"]]])
-(defn table-head [cells
-                  cell-width
-                  add-col!]
+
+(defn table-head
+  [cells
+   cell-width
+   add-col!]
   [:thead {:style       overflow-style
            :data-testid "thead"}
    [:tr {:style (light-border-style cell-width)}
@@ -256,4 +259,4 @@
         [table-body @*cells cell-width {:focus-cell!  (partial focus-cell! *cells)
                                         :submit-cell! (partial submit-cell! *cells)
                                         :change-cell! (partial change-cell! *cells)}
-          (partial add-row! *cells)]]]])))
+         (partial add-row! *cells)]]]])))
