@@ -78,44 +78,39 @@
 (declare eval-cell)
 
 (defn parse-range-cells
-  [env parsed-exp]
-  (let [r (-> parsed-exp
-              (str/upper-case)
-              (str/split #":")
-              range-cells-get)]
-    (->> r
-         (map (partial eval-cell env))
-         (map parse-float-if))))
+  [parsed-exp]
+  (-> parsed-exp
+      (str/upper-case)
+      (str/split #":")
+      range-cells-get))
 
-(defn tokenizer
-  [env parsed-exp]
-  (cond
-    (can-parse-numeric? parsed-exp) (js/parseFloat parsed-exp)
-    (is-cell? env parsed-exp) (eval-cell env parsed-exp)
-    (is-range-cells? env parsed-exp) (parse-range-cells env parsed-exp)
-    (is-op? parsed-exp) (get kw->op (keyword parsed-exp))))
+(def filling #{"of" "and"})
 
 (defn eval-cell
   [{:keys [cells chain] :or {chain #{}} :as env} s]
   (cond
     (get chain s) "Circular dependency found!"
     (nil? s) ""
-    (can-parse-numeric? s) s
+    (valid/numeric? s) s
+    (is-op? s) (get kw->op (keyword s))
+    (can-parse-numeric? s) (js/parseFloat s)
     (is-cell? env s) (recur (assoc env :chain (conj chain s))
                        (->> s
                             str/upper-case
                             keyword
                             (#(get cells % 0))))
-    (is-op? s) (get kw->op (keyword s))
-    (and (string? s) (str/ends-with? s "=")) (let [tokenized (->>
-                                                               (str/split (str/lower-case s) #" ")
-                                                               (map (partial tokenizer env))
-                                                               (remove nil?)
-                                                               (map parse-float-if)
-                                                               flatten)]
-                                               (str (if (valid/numeric? (first tokenized))
-                                                      (apply str tokenized)
-                                                      (eval-string (str tokenized)))))
+    (is-range-cells? env s) (->> (parse-range-cells s)
+                                 (map (partial eval-cell env))
+                                 (map parse-float-if))
+    (and (string? s) (str/ends-with? s "=")) (let [result (->> (str/split s #" ")
+                                                               butlast
+                                                               (map str/lower-case)
+                                                               (map (partial eval-cell env))
+                                                               flatten
+                                                               (remove filling))]
+                                               (if (second result)
+                                                 (eval-string (str result))
+                                                 (parse-float-if (first result))))
     :else s))
 
 ;; UI impl
