@@ -10,83 +10,59 @@
     [reagent.core :as r]
     [clojure.string :as str]))
 
+(defn new-table
+  [cells]
+  {:chain #{}
+   :rows 10
+   :columns 10
+   :cells cells})
+
 (ws/deftest
   eval-cell-test
   (are
     [expected actual]
     (= expected actual)
-    "Monkey" (eval-cell {:columns 10
-                         :rows    10} "Monkey")
-    `cljs.core/+ (eval-cell {:columns 10
-                             :rows    10} "add")
-    "0" (eval-cell {:columns 10
-                    :rows    10} "0")
-    "1" (eval-cell {:columns 10
-                    :rows    10
-                    :cells   {:A1 "1"}} "A1")
-    "2" (eval-cell {:columns 10
-                    :rows    10
-                    :cells   {:A1 "2"}} "A1 =")
-    "3" (eval-cell {:columns 10
-                    :rows    10
-                    :cells   {:A1 "2"}} "Add A1 1 =")
-    "4" (eval-cell {:columns 10
-                    :rows    10
-                    :cells   {:A1 "2"
-                              :A2 "Add A1 2 ="}} "A2")
-    "5" (eval-cell {:columns 10
-                    :rows    10
-                    :cells   {:A1 "1"
-                              :A2 "Add A1 2 ="}} "add A2 A1 1 =")
-    "9" (eval-cell {:columns 10
-                    :rows    10
-                    :cells   {:A1 "1"
-                              :A2 "1"
-                              :A3 "1"
-                              :A4 "1"
-                              :A5 "1"
-                              :A6 "1"
-                              :A7 "1"
-                              :A8 "1"
-                              :A9 "1"}} "sum of A0:A9 =")
-    "10" (eval-cell {:columns 10
-                     :rows    10
-                     :cells   {:A0 "1"
-                               :A1 "A0"
-                               :A2 "A1"
-                               :A3 "A1"
-                               :A4 "A1"
-                               :A5 "A1"
-                               :A6 "A1"
-                               :A7 "A1"
-                               :A8 "A1"
-                               :A9 "A1"}} "sum of A0:A9 =")
-    "Circular dependency found!" (eval-cell {:columns 10
-                                             :rows    10
-                                             :chain #{}
-                                             :cells   {:A0 "A0"}} "A0")
-    "10" (eval-cell {:cells   {:A2 "2" :B8 "8"}
-                     :columns 10
-                     :rows    10} "Sum of A2:B8 =")
-    "0" (eval-cell {:columns 10
-                    :rows    10} "Sum of A2:B8 =")
-    "4" (eval-cell {:columns 10
-                    :rows    10} "Sum of 4 and A2:B8 =")
+    "Monkey" (eval-cell (new-table {})  "Monkey")
+    `cljs.core/+ (eval-cell (new-table {}) "add")
+    "0" (eval-cell (new-table {}) "0")
+    "1" (eval-cell (new-table {:A1 "1"}) "A1")
+    "2" (eval-cell (new-table {:A1 "2"}) "A1 =")
+    "3" (eval-cell (new-table {:A1 "2"}) "Add A1 1 =")
+    "4" (eval-cell (new-table {:A1 "2"
+                                     :A2 "Add A1 2 ="}) "A2")
+    "5" (eval-cell (new-table {:A1 "1"
+                                     :A2 "Add A1 2 ="}) "add A2 A1 1 =")
+    "9" (eval-cell (new-table {:A1 "1"
+                                     :A2 "1"
+                                     :A3 "1"
+                                     :A4 "1"
+                                     :A5 "1"
+                                     :A6 "1"
+                                     :A7 "1"
+                                     :A8 "1"
+                                     :A9 "1"}) "sum of A0:A9 =")
+    "10" (eval-cell (new-table {:A0 "1"
+                                      :A1 "A0"
+                                      :A2 "A1"
+                                      :A3 "A1"
+                                      :A4 "A1"
+                                      :A5 "A1"
+                                      :A6 "A1"
+                                      :A7 "A1"
+                                      :A8 "A1"
+                                      :A9 "A1"}) "sum of A0:A9 =")
+    "Circular dependency found!" (eval-cell (new-table {:A0 "A0"}) "A0")
+    "10" (eval-cell (new-table {:A2 "2" :B8 "8"}) "Sum of A2:B8 =")
+    "0" (eval-cell (new-table {}) "Sum of A2:B8 =")
+    "4" (eval-cell (new-table {}) "Sum of 4 and A2:B8 =")
     "3" (eval-cell {} "Add 1 and 2 =")
-    "NaN" (eval-cell {:columns 10
-                      :rows    10} "Div of B5 and C5 =")
+    "NaN" (eval-cell (new-table {}) "Div of B5 and C5 =")
     "a" (eval-cell {} "a")
-    "Elephant10" (eval-cell {:cells   {:B1 "Elephant"
-                                       :B2 "10"}
-                             :columns 10
-                             :rows    10} "Sum of B1 and B2 =")
-    "20" (eval-cell {:cells   {:A7 "10"
-                               :G0 "10"}
-                     :columns 10
-                     :rows    10} "Add A7 and G0 =")
-    "20" (eval-cell {:columns 10
-                     :rows    10
-                     :cells   {:A1 "20"}} "A1 =")
+    "Elephant10" (eval-cell (new-table {:B1 "Elephant"
+                                              :B2 "10"}) "Sum of B1 and B2 =")
+    "20" (eval-cell (new-table {:A7 "10"
+                                      :G0 "10"}) "Add A7 and G0 =")
+    "20" (eval-cell (new-table {:A1 "20"}) "A1 =")
     "" (eval-cell {} nil)))
 
 (defn texts-on-field
@@ -98,6 +74,7 @@
     [*test-state (r/atom {:focused-cell nil
                           :edition      ""
                           :cells        {}
+                          :chain        #{}
                           :columns      26
                           :rows         100})]
     (u/with-mounted-component
@@ -150,4 +127,8 @@
             (is (= "25" (.-innerText (cell comp "B4")))))
           (testing "Circular dependency"
             (insert comp "B1" "B1")
+            (is (= "Circular dependency found!" (.-innerText (cell comp "B1")))))
+          (testing "Deep circular dependency"
+            (insert comp "B1" "A1")
+            (insert comp "A1" "B1")
             (is (= "Circular dependency found!" (.-innerText (cell comp "B1"))))))))))
