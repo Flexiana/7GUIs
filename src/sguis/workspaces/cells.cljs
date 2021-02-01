@@ -97,7 +97,6 @@
 
 (defn eval-cell
   [{:keys [cells chain] :as env} s]
-  (println chain)
   (cond
     (get chain s) "Circular dependency found!"
     (nil? s) ""
