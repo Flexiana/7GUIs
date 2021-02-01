@@ -12,8 +12,7 @@
 
 (defn new-table
   [cells]
-  {:chain #{}
-   :rows 10
+  {:rows 10
    :columns 10
    :cells cells})
 
