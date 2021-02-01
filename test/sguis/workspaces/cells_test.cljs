@@ -61,10 +61,10 @@
                                :A7 "A1"
                                :A8 "A1"
                                :A9 "A1"}} "sum of A0:A9 =")
-   ;; TODO Make short-circuit to avoid circular dependencies
-    #_(is (= "" (eval-cell {:columns 10
-                            :rows    10
-                            :cells   {:A0 "A0"}} "A0")))
+    "Circular dependency found!" (eval-cell {:columns 10
+                                             :rows    10
+                                             :chain #{}
+                                             :cells   {:A0 "A0"}} "A0")
     "10" (eval-cell {:cells   {:A2 "2" :B8 "8"}
                      :columns 10
                      :rows    10} "Sum of A2:B8 =")
@@ -147,8 +147,7 @@
             (is (= "9" (.-innerText (cell comp "B4"))))
             (insert comp "B1" "5")
             (is (= "10" (.-innerText (cell comp "B3"))))
-            (is (= "25" (.-innerText (cell comp "B4"))))))))))
-;; TODO Make short-circuit to avoid circular dependencies
-;(testing "Circular dependency"
-;    (insert comp "B1" "B1")
-;    (is (= "Circular dependency" (.-innerText (cell comp "B1")))))))))
+            (is (= "25" (.-innerText (cell comp "B4")))))
+          (testing "Circular dependency"
+            (insert comp "B1" "B1")
+            (is (= "Circular dependency found!" (.-innerText (cell comp "B1"))))))))))
