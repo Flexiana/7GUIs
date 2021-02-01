@@ -96,16 +96,16 @@
     (is-op? parsed-exp) (get kw->op (keyword parsed-exp))))
 
 (defn eval-cell
-  [{:keys [cells chain] :as env} s]
+  [{:keys [cells chain] :or {chain #{}} :as env} s]
   (cond
     (get chain s) "Circular dependency found!"
     (nil? s) ""
     (can-parse-numeric? s) s
     (is-cell? env s) (recur (assoc env :chain (conj chain s))
-                            (->> s
-                              str/upper-case
-                              keyword
-                              (#(get cells % 0))))
+                       (->> s
+                            str/upper-case
+                            keyword
+                            (#(get cells % 0))))
     (is-op? s) (get kw->op (keyword s))
     (and (string? s) (str/ends-with? s "=")) (let [tokenized (->>
                                                                (str/split (str/lower-case s) #" ")
@@ -175,7 +175,7 @@
                  :auto-focus    true
                  :default-value (get cells cell-id)
                  :on-change     (partial change-cell!)}]]
-       (eval-cell (assoc env :chain #{}) (get cells cell-id)))]))
+       (eval-cell env (get cells cell-id)))]))
 
 #_:clj-kondo/ignore
 
