@@ -101,11 +101,11 @@
     (get chain s) "Circular dependency found!"
     (nil? s) ""
     (can-parse-numeric? s) s
-    (is-cell? env s) (eval-cell (assoc env :chain (conj chain s))
-                                (->> s
-                                     str/upper-case
-                                     keyword
-                                     (#(get cells % 0))))
+    (is-cell? env s) (recur (assoc env :chain (conj chain s))
+                            (->> s
+                              str/upper-case
+                              keyword
+                              (#(get cells % 0))))
     (is-op? s) (get kw->op (keyword s))
     (and (string? s) (str/ends-with? s "=")) (let [tokenized (->>
                                                                (str/split (str/lower-case s) #" ")
