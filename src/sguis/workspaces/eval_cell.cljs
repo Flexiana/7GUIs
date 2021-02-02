@@ -119,9 +119,9 @@
 
     (is (= '(+ :A1 :A2) (input->raw-ast "= add (A1,A2)")))
     (is (= '(+ 1 3) (raw-ast->ast env '(+ :A1 :A2))))
-    (is (= {:input "= add (A1,A2)", :raw-ast (+ :A1 :A2), :ast (+ 1 3), :output 4}
+    (is (= {:input "= add (A1,A2)", :raw-ast '(+ :A1 :A2), :ast (+ 1 3), :output 4}
            (eval-cell env {:input "= add (A1,A2)"})))
 
     (is (= '(+ 1 2) (raw-ast->ast env '(+ :A1 2))))
-    (is (= {:input "= add (A1,2)", :raw-ast (+ :A1 2), :ast (+ 1 2), :output 3}
+    (is (= {:input "= add (A1,2)", :raw-ast '(+ :A1 2), :ast (+ 1 2), :output 3}
            (eval-cell env {:input "= add (A1,2)"})))))
