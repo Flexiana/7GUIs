@@ -108,16 +108,20 @@
 
     (is (= "abc" (input->raw-ast "abc")))
     (is (= "abc" (raw-ast->ast env "abc")))
-    (is (= "abc" (eval-cell env {:input "abc"})))
+    (is (= {:input "abc", :raw-ast "abc", :ast "abc", :output "abc"}
+           (eval-cell env {:input "abc"})))
 
 
     (is (= '(+ 1 2) (input->raw-ast "= add (1,2)")))
     (is (= '(+ 1 2) (raw-ast->ast env '(+ 1 2))))
-    (is (= 3 (eval-cell env {:input "= add (1,2)"})))
+    (is (= {:input "= add (1,2)", :raw-ast (+ 1 2), :ast (+ 1 2), :output 3}
+           (eval-cell env {:input "= add (1,2)"})))
 
     (is (= '(+ :A1 :A2) (input->raw-ast "= add (A1,A2)")))
     (is (= '(+ 1 3) (raw-ast->ast env '(+ :A1 :A2))))
-    (is (= 4 (eval-cell env {:input "= add (A1,A2)"})))
+    (is (= {:input "= add (A1,A2)", :raw-ast (+ :A1 :A2), :ast (+ 1 3), :output 4}
+           (eval-cell env {:input "= add (A1,A2)"})))
 
     (is (= '(+ 1 2) (raw-ast->ast env '(+ :A1 2))))
-    (is (= 3 (eval-cell env {:input "= add (A1,2)"})))))
+    (is (= {:input "= add (A1,2)", :raw-ast (+ :A1 2), :ast (+ 1 2), :output 3}
+           (eval-cell env {:input "= add (A1,2)"})))))
