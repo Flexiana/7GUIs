@@ -124,4 +124,6 @@
 
     (is (= '(+ 1 2) (raw-ast->ast env '(+ :A1 2))))
     (is (= {:input "= add (A1,2)", :raw-ast '(+ :A1 2), :ast '(+ 1 2), :output 3}
-           (eval-cell env {:input "= add (A1,2)"})))))
+           (eval-cell env {:input "= add (A1,2)"})))
+
+    (is (= env (eval-sheets env)))))

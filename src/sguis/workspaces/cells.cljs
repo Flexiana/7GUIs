@@ -1,14 +1,16 @@
 (ns sguis.workspaces.cells
   (:require
-    [clojure.string :as str]
-    [reagent.core :as r]
-    [sci.core :refer [eval-string]]
-    [sguis.workspaces.validator :as valid]))
+   [clojure.string :as str]
+   [reagent.core :as r]
+   [sci.core :refer [eval-string
+                     init]]
+   [sguis.workspaces.eval-cell :refer [eval-sheets]]
+   [sguis.workspaces.validator :as valid]))
 
 (def cells-start
   {:focused-cell nil
-   :edition      ""
    :cells        {}
+   :sci-ctx      (init {})
    :columns      10
    :rows         5})
 
@@ -139,22 +141,17 @@
   (swap! *state assoc :focused-cell cell-id))
 
 (defn submit-cell!
-  [*state {:keys [edition]}
-   cell-id
-   event]
+  [*state event]
   (.preventDefault event)
   (swap! *state
-    #(-> %
-         (assoc-in [:cells cell-id]
-           (if
-             (str/ends-with? edition "=")
-             (str/lower-case edition)
-             edition))
-         (dissoc :focused-cell :edition))))
+         #(do (tap> @*state)
+              (-> %
+                  eval-sheets
+                  (dissoc :focused-cell)))))
 
 (defn change-cell!
-  [*state event]
-  (swap! *state assoc :edition (.. event -target -value)))
+  [*state cell-id event]
+  (swap! *state assoc-in [:cells cell-id :input] (.. event -target -value)))
 
 (defn coll-fn
   [{:keys [focused-cell cells] :as env}
@@ -168,14 +165,15 @@
        [:form {:style       {:border "1px solid #ccc"}
                :id          cell-id
                :data-testid (str "form-" (name cell-id))
-               :on-submit   (partial submit-cell! env cell-id)}
+               :on-submit   (partial submit-cell!)}
         [:input {:style         (light-border-style cell-width)
                  :type          "text"
                  :data-testid   (str "input-" (name cell-id))
                  :auto-focus    true
-                 :default-value (get cells cell-id)
-                 :on-change     (partial change-cell!)}]]
-       (eval-cell env (get cells cell-id)))]))
+                 :default-value (get-in cells [cell-id :input])
+                 :on-change     (partial change-cell! cell-id)}]]
+       (get-in cells [cell-id :output])
+       #_(eval-cell env (get cells cell-id)))]))
 
 #_:clj-kondo/ignore
 
