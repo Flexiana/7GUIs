@@ -19,6 +19,8 @@
    :sum      '+
    :prod     '*})
 
+
+
 (defn input->raw-ast [s]
   (cond (str/starts-with? s "=")             (let [[_eq op d] (str/split s #"\s" 3)
                                                    opkw       (kw->op (keyword op))]
@@ -67,7 +69,11 @@
                           :output  3}}}]
     (is (= 1 (input->raw-ast "1")))
     (is (= 1 (raw-ast->ast env 1)))
+    (is (= 1 (->> "1"
+                  input->raw-ast
+                  (raw-ast->ast env))))
 
+    (is (= :A1 (input->raw-ast "= A1")))
     (is (= 1 (raw-ast->ast env :A1)))
 
     (is (= "abc" (input->raw-ast "abc")))
