@@ -43,16 +43,24 @@
         (keyword? r) (get-in env [:cells r :output])
         :else        r))
 
+(defn raw-ast->dependencies [raw-ast]
+  (cond
+    (coll? raw-ast)    (mapcat raw-ast->dependencies raw-ast)
+    (keyword? raw-ast) [raw-ast]
+    :else              nil))
+
 (defn eval-cell [{:keys [sci-ctx]
                   :as   env} {:keys [input]
                               :as   cell}]
   (let [raw-ast (input->raw-ast input)
         ast     (raw-ast->ast env raw-ast)
         output  (eval-form sci-ctx ast)]
-    (assoc cell
-           :raw-ast raw-ast
-           :ast ast
-           :output output)))
+    (merge (assoc cell
+                  :raw-ast raw-ast
+                  :ast ast
+                  :output output)
+           (when-let [dependencies (not-empty (raw-ast->dependencies raw-ast))]
+             {:dependencies dependencies}))))
 
 (defn eval-sheets [{:keys [cells]
                     :as   env}]
@@ -100,10 +108,11 @@
 
     (is (= :A1 (input->raw-ast "= A1")))
     (is (= 1 (raw-ast->ast env :A1)))
-    (is (= {:input   "= A1"
-            :raw-ast :A1
-            :ast     1
-            :output  1}
+    (is (= {:input        "= A1"
+            :raw-ast      :A1
+            :ast          1
+            :output       1
+            :dependencies [:A1]}
            (eval-cell env {:input "= A1"})))
 
     (is (= "abc" (input->raw-ast "abc")))
@@ -119,11 +128,30 @@
 
     (is (= '(+ :A1 :A2) (input->raw-ast "= add (A1,A2)")))
     (is (= '(+ 1 3) (raw-ast->ast env '(+ :A1 :A2))))
-    (is (= {:input "= add (A1,A2)", :raw-ast '(+ :A1 :A2), :ast '(+ 1 3), :output 4}
+    (is (= {:input        "= add (A1,A2)", :raw-ast '(+ :A1 :A2), :ast '(+ 1 3), :output 4
+            :dependencies [:A1 :A2]}
            (eval-cell env {:input "= add (A1,A2)"})))
 
     (is (= '(+ 1 2) (raw-ast->ast env '(+ :A1 2))))
-    (is (= {:input "= add (A1,2)", :raw-ast '(+ :A1 2), :ast '(+ 1 2), :output 3}
-           (eval-cell env {:input "= add (A1,2)"})))
+    (is (= {:input        "= add (A1,2)", :raw-ast '(+ :A1 2), :ast '(+ 1 2), :output 3
+            :dependencies [:A1]}
+           (eval-cell env {:input "= add (A1,2)"})))))
 
-    (is (= env (eval-sheets env)))))
+
+(ws/deftest eval-sheets-test
+  (let [env {:sci-ctx (init {})
+             :cells   {:A0 {:input        "= add (B0,B1)",
+                            :raw-ast      '(+ :B0 :B1),
+                            :ast          '(+ nil nil),
+                            :output       0,
+                            :dependencies '(:B0 :B1)}
+                       :B0 {:input "1"}}}]
+    (is (= {:A0 {:input        "= add (B0,B1)",
+                 :raw-ast      '(+ :B0 :B1),
+                 :ast          '(+ 1 nil),
+                 :output       1,
+                 :dependencies '(:B0 :B1)}
+            :B0 {:input   "1"
+                 :raw-ast 1
+                 :ast     1
+                 :output  1}} (:cells (eval-sheets env))))))
