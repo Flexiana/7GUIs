@@ -21,18 +21,18 @@
    :prod     '*})
 
 (defn input->raw-ast [input]
-  (cond (str/starts-with? input "=")         (if (= 3 (count (str/split input #"\s")))
-                                               (let [[_eq op d] (str/split input #"\s" 3)
-                                                     opkw       (kw->op (keyword op))]
-                                                 `(~opkw ~@(map (fn [x]
-                                                                  (if (symbol? x)
-                                                                    (keyword x)
-                                                                    x))
-                                                                (edn/read-string d))))
-                                               (let [[_eq d] (str/split input #"\s" 2)]
-                                                 (keyword d)))
-        (valid/numeric? (edn/read-string s)) (edn/read-string input)
-        :else                                input))
+  (cond (str/starts-with? input "=")             (if (= 3 (count (str/split input #"\s")))
+                                                   (let [[_eq op d] (str/split input #"\s" 3)
+                                                         opkw       (kw->op (keyword op))]
+                                                     `(~opkw ~@(map (fn [x]
+                                                                      (if (symbol? x)
+                                                                        (keyword x)
+                                                                        x))
+                                                                    (edn/read-string d))))
+                                                   (let [[_eq d] (str/split input #"\s" 2)]
+                                                     (keyword d)))
+        (valid/numeric? (edn/read-string input)) (edn/read-string input)
+        :else                                    input))
 
 (defn raw-ast->ast [env r]
   (cond (seq? r)     (->> r
