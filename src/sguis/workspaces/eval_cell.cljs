@@ -1,7 +1,9 @@
 (ns sguis.workspaces.eval-cell
   (:require [clojure.string :as str]
             [reagent.core :as r]
-            [sci.core :refer [eval-string]]
+            [sci.core :refer [parse-next
+                              eval-form
+                              init]]
             [sguis.workspaces.validator :as valid]
             [cljs.test :as t
              :include-macros true
@@ -9,6 +11,8 @@
             [nubank.workspaces.core :as ws]
             [clojure.string :as str]
             [clojure.edn :as edn]))
+(def sci-eval
+  (partial eval-form (init {})))
 
 (def kw->op
   {:add      '+
@@ -68,21 +72,45 @@
                           :raw-ast '(+ :A1 :A2)
                           :ast     '(+ 1 2)
                           :output  3}}}]
+
     (is (= 1 (input->raw-ast "1")))
     (is (= 1 (raw-ast->ast env 1)))
     (is (= 1 (->> "1"
                   input->raw-ast
-                  (raw-ast->ast env))))
+                  (raw-ast->ast env)
+                  sci-eval)))
 
     (is (= :A1 (input->raw-ast "= A1")))
     (is (= 1 (raw-ast->ast env :A1)))
+    (is (= 1 (->> "= A1"
+                  input->raw-ast
+                  (raw-ast->ast env)
+                  sci-eval)))
 
     (is (= "abc" (input->raw-ast "abc")))
     (is (= "abc" (raw-ast->ast env "abc")))
+    (is (= "abc" (->> "abc"
+                      input->raw-ast
+                      (raw-ast->ast env)
+                      sci-eval)))
+
 
     (is (= '(+ 1 2) (input->raw-ast "= add (1,2)")))
     (is (= '(+ 1 2) (raw-ast->ast env '(+ 1 2))))
+    (is (= 3 (->> "= add (1,2)"
+                  input->raw-ast
+                  (raw-ast->ast env)
+                  sci-eval)))
 
     (is (= '(+ :A1 :A2) (input->raw-ast "= add (A1,A2)")))
     (is (= '(+ 1 3) (raw-ast->ast env '(+ :A1 :A2))))
-    (is (= '(+ 1 2) (raw-ast->ast env '(+ :A1 2))))))
+    (is (= 4 (->> "= add (A1,A2)"
+                  input->raw-ast
+                  (raw-ast->ast env)
+                  sci-eval)))
+
+    (is (= '(+ 1 2) (raw-ast->ast env '(+ :A1 2))))
+    (is (= 3 (->> "= add (A1,2)"
+                  input->raw-ast
+                  (raw-ast->ast env)
+                  sci-eval)))))
