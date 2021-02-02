@@ -56,7 +56,7 @@
                           :ast     "abc"
                           :output  "abc"}
                      ;; simple ref
-                     :A4 {:input   "A1 ="
+                     :A4 {:input   "=A1"
                           :raw-ast :A1
                           :ast     1
                           :output  1}
