@@ -19,16 +19,17 @@
    :sum      '+
    :prod     '*})
 
-
-
 (defn input->raw-ast [s]
-  (cond (str/starts-with? s "=")             (let [[_eq op d] (str/split s #"\s" 3)
-                                                   opkw       (kw->op (keyword op))]
-                                               `(~opkw ~@(map (fn [x]
-                                                                (if (symbol? x)
-                                                                  (keyword x)
-                                                                  x))
-                                                              (edn/read-string d))))
+  (cond (str/starts-with? s "=")             (if (= 3 (count (str/split s #"\s")))
+                                               (let [[_eq op d] (str/split s #"\s" 3)
+                                                     opkw       (kw->op (keyword op))]
+                                                 `(~opkw ~@(map (fn [x]
+                                                                  (if (symbol? x)
+                                                                    (keyword x)
+                                                                    x))
+                                                                (edn/read-string d))))
+                                               (let [[_eq d] (str/split s #"\s" 2)]
+                                                 (keyword d)))
         (valid/numeric? (edn/read-string s)) (edn/read-string s)
         :else                                s))
 
