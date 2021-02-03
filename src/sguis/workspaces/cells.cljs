@@ -4,7 +4,7 @@
    [reagent.core :as r]
    [sci.core :refer [eval-string
                      init]]
-   [sguis.workspaces.eval-cell :refer [eval-sheets]]
+   [sguis.workspaces.eval-cell :as evaluator]
    [sguis.workspaces.validator :as valid]))
 
 (def cells-start
@@ -141,13 +141,12 @@
   (swap! *state assoc :focused-cell cell-id))
 
 (defn submit-cell!
-  [*state event]
+  [*state cell-id event]
   (.preventDefault event)
   (swap! *state
-         #(do (tap> @*state)
-              (-> %
-                  eval-sheets
-                  (dissoc :focused-cell)))))
+         #(-> %
+              (evaluator/eval-cell cell-id)
+              (dissoc :focused-cell))))
 
 (defn change-cell!
   [*state cell-id event]
@@ -165,15 +164,14 @@
        [:form {:style       {:border "1px solid #ccc"}
                :id          cell-id
                :data-testid (str "form-" (name cell-id))
-               :on-submit   (partial submit-cell!)}
+               :on-submit   (partial submit-cell! cell-id)}
         [:input {:style         (light-border-style cell-width)
                  :type          "text"
                  :data-testid   (str "input-" (name cell-id))
                  :auto-focus    true
                  :default-value (get-in cells [cell-id :input])
                  :on-change     (partial change-cell! cell-id)}]]
-       (get-in cells [cell-id :output])
-       #_(eval-cell env (get cells cell-id)))]))
+       (get-in cells [cell-id :output]))]))
 
 #_:clj-kondo/ignore
 
