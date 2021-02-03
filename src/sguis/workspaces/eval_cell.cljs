@@ -193,16 +193,28 @@
                                  :A4 {}}}
         duplicated-deps {:cells {:A0 {:dependencies [:A1 :A2]}
                                  :A1 {:dependencies [:A2]}
-                                 :A2 {}}}]
+                                 :A2 {}}}
+        nested-deps     {:cells {:A0 {:dependencies '(:B0 :B1)}
+                                 :B0 {}
+                                 :B1 {}
+                                 :B2 {:dependencies '(:B0 :A0)}}}]
     (is (= [:A1 :A0] (dependency-buildn env0 :A0)))
     (is (= [:A2 :A1 :A0] (dependency-buildn env1 :A0)))
     (is (= [:A3 :A2 :A1 :A0] (dependency-buildn env2 :A0)))
     (is (= [:A4 :A3 :A2 :A1 :A0] (dependency-buildn env3 :A0)))
-    (is (= [:A2 :A1 :A0] (dependency-buildn duplicated-deps :A0)))))
+    (is (= [:A2 :A1 :A0] (dependency-buildn duplicated-deps :A0)))
+    (is (= [:B0 :B1 :A0 :B2] (dependency-buildn nested-deps :B2)))))
 
 (ws/deftest fix-loop-deps
-  (let [looping-deps0 {:cells {:A0 {:dependencies [:A0]}}}]
+  (let [looping-deps0 {:cells {:A0 {:dependencies [:A0]}}}
+        looping-deps1 {:cells {:A0 {:dependencies [:A1]}
+                               :A1 {:dependencies [:A2 :A0]}
+                               :A2 {:dependencies []}}}]
     (is (= "duplicated keys: :A0" (ex-message
                                    (try (dependency-buildn looping-deps0 :A0)
+                                        (catch :default ex
+                                          ex)))))
+    (is (= "duplicated keys: :A0" (ex-message
+                                   (try (dependency-buildn looping-deps1 :A0)
                                         (catch :default ex
                                           ex)))))))
