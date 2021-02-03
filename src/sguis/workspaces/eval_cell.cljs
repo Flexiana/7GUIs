@@ -86,13 +86,18 @@
 (defn eval-cell [env cell-id]
   (let [{:keys [sci-ctx eval-tree] :as env-new} (add-eval-tree (eval-sheets-raw-ast env) cell-id)]
     (reduce (fn [env cell-id]
-              (merge env
-                     (let [raw-ast-data (get-in env [:cells cell-id :raw-ast])]
+              (let [raw-ast-data (get-in env [:cells cell-id :raw-ast])]
+                (merge env
                        (cond (keyword? raw-ast-data) (let [env-ast (assoc-in env [:cells cell-id :ast]
                                                                              (get-in env [:cells raw-ast-data :output]))]
                                                        (assoc-in env-ast [:cells cell-id :output]
                                                                  (eval-form sci-ctx (get-in env-ast [:cells cell-id :ast]))))
-                             (seq? raw-ast-data)     raw-ast-data
+                             (seq? raw-ast-data)     (assoc-in env [:cells cell-id :output]
+                                                               (eval-form sci-ctx
+                                                                          (map (fn [data]
+                                                                                 (if (keyword? data)
+                                                                                   (get-in env [:cells data :output])
+                                                                                   data)) raw-ast-data)))
                              :else                   (let [env-ast (assoc-in env [:cells cell-id :ast] raw-ast-data)]
                                                        (assoc-in
                                                         env-ast
@@ -242,5 +247,11 @@
   (let [env-simple-subs       {:sci-ctx (init {})
                                :cells   {:A0 {:input "= B0"}
                                          :B0 {:input "1"}}}
-        evaluated-simple-subs (eval-cell env-simple-subs :A0)]
-    (is (= 1 (get-in evaluated-simple-subs [:cells :A0 :output])))))
+        evaluated-simple-subs (eval-cell env-simple-subs :A0)
+        env-simple-op         {:sci-ctx (init {})
+                               :cells   {:A0 {:input "= add (B0,B1)"}
+                                         :B0 {:input "1"}
+                                         :B1 {:input "10"}}}
+        evaluated-simple-op   (eval-cell env-simple-op :A0)]
+    (is (= 1 (get-in evaluated-simple-subs [:cells :A0 :output])))
+    (is (= 11 (get-in evaluated-simple-op [:cells :A0 :output])))))
