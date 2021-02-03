@@ -78,6 +78,10 @@
                   :cells {:A1 {:input "= Add (A3,= mul (2,A2))"}
                           :A3 {:input "5"}
                           :A2 {:input "6"}}} "A1")
+    19 (->render {:chain #{}
+                  :cells {:A1 {:input "= Add (A3,= mul (2,= add (1,A2)))"}
+                          :A3 {:input "5"}
+                          :A2 {:input "6"}}} "A1")
     "6, 5" (->render {:chain #{}
                       :cells {:A1 {:input "A3:A2"}
                               :A3 {:input "5"}

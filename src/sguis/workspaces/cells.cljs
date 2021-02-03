@@ -143,14 +143,14 @@
 (defmethod parse :operand [{:keys [input] :as m}]
   (assoc m :output (get kw->op (keyword (str/lower-case input)))))
 
+(declare ->render)
+
 (defmethod parse :expression [{:keys [env input]}]
   (let [[_ op _ _ par] (re-matches xp-matcher input)
         op-cell    (keyword (gensym))
         operand    (reader (assoc-in env [:cells op-cell :input] op) op-cell)
         tmp-cell   (keyword (gensym))
-        parameters (str/replace par xp-matcher
-                                #(let [p (reader (assoc-in env [:cells tmp-cell :input] (first %1)) tmp-cell)]
-                                   (map :output p)))]
+        parameters (str/replace par xp-matcher #(->render (assoc-in env [:cells tmp-cell :input] (first %1)) tmp-cell))]
     (-> (for [p (str/split parameters ",")
               :let [tmp-cell (keyword (gensym))]]
           (reader (assoc-in env [:cells tmp-cell :input] p) tmp-cell))
@@ -162,9 +162,7 @@
   (cond
     (:error exp) (:error exp)
     (and (seq? exp) (some :error exp)) (str/join ", " (mapv :error (filter :error exp)))
-    (and (seq? exp) (= :operand (get (first exp) :type))) (-> (map #(if (and (= :string  (:type %)) (str/starts-with? (:output %) "(cljs.core/"))
-                                                                      (eval-string (:output %))
-                                                                      (:output %)) exp)
+    (and (seq? exp) (= :operand (get (first exp) :type))) (-> (map :output exp)
                                                               str
                                                               eval-string
                                                               parse-float-if)
