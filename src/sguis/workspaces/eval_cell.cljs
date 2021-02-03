@@ -9,7 +9,8 @@
              :refer [are is testing]]
             [nubank.workspaces.core :as ws]
             [clojure.string :as str]
-            [clojure.edn :as edn]))
+            [clojure.edn :as edn]
+            [instaparse.core :as insta :refer-macros [defparser]]))
 
 (def kw->op
   {:add      '+
@@ -168,19 +169,19 @@
                             :raw-ast      '(+ :B0 :B1),
                             :ast          '(+ nil nil),
                             :output       0,
-:dependencies '(:B0 :B1)}
-                     :B0 {:input "1"}
-                     :B2 {:input "= add (B0,B2)"}}}]
-  (is (= {:A0 {:input        "= add (B0,B1)",
-               :raw-ast      '(+ :B0 :B1),
-               :ast          '(+ nil nil),
-               :output       0,
-               :dependencies '(:B0 :B1)}
-          :B0 {:input "1" :raw-ast 1}
-          :B2 {:input        "= add (B0,B2)"
-               :raw-ast      '(+ :B0 :B2)
-               :dependencies '(:B0 :B2)}}
-         (:cells (eval-sheets-raw-ast env))))))
+                            :dependencies '(:B0 :B1)}
+                       :B0 {:input "1"}
+                       :B2 {:input "= add (B0,B2)"}}}]
+    (is (= {:A0 {:input        "= add (B0,B1)",
+                 :raw-ast      '(+ :B0 :B1),
+                 :ast          '(+ nil nil),
+                 :output       0,
+                 :dependencies '(:B0 :B1)}
+            :B0 {:input "1" :raw-ast 1}
+            :B2 {:input        "= add (B0,B2)"
+                 :raw-ast      '(+ :B0 :B2)
+                 :dependencies '(:B0 :B2)}}
+           (:cells (eval-sheets-raw-ast env))))))
 
 (ws/deftest dependencies-builder
   (let [env0            {:cells {:A0 {:dependencies [:A1]}
