@@ -265,7 +265,7 @@
   (cond
     (:error exp) (:error exp)
     (and (seq? exp) (some :error exp)) (str/join ", " (mapv :error (filter :error exp)))
-    (and (seq? exp) (= :operand (get (first exp) :type))) (eval-string (str (map #(if (= :string  (:type %))
+    (and (seq? exp) (= :operand (get (first exp) :type))) (eval-string (str (map #(if (and (= :string  (:type %)) (str/starts-with? (:output %) "core/"))
                                                                                     (eval-string (:output %))
                                                                                     (:output %)) exp)))
     (seq? exp) (str/join ", " (mapv :output exp))

@@ -6,6 +6,7 @@
     [reagent.core :as r]
     [sguis.workspaces.cells :refer [cells-ui]]
     [sguis.workspaces.cells-test]
+    [sguis.workspaces.alternate-cells-test]
     [sguis.workspaces.circle-drawer :refer [circles-ui]]
     [sguis.workspaces.circle-drawer-test]
     [sguis.workspaces.counter :refer [counter-ui]]
