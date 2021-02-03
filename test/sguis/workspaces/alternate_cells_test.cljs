@@ -4,11 +4,87 @@
      :include-macros true
      :refer [are is testing]]
     [nubank.workspaces.core :as ws]
-    [sguis.workspaces.cells :refer [eval-cell
+    [sguis.workspaces.cells :refer [->render
                                     cells-ui]]
     [sguis.workspaces.test-utils :as u]
     [reagent.core :as r]
     [clojure.string :as str]))
+
+(defn new-table
+  [cells]
+  {:rows    10
+   :columns 10
+   :chain #{}
+   :cells   (into {} (for [[k v] cells] [k {:input v}]))})
+
+(ws/deftest
+  eval-cell-test
+  (are [expected actual] (= expected actual)
+    1 (->render (new-table {:A1 "1"}) "A1")
+    4 (->render (new-table {:A1 "2"
+                            :A2 "= Add(A1,2)"}) "A2")
+    9 (->render (new-table {:A0 "= sum(A1:A9)"
+                            :A1 "1"
+                            :A2 "1"
+                            :A3 "1"
+                            :A4 "1"
+                            :A5 "1"
+                            :A6 "1"
+                            :A7 "1"
+                            :A8 "1"
+                            :A9 "1"}) "A0")
+    10 (->render (new-table {:A0 "1"
+                             :A1 "A0"
+                             :A2 "A1"
+                             :A3 "A1"
+                             :A4 "A1"
+                             :A5 "A1"
+                             :A6 "A1"
+                             :A7 "A1"
+                             :A8 "A1"
+                             :A9 "A1"
+                             :B0 "= sum (A0:A9)"}) "B0")
+    "Cyclic dependency found A0" (->render (new-table {:A0 "A0"}) "A0")
+    "" (->render (new-table {}) "Div of B5 and C5 =")
+    "Elephant10" (->render (new-table {:B1 "Elephant"
+                                       :B2 "10"
+                                       :B3 "= sum (B1,B2)"}) "B3")
+    "" (->render {} nil)
+    1 (->render {:chain #{}
+                 :cells {:A1 {:input "1"}}} "A1")
+    "A" (->render {:chain #{}
+                   :cells {:A1 {:input "A"}}} "A1")
+    "" (->render {:chain #{}
+                  :cells {:A2 {:input "A1"}}} "A1")
+    "Cyclic dependency found A1" (->render {:chain #{}
+                                            :cells {:A1 {:input "A1"}}} "A1")
+    "2, 3" (->render {:chain #{}
+                      :cells {:A1 {:input "A2:A3"}
+                              :A2 {:input "2"}
+                              :A3 {:input "3"}}} "A1")
+    "Cyclic dependency found A1, Cyclic dependency found A3"
+    (->render {:chain #{}
+               :cells {:A1 {:input "A1:A3"}
+                       :A2 {:input "2"}
+                       :A3 {:input "A3"}}} "A1")
+    "Cyclic dependency found A1" (->render {:chain #{}
+                                            :cells {:A1 {:input "A1,A2"}
+                                                    :A2 {:input "2"}}} "A1")
+    11 (->render {:chain #{}
+                  :cells {:A1 {:input "= Add (A2:A5)"}
+                          :A3 {:input "5"}
+                          :A2 {:input "6"}}} "A1")
+    17 (->render {:chain #{}
+                  :cells {:A1 {:input "= Add (A3,= mul (2,A2))"}
+                          :A3 {:input "5"}
+                          :A2 {:input "6"}}} "A1")
+    "6, 5" (->render {:chain #{}
+                      :cells {:A1 {:input "A3:A2"}
+                              :A3 {:input "5"}
+                              :A2 {:input "6"}}} "A1")
+    5 (->render {:chain #{}
+                 :cells {:A1 {:input "= add (A2,3)"}
+                         :A2 {:input "2"}}} "A1")))
 
 (defn texts-on-field
   [field]

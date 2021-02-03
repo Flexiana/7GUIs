@@ -253,7 +253,6 @@
         parameters (str/replace par #"=\s*(\w+)\s*((\((.*)\)))*"
                                 #(let [p (reader (assoc-in env [:cells tmp-cell :input] (first %1)) tmp-cell)]
                                    (map :output p)))]
-
     (->> operand
          (conj (for [p (str/split parameters ",")
                      :let [tmp-cell (keyword (gensym))]]
@@ -265,61 +264,18 @@
   (cond
     (:error exp) (:error exp)
     (and (seq? exp) (some :error exp)) (str/join ", " (mapv :error (filter :error exp)))
-    (and (seq? exp) (= :operand (get (first exp) :type))) (eval-string (str (map #(if (and (= :string  (:type %)) (str/starts-with? (:output %) "core/"))
-                                                                                    (eval-string (:output %))
-                                                                                    (:output %)) exp)))
+    (and (seq? exp) (= :operand (get (first exp) :type))) (-> (map #(if (and (= :string  (:type %)) (str/starts-with? (:output %) "(cljs.core/"))
+                                                                      (eval-string (:output %))
+                                                                      (:output %)) exp)
+                                                              str
+                                                              eval-string
+                                                              parse-float-if)
     (seq? exp) (str/join ", " (mapv :output exp))
     :else (:output exp)))
 
-(render (reader {:chain #{}
-                 :cells {:A1 {:input "1"}}} "A1"))
-
-(render  (reader {:chain #{}
-                  :cells {:A1 {:input "A"}}} "A1"))
-
-(render (reader {:chain #{}
-                 :cells {:A2 {:input "A1"}}} "A1"))
-
-(render (reader {:chain #{}
-                 :cells {:A1 {:input "A1"}}} "A1"))
-
-(render (reader {:chain #{}
-                 :cells {:A1 {:input "A2:A3"}
-                         :A2 {:input "2"}
-                         :A3 {:input "3"}}} "A1"))
-
-(render (reader {:chain #{}
-                 :cells {:A1 {:input "A2,A3"}
-                         :A2 {:input "2"}
-                         :A3 {:input "3"}}} "A1"))
-
-(render (reader {:chain #{}
-                 :cells {:A1 {:input "A1:A3"}
-                         :A2 {:input "2"}
-                         :A3 {:input "A3"}}} "A1"))
-
-(render (reader {:chain #{}
-                 :cells {:A1 {:input "A1,A2"}
-                         :A2 {:input "2"}}} "A1"))
-
-(render (reader {:chain #{}
-                 :cells {:A1 {:input "= Add (A2:A5)"}
-                         :A3 {:input "5"}
-                         :A2 {:input "6"}}} "A1"))
-
-(render (reader {:chain #{}
-                 :cells {:A1 {:input "= Add (A3,= mul (2,A2))"}
-                         :A3 {:input "5"}
-                         :A2 {:input "6"}}} "A1"))
-
-(render (reader {:chain #{}
-                 :cells {:A1 {:input "A3:A2"}
-                         :A3 {:input "5"}
-                         :A2 {:input "6"}}} "A1"))
-
-(render (reader {:chain #{}
-                 :cells {:A1 {:input "= add (A2,3)"}
-                         :A2 {:input "2"}}} "A1"))
+(defn ->render
+  [env id]
+  (render (reader env id)))
 
 (defn coll-fn
   [{:keys [focused-cell cells] :as env}
@@ -340,7 +296,7 @@
                  :auto-focus    true
                  :default-value (get cells cell-id)
                  :on-change     (partial change-cell!)}]]
-       (render (reader env cell-id)))]))
+       (->render env cell-id))]))
 
 #_:clj-kondo/ignore
 
