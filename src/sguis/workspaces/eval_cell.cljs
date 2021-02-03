@@ -83,27 +83,32 @@
 (defn add-eval-tree [env init-key]
   (merge env {:eval-tree (dependency-buildn (eval-sheets-raw-ast env) init-key)}))
 
-(defn eval-cell [env cell-id]
-  (let [{:keys [sci-ctx eval-tree] :as env-new} (add-eval-tree (eval-sheets-raw-ast env) cell-id)]
-    (reduce (fn [env cell-id]
-              (let [raw-ast-data (get-in env [:cells cell-id :raw-ast])]
-                (cond (keyword? raw-ast-data) (let [env-ast (assoc-in env [:cells cell-id :ast]
-                                                                      (get-in env [:cells raw-ast-data :output]))]
-                                                (assoc-in env-ast [:cells cell-id :output]
-                                                          (eval-form sci-ctx (get-in env-ast [:cells cell-id :ast]))))
-                      (seq? raw-ast-data)     (assoc-in env [:cells cell-id :output]
-                                                        (eval-form sci-ctx
-                                                                   (map (fn [data]
-                                                                          (if (keyword? data)
-                                                                            (get-in env [:cells data :output])
-                                                                            data)) raw-ast-data)))
-                      :else                   (let [env-ast (assoc-in env [:cells cell-id :ast] raw-ast-data)]
-                                                (assoc-in
-                                                 env-ast
-                                                 [:cells cell-id :output]
-                                                 (eval-form sci-ctx (get-in env-ast [:cells cell-id :ast])))))))
-            env-new
-            eval-tree)))
+(defn eval-cell
+  [env cell-id]
+  (let [{:keys [sci-ctx eval-tree]
+         :as   env-new} (-> env
+                            eval-sheets-raw-ast
+                            (add-eval-tree cell-id))
+        rf              (fn [{:keys [cells]
+                             :as   env} cell-id]
+                          (let [{:keys [raw-ast]} (get cells cell-id)]
+                            (cond (keyword? raw-ast) (let [{:keys [output]} (get cells raw-ast)
+                                                           env-after        (assoc-in env [:cells cell-id :ast] output)
+                                                           current-output   (eval-form sci-ctx output)]
+                                                       (assoc-in env-after [:cells cell-id :output]
+                                                                 current-output))
+                                  (seq? raw-ast)     (let [form   (map (fn [data]
+                                                                         (if (keyword? data)
+                                                                           (-> cells (get data) :output)
+                                                                           data))
+                                                                       raw-ast)
+                                                           output (eval-form sci-ctx form)]
+                                                       (assoc-in env [:cells cell-id :output] output))
+                                  :else              (let [output (eval-form sci-ctx raw-ast)]
+                                                       (update-in env [:cells cell-id] assoc
+                                                                  :ast raw-ast
+                                                                  :output output)))))]
+    (reduce rf env-new eval-tree)))
 
 (ws/deftest input->ast-test
   (let [env {:sci-ctx (init {})
