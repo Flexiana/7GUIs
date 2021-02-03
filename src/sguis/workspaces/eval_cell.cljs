@@ -21,7 +21,8 @@
    :prod     '*})
 
 (defn input->raw-ast [input]
-  (cond (str/starts-with? input "=")             (if (= 3 (count (str/split input #"\s")))
+  (cond (nil? input)                             ""
+        (str/starts-with? input "=")             (if (= 3 (count (str/split input #"\s")))
                                                    (let [[_eq op d] (str/split input #"\s" 3)
                                                          opkw       (kw->op (keyword op))]
                                                      `(~opkw ~@(map (fn [x]
