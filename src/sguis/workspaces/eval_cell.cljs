@@ -159,3 +159,31 @@
                  :raw-ast      '(+ :B0 :B2)
                  :dependencies '(:B0 :B2)}}
            (:cells (eval-sheets-raw-ast env))))))
+
+(defn dependency-buildn
+  [{:keys [cells]} init-key]
+  (letfn [(next-deps-impl [deps]
+            (concat (mapcat #(next-deps-impl (get-in cells [% :dependencies]))
+                            deps)
+                    deps))]
+    (next-deps-impl [init-key])))
+
+(ws/deftest dependencies-builder
+  (let [env0 {:cells {:A0 {:dependencies [:A1]}
+                      :A1 {}}}
+        env1 {:cells {:A0 {:dependencies [:A1]}
+                      :A1 {:dependencies [:A2]}
+                      :A2 {:dependencies []}}}
+        env2 {:cells {:A0 {:dependencies [:A1]}
+                      :A1 {:dependencies [:A2]}
+                      :A2 {:dependencies [:A3]}
+                      :A3 {:dependencies []}}}
+        env3 {:cells {:A0 {:dependencies [:A1]}
+                      :A1 {:dependencies [:A2]}
+                      :A2 {:dependencies [:A3]}
+                      :A3 {:dependencies [:A4]}
+                      :A4 {}}}]
+    (is (= [:A1 :A0] (dependency-buildn env0 :A0)))
+    (is (= [:A2 :A1 :A0] (dependency-buildn env1 :A0)))
+    (is (= [:A3 :A2 :A1 :A0] (dependency-buildn env2 :A0)))
+    (is (= [:A4 :A3 :A2 :A1 :A0] (dependency-buildn env3 :A0)))))
