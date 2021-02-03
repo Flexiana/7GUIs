@@ -20,12 +20,6 @@
   [rows]
   (take rows (range 0 100)))
 
-(defn possible-cells
-  [{:keys [rows columns]}]
-  (set (for [s (az-range columns)
-             n (table-lines rows)]
-         (keyword (str s n)))))
-
 ;; Parser Impl
 
 (def kw->op
@@ -43,110 +37,11 @@
        (re-matches #"^[+-]?\d+(\.\d+)?$" parsed-exp)
        (valid/numeric? (js/parseFloat parsed-exp))))
 
-(defn is-cell?
-  [env parsed-exp]
-  (when parsed-exp
-    (and (string? parsed-exp)
-         (= 2 (count parsed-exp))
-         (get (possible-cells env) (keyword (str/upper-case parsed-exp))))))
-
-(defn is-range-cells?
-  [env parsed-exp]
-  (and (= 5 (count parsed-exp))
-       (->> (str/split parsed-exp #":")
-            (map (comp boolean (possible-cells env) keyword str/upper-case))
-            (every? true?))))
-
-(defn range-cells-get
-  [[fst snd]]
-  (let [[collmin min] (name fst)
-        [collmax max] (name snd)]
-    (for [collv (range (.charCodeAt collmin) (inc (.charCodeAt collmax)))
-          v     (range (int min) (inc (int max)))]
-      (str (char collv) v))))
-
-(defn is-op?
-  [parsed-exp]
-  (contains? (set (keys kw->op)) (keyword parsed-exp)))
-
 (defn parse-float-if
   [s]
   (if (can-parse-numeric? s)
     (js/parseFloat s)
     s))
-
-(declare eval-cell)
-
-(defn parse-range-cells
-  [parsed-exp]
-  (-> parsed-exp
-      (str/upper-case)
-      (str/split #":")
-      range-cells-get))
-
-(def filling #{"of" "and"})
-
-(defn eval-cell
-  [{:keys [cells chain] :or {chain #{}} :as env} s]
-  (cond
-    (get chain s) "Circular dependency found!"
-    (nil? s) ""
-    (valid/numeric? s) s
-    (is-op? (str/lower-case s)) (get kw->op (keyword (str/lower-case s)))
-    (can-parse-numeric? s) (js/parseFloat s)
-    (is-cell? env s) (recur (assoc env :chain (conj chain s))
-                       (->> s
-                            str/upper-case
-                            keyword
-                            (#(get cells % 0))))
-    (is-range-cells? env s) (->> (parse-range-cells s)
-                                 (map (partial eval-cell env))
-                                 (map parse-float-if))
-    (and (string? s) (str/ends-with? s "=")) (let [result (->> (str/split s #" ")
-                                                               butlast
-                                                               (map str/lower-case)
-                                                               (map (partial eval-cell env))
-                                                               flatten
-                                                               (remove filling))]
-                                               (if (second result)
-                                                 (eval-string (str result))
-                                                 (parse-float-if (first result))))
-    :else s))
-
-;; UI impl
-
-(def overflow-style
-  {:overflow "auto"})
-
-(defn light-border-style
-  [width]
-  {:border  "1px solid #ccc"
-   :width   width
-   :padding "0.5em"})
-
-(defn header-fn
-  [width chars]
-  ^{:key chars}
-  [:td {:style (light-border-style width)} chars])
-
-(defn focus-cell!
-  [*state cell-id _]
-  (swap! *state assoc :focused-cell cell-id))
-
-(defn submit-cell!
-  [*state {:keys [edition]}
-   cell-id
-   event]
-  (.preventDefault event)
-  (swap! *state
-    #(-> %
-         (assoc-in [:cells cell-id :input]
-           edition)
-         (dissoc :focused-cell :edition))))
-
-(defn change-cell!
-  [*state event]
-  (swap! *state assoc :edition (.. event -target -value)))
 
 (defn expression?
   [x]
@@ -175,11 +70,11 @@
   (and (string? x)
        (get (into #{} (map name (keys kw->op))) (str/lower-case x))))
 
-(defmulti parse :type)
-
 (defn seq-cell?
   [input]
   (every? single-cell? (str/split input ",")))
+
+(defmulti parse :type)
 
 (defn reader
   [{:keys [cells chain] :or {chain #{}} :as env} id]
@@ -276,6 +171,41 @@
 (defn ->render
   [env id]
   (render (reader env id)))
+
+;; UI impl
+
+(def overflow-style
+  {:overflow "auto"})
+
+(defn light-border-style
+  [width]
+  {:border  "1px solid #ccc"
+   :width   width
+   :padding "0.5em"})
+
+(defn header-fn
+  [width chars]
+  ^{:key chars}
+  [:td {:style (light-border-style width)} chars])
+
+(defn focus-cell!
+  [*state cell-id _]
+  (swap! *state assoc :focused-cell cell-id))
+
+(defn submit-cell!
+  [*state {:keys [edition]}
+   cell-id
+   event]
+  (.preventDefault event)
+  (swap! *state
+    #(-> %
+         (assoc-in [:cells cell-id :input]
+           edition)
+         (dissoc :focused-cell :edition))))
+
+(defn change-cell!
+  [*state event]
+  (swap! *state assoc :edition (.. event -target -value)))
 
 (defn coll-fn
   [{:keys [focused-cell cells] :as env}
