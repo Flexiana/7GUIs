@@ -43,10 +43,13 @@
     (js/parseFloat s)
     s))
 
+0(def xp-matcher
+   #"=\s*(\w+)\s*((\((.*)\)))*")
+
 (defn expression?
   [x]
   (and (string? x)
-       (re-matches #"=\s*(\w+)\s*((\((.*)\)))*" x)))
+       (re-matches xp-matcher x)))
 
 (defn extract
   [input]
@@ -92,17 +95,17 @@
                 :else :string)]
     (trampoline parse {:input input :id id :type typ :env env})))
 
-(defmethod parse :cycle-error [x]
-  (assoc x :error (str "Cyclic dependency found " (:id x))))
+(defmethod parse :cycle-error [{:keys [id] :as m}]
+  (assoc m :error (str "Cyclic dependency found " id)))
 
-(defmethod parse :float [x]
-  (assoc x :output (:input x)))
+(defmethod parse :float [{:keys [input] :as m}]
+  (assoc m :output input))
 
 (defmethod parse :nil [x]
   (assoc x :output ""))
 
-(defmethod parse :parsable-float [x]
-  (assoc x :output (js/parseFloat (:input x))))
+(defmethod parse :parsable-float [{:keys [input] :as m}]
+  (assoc m :output (js/parseFloat input)))
 
 (defmethod parse :cell [{:keys [env input id]}]
   (let [chain (get env :chain #{})]
@@ -126,33 +129,33 @@
   (for [cell cells]
     (trampoline parse (assoc env :type :cell :input cell))))
 
-(defmethod parse :multi-cell [{:keys [input] :as x}]
+(defmethod parse :multi-cell [{:keys [input] :as m}]
   (let [cell-range (multi->cells input)]
-    (parse-multiple x cell-range)))
+    (parse-multiple m cell-range)))
 
-(defmethod parse :seq-cell [{:keys [input] :as x}]
+(defmethod parse :seq-cell [{:keys [input] :as m}]
   (let [cell-range (str/split input ",")]
-    (parse-multiple x cell-range)))
+    (parse-multiple m cell-range)))
 
-(defmethod parse :string [x]
-  (assoc x :output (:input x)))
+(defmethod parse :string [{:keys [input] :as m}]
+  (assoc m :output input))
 
-(defmethod parse :operand [{:keys [input] :as x}]
-  (assoc x :output (get kw->op (keyword (str/lower-case input)))))
+(defmethod parse :operand [{:keys [input] :as m}]
+  (assoc m :output (get kw->op (keyword (str/lower-case input)))))
 
 (defmethod parse :expression [{:keys [env input]}]
-  (let [[_ op _ _ par] (re-matches #"=\s*(\w+)\s*((\((.*)\)))*" input)
+  (let [[_ op _ _ par] (re-matches xp-matcher input)
         op-cell    (keyword (gensym))
         operand    (reader (assoc-in env [:cells op-cell :input] op) op-cell)
         tmp-cell   (keyword (gensym))
-        parameters (str/replace par #"=\s*(\w+)\s*((\((.*)\)))*"
+        parameters (str/replace par xp-matcher
                                 #(let [p (reader (assoc-in env [:cells tmp-cell :input] (first %1)) tmp-cell)]
                                    (map :output p)))]
-    (->> operand
-         (conj (for [p (str/split parameters ",")
-                     :let [tmp-cell (keyword (gensym))]]
-                 (reader (assoc-in env [:cells tmp-cell :input] p) tmp-cell)))
-         flatten)))
+    (-> (for [p (str/split parameters ",")
+              :let [tmp-cell (keyword (gensym))]]
+          (reader (assoc-in env [:cells tmp-cell :input] p) tmp-cell))
+        (conj operand)
+        flatten)))
 
 (defn render
   [exp]
