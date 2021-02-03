@@ -162,11 +162,19 @@
 
 (defn dependency-buildn
   [{:keys [cells]} init-key]
-  (letfn [(next-deps-impl [deps]
-            (distinct (concat (mapcat #(next-deps-impl (get-in cells [% :dependencies]))
-                                      deps)
-                              deps)))]
-    (next-deps-impl [init-key])))
+  (letfn [(next-deps-impl [seen deps]
+            (let [seen-next (into seen deps)]
+              (concat (mapcat #(let [next (get-in cells [% :dependencies])]
+                                 (when-let [dupe (some seen next)]
+                                   (-> (str "duplicated keys: " dupe)
+                                       (ex-info {:cognitect.anomalies/category :cognitect.anomalies/conflict
+                                                 :dupe                         dupe
+                                                 :seen                         seen})
+                                       (throw)))
+                                 (next-deps-impl seen-next next))
+                              deps)
+                      deps)))]
+    (distinct (next-deps-impl #{} [init-key]))))
 
 (ws/deftest dependencies-builder
   (let [env0            {:cells {:A0 {:dependencies [:A1]}
@@ -193,6 +201,8 @@
     (is (= [:A2 :A1 :A0] (dependency-buildn duplicated-deps :A0)))))
 
 (ws/deftest fix-loop-deps
-  (let [looping-deps0 {:cells {:A0 {:dependencies [:A1]}
-                               :A1 {:dependencies [:A1]}}}]
-    (is (= "loop error on :A1" (dependency-buildn looping-deps0 :A0)))))
+  (let [looping-deps0 {:cells {:A0 {:dependencies [:A0]}}}]
+    (is (= "duplicated keys: :A0" (ex-message
+                                   (try (dependency-buildn looping-deps0 :A0)
+                                        (catch :default ex
+                                          ex)))))))
