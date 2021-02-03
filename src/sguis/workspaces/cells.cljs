@@ -195,7 +195,7 @@
                 (multi-cell? input) :multi-cell
                 (operand? input) :operand
                 :else :string)]
-    #(parse {:input input :id id :type typ :env env})))
+    (trampoline parse {:input input :id id :type typ :env env})))
 
 (defmethod parse :cycle-error [x]
   (assoc x :error (str "Cyclic dependency found " (:id x))))
@@ -248,16 +248,16 @@
 (defmethod parse :expression [{:keys [env input]}]
   (let [[_ op _ _ par] (re-matches #"=\s*(\w+)\s*((\((.*)\)))*" input)
         op-cell    (keyword (gensym))
-        operand    (trampoline (reader (assoc-in env [:cells op-cell :input] op) op-cell))
+        operand    (reader (assoc-in env [:cells op-cell :input] op) op-cell)
         tmp-cell   (keyword (gensym))
         parameters (str/replace par #"=\s*(\w+)\s*((\((.*)\)))*"
-                                #(let [p (trampoline reader (assoc-in env [:cells tmp-cell :input] (first %1)) tmp-cell)]
+                                #(let [p (reader (assoc-in env [:cells tmp-cell :input] (first %1)) tmp-cell)]
                                    (map :output p)))]
 
     (->> operand
          (conj (for [p (str/split parameters ",")
                      :let [tmp-cell (keyword (gensym))]]
-                 (trampoline (reader (assoc-in env [:cells tmp-cell :input] p) tmp-cell))))
+                 (reader (assoc-in env [:cells tmp-cell :input] p) tmp-cell)))
          flatten)))
 
 (defn render
@@ -271,55 +271,55 @@
     (seq? exp) (str/join ", " (mapv :output exp))
     :else (:output exp)))
 
-(render (trampoline (reader {:chain #{}
-                             :cells {:A1 {:input "1"}}} "A1")))
+(render (reader {:chain #{}
+                 :cells {:A1 {:input "1"}}} "A1"))
 
-(render (trampoline (reader {:chain #{}
-                             :cells {:A1 {:input "A"}}} "A1")))
+(render  (reader {:chain #{}
+                  :cells {:A1 {:input "A"}}} "A1"))
 
-(render (trampoline (reader {:chain #{}
-                             :cells {:A2 {:input "A1"}}} "A1")))
+(render (reader {:chain #{}
+                 :cells {:A2 {:input "A1"}}} "A1"))
 
-(render (trampoline (reader {:chain #{}
-                             :cells {:A1 {:input "A1"}}} "A1")))
+(render (reader {:chain #{}
+                 :cells {:A1 {:input "A1"}}} "A1"))
 
-(render (trampoline (reader {:chain #{}
-                             :cells {:A1 {:input "A2:A3"}
-                                     :A2 {:input "2"}
-                                     :A3 {:input "3"}}} "A1")))
+(render (reader {:chain #{}
+                 :cells {:A1 {:input "A2:A3"}
+                         :A2 {:input "2"}
+                         :A3 {:input "3"}}} "A1"))
 
-(render (trampoline (reader {:chain #{}
-                             :cells {:A1 {:input "A2,A3"}
-                                     :A2 {:input "2"}
-                                     :A3 {:input "3"}}} "A1")))
+(render (reader {:chain #{}
+                 :cells {:A1 {:input "A2,A3"}
+                         :A2 {:input "2"}
+                         :A3 {:input "3"}}} "A1"))
 
-(render (trampoline (reader {:chain #{}
-                             :cells {:A1 {:input "A1:A3"}
-                                     :A2 {:input "2"}
-                                     :A3 {:input "A3"}}} "A1")))
+(render (reader {:chain #{}
+                 :cells {:A1 {:input "A1:A3"}
+                         :A2 {:input "2"}
+                         :A3 {:input "A3"}}} "A1"))
 
-(render (trampoline (reader {:chain #{}
-                             :cells {:A1 {:input "A1,A2"}
-                                     :A2 {:input "2"}}} "A1")))
+(render (reader {:chain #{}
+                 :cells {:A1 {:input "A1,A2"}
+                         :A2 {:input "2"}}} "A1"))
 
-(render (trampoline (reader {:chain #{}
-                             :cells {:A1 {:input "= Add (A2:A5)"}
-                                     :A3 {:input "5"}
-                                     :A2 {:input "6"}}} "A1")))
+(render (reader {:chain #{}
+                 :cells {:A1 {:input "= Add (A2:A5)"}
+                         :A3 {:input "5"}
+                         :A2 {:input "6"}}} "A1"))
 
-(render (trampoline (reader {:chain #{}
-                             :cells {:A1 {:input "= Add (A3,= mul (2,A2))"}
-                                     :A3 {:input "5"}
-                                     :A2 {:input "6"}}} "A1")))
+(render (reader {:chain #{}
+                 :cells {:A1 {:input "= Add (A3,= mul (2,A2))"}
+                         :A3 {:input "5"}
+                         :A2 {:input "6"}}} "A1"))
 
-(render (trampoline (reader {:chain #{}
-                             :cells {:A1 {:input "A3:A2"}
-                                     :A3 {:input "5"}
-                                     :A2 {:input "6"}}} "A1")))
+(render (reader {:chain #{}
+                 :cells {:A1 {:input "A3:A2"}
+                         :A3 {:input "5"}
+                         :A2 {:input "6"}}} "A1"))
 
-(render (trampoline (reader {:chain #{}
-                             :cells {:A1 {:input "= add (A2,3)"}
-                                     :A2 {:input "2"}}} "A1")))
+(render (reader {:chain #{}
+                 :cells {:A1 {:input "= add (A2,3)"}
+                         :A2 {:input "2"}}} "A1"))
 
 (defn coll-fn
   [{:keys [focused-cell cells] :as env}
@@ -340,7 +340,7 @@
                  :auto-focus    true
                  :default-value (get cells cell-id)
                  :on-change     (partial change-cell!)}]]
-       (render (trampoline (reader env cell-id))))]))
+       (render (reader env cell-id)))]))
 
 #_:clj-kondo/ignore
 
