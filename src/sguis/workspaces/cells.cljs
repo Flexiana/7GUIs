@@ -43,8 +43,8 @@
     (js/parseFloat s)
     s))
 
-0(def xp-matcher
-   #"=\s*(\w+)\s*((\((.*)\)))*")
+(def xp-matcher
+  #"=\s*(\w+)\s*((\((.*)\)))*")
 
 (defn expression?
   [x]
