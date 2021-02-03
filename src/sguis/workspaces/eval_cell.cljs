@@ -49,27 +49,51 @@
     (coll? raw-ast)    (mapcat raw-ast->dependencies raw-ast)
     (keyword? raw-ast) [raw-ast]
     :else              nil))
+(defn eval-sheets-raw-ast [{:keys [cells]
+                            :as   env}]
+  (reduce (fn [env cell-id]
+            (let [raw-ast (input->raw-ast (get-in cells [cell-id :input]))
+                  deps    (not-empty (raw-ast->dependencies raw-ast))
+                  env-new (assoc-in env
+                                    [:cells cell-id :raw-ast]
+                                    raw-ast)]
+              (if deps
+                (assoc-in env-new [:cells cell-id :dependencies]
+                          deps)
+                env-new)))
+          env
+          (keys cells)))
+
+(defn dependency-buildn
+  [{:keys [cells]} init-key]
+  (letfn [(next-deps-impl [seen deps]
+            (let [seen-next (into seen deps)]
+              (concat (mapcat #(let [next (get-in cells [% :dependencies])]
+                                 (when-let [dupe (some seen next)]
+                                   (-> (str "duplicated keys: " dupe)
+                                       (ex-info {:cognitect.anomalies/category :cognitect.anomalies/conflict
+                                                 :dupe                         dupe
+                                                 :seen                         seen})
+                                       (throw)))
+                                 (next-deps-impl seen-next next))
+                              deps)
+                      deps)))]
+    (distinct (next-deps-impl #{} [init-key]))))
+
+(defn add-eval-tree [env init-key]
+  (merge env {:eval-tree (dependency-buildn (eval-sheets-raw-ast env) init-key)}))
 
 (defn eval-cell [{:keys [sci-ctx]
-                  :as   env} {:keys [input]
-                              :as   cell}]
-  (let [raw-ast (input->raw-ast input)
-        ast     (raw-ast->ast env raw-ast)
-        output  (eval-form sci-ctx ast)]
-    (merge (assoc cell
-                  :raw-ast raw-ast
-                  :ast ast
-                  :output output)
-           (when-let [dependencies (not-empty (raw-ast->dependencies raw-ast))]
-             {:dependencies dependencies}))))
-
-(defn eval-sheets [{:keys [cells]
-                    :as   env}]
-  (reduce-kv (fn [env ident cell]
-               (assoc-in env [:cells ident]
-                         (eval-cell env cell)))
-             env
-             cells))
+                  :as   env} cell-id]
+  #_(let [raw-ast (input->raw-ast input)
+          ast     (raw-ast->ast env raw-ast)
+          output  (eval-form sci-ctx ast)]
+      (merge (assoc cell
+                    :raw-ast raw-ast
+                    :ast ast
+                    :output output)
+             (when-let [dependencies (not-empty (raw-ast->dependencies raw-ast))]
+               {:dependencies dependencies}))))
 
 (ws/deftest input->ast-test
   (let [env {:sci-ctx (init {})
@@ -101,45 +125,23 @@
 
     (is (= 1 (input->raw-ast "1")))
     (is (= 1 (raw-ast->ast env 1)))
-    (is (= {:input   "1"
-            :raw-ast 1
-            :ast     1
-            :output  1}
-           (eval-cell env {:input "1"})))
 
     (is (= :A1 (input->raw-ast "= A1")))
     (is (= 1 (raw-ast->ast env :A1)))
-    (is (= {:input        "= A1"
-            :raw-ast      :A1
-            :ast          1
-            :output       1
-            :dependencies [:A1]}
-           (eval-cell env {:input "= A1"})))
 
     (is (= "abc" (input->raw-ast "abc")))
     (is (= "abc" (raw-ast->ast env "abc")))
-    (is (= {:input "abc", :raw-ast "abc", :ast "abc", :output "abc"}
-           (eval-cell env {:input "abc"})))
 
 
     (is (= '(+ 1 2) (input->raw-ast "= add (1,2)")))
     (is (= '(+ 1 2) (raw-ast->ast env '(+ 1 2))))
-    (is (= {:input "= add (1,2)", :raw-ast '(+ 1 2), :ast '(+ 1 2), :output 3}
-           (eval-cell env {:input "= add (1,2)"})))
 
     (is (= '(+ :A1 :A2) (input->raw-ast "= add (A1,A2)")))
     (is (= '(+ 1 3) (raw-ast->ast env '(+ :A1 :A2))))
-    (is (= {:input        "= add (A1,A2)", :raw-ast '(+ :A1 :A2), :ast '(+ 1 3), :output 4
-            :dependencies [:A1 :A2]}
-           (eval-cell env {:input "= add (A1,A2)"})))
 
-    (is (= '(+ 1 2) (raw-ast->ast env '(+ :A1 2))))
-    (is (= {:input        "= add (A1,2)", :raw-ast '(+ :A1 2), :ast '(+ 1 2), :output 3
-            :dependencies [:A1]}
-           (eval-cell env {:input "= add (A1,2)"})))))
+    (is (= '(+ 1 2) (raw-ast->ast env '(+ :A1 2))))))
 
 
-(ws/deftest eval-sheets-test
 (ws/deftest eval-sheets-raw-ast-test
   (let [env {:sci-ctx (init {})
              :cells   {:A0 {:input        "= add (B0,B1)",
@@ -159,22 +161,6 @@
                  :raw-ast      '(+ :B0 :B2)
                  :dependencies '(:B0 :B2)}}
            (:cells (eval-sheets-raw-ast env))))))
-
-(defn dependency-buildn
-  [{:keys [cells]} init-key]
-  (letfn [(next-deps-impl [seen deps]
-            (let [seen-next (into seen deps)]
-              (concat (mapcat #(let [next (get-in cells [% :dependencies])]
-                                 (when-let [dupe (some seen next)]
-                                   (-> (str "duplicated keys: " dupe)
-                                       (ex-info {:cognitect.anomalies/category :cognitect.anomalies/conflict
-                                                 :dupe                         dupe
-                                                 :seen                         seen})
-                                       (throw)))
-                                 (next-deps-impl seen-next next))
-                              deps)
-                      deps)))]
-    (distinct (next-deps-impl #{} [init-key]))))
 
 (ws/deftest dependencies-builder
   (let [env0            {:cells {:A0 {:dependencies [:A1]}
@@ -218,3 +204,28 @@
                                    (try (dependency-buildn looping-deps1 :A0)
                                         (catch :default ex
                                           ex)))))))
+
+(ws/deftest dependencies-builder-from-sheets
+  (let [env {:sci-ctx (init {})
+             :cells   {:A0 {:input        "= add (B0,B1)",
+                            :raw-ast      '(+ :B0 :B1),
+                            :ast          '(+ nil nil),
+                            :output       0,
+                            :dependencies '(:B0 :B1)}
+                       :B0 {:input "1"}
+                       :B2 {:input "= add (B0,B2)"}}}]
+    (is (= "duplicated keys: :B2"
+           (ex-message (try (dependency-buildn (eval-sheets-raw-ast env) :B2)
+                            (catch :default ex
+                              ex)))))))
+
+(ws/deftest add-eval-tree-test
+  (let [env                       {:sci-ctx (init {})
+                                   :cells   {:A0 {:input "= add (B0,B1)",}
+                                             :B0 {:input "1"}
+                                             :B2 {:input "= add (B0,3)"}}                                                                                                                                                                                                                                                                                                                                                                                            }
+        {:keys [eval-tree cells]} (add-eval-tree env :B2)]
+    (is (= [:B0 :B2] eval-tree))
+    (is (= {:A0 {:input "= add (B0,B1)"},
+            :B0 {:input "1"},
+            :B2 {:input "= add (B0,3)"}} cells))))
