@@ -84,7 +84,7 @@
   (merge env {:eval-tree (dependency-buildn (eval-sheets-raw-ast env) init-key)}))
 
 (defn eval-cell [env cell-id]
-  (let [{:keys [sci-ctx eval-tree cells] :as env-new} (add-eval-tree (eval-sheets-raw-ast env) cell-id)]
+  (let [{:keys [sci-ctx eval-tree] :as env-new} (add-eval-tree (eval-sheets-raw-ast env) cell-id)]
     (reduce (fn [env cell-id]
               (merge env
                      (let [raw-ast-data (get-in env [:cells cell-id :raw-ast])]
@@ -241,6 +241,6 @@
 (ws/deftest eval-cell-test
   (let [env-simple-subs       {:sci-ctx (init {})
                                :cells   {:A0 {:input "= B0"}
-                                         :B0 {:input "1"}}                                                                                                                                                                                                                                                                                                                                                                                            }
+                                         :B0 {:input "1"}}}
         evaluated-simple-subs (eval-cell env-simple-subs :A0)]
     (is (= 1 (get-in evaluated-simple-subs [:cells :A0 :output])))))
