@@ -21,20 +21,41 @@
    :sum      '+
    :prod     '*})
 
+
+(defparser excel-like
+  "
+formula = decimal / textual / (<'='> expr)
+expr    = range / cell / decimal / app
+app     = ident <'('> (expr <','>)* expr <')'>
+range   = cell <':'> cell
+cell    = #'[A-Za-z]\\d+'
+textual = #'[^=].*'
+ident   = #'[a-zA-Z_]\\w*'
+decimal = #'-?\\d+(\\.\\d*)?'
+")
+
+(defn range-cells-get
+  [[fst snd]]
+  (let [[collmin min] (name fst)
+        [collmax max] (name snd)]
+    (for [collv (range (.charCodeAt collmin) (inc (.charCodeAt collmax)))
+          v     (range (int min) (inc (int max)))]
+      (str (char collv) v))))
+
+(defn parse-input [input]
+  (excel-like input))
+
 (defn input->raw-ast [input]
-  (cond (nil? input)                             ""
-        (str/starts-with? input "=")             (if (= 3 (count (str/split input #"\s")))
-                                                   (let [[_eq op d] (str/split input #"\s" 3)
-                                                         opkw       (kw->op (keyword op))]
-                                                     `(~opkw ~@(map (fn [x]
-                                                                      (if (symbol? x)
-                                                                        (keyword x)
-                                                                        x))
-                                                                    (edn/read-string d))))
-                                                   (let [[_eq d] (str/split input #"\s" 2)]
-                                                     (keyword d)))
-        (valid/numeric? (edn/read-string input)) (edn/read-string input)
-        :else                                    input))
+  (insta/transform
+   {:decimal edn/read-string
+    :ident   keyword
+    :textual identity
+    :cell    keyword
+    :range   #(range-cells-get [%1 %2])
+    :app     (fn [kw & args]
+               (concat [(get kw->op kw)] args))
+    :expr    identity
+    :formula identity} (parse-input input)))
 
 (defn raw-ast->dependencies [raw-ast]
   (cond
@@ -111,6 +132,20 @@
                                                                   :output output)))))]
     (reduce rf env-new eval-tree)))
 
+(ws/deftest parse-input->raw-ast-test
+  (let [exp1 "1"
+        exp2 "=A1"
+        exp3 "abc"
+        exp4 "=add(1,2)"
+        exp5 "=add(A1,A2)"
+        exp6 "=add(A3,mul(2,A2))"]
+    (is (= 1 (input->raw-ast exp1)))
+    (is (= :A1 (input->raw-ast exp2)))
+    (is (= "abc" (input->raw-ast exp3)))
+    (is (= '(+ 1 2) (input->raw-ast exp4)))
+    (is (= '(+ :A1 :A2) (input->raw-ast exp5)))
+    (is (= '(+ :A3 (* 2 :A2)) (input->raw-ast exp6)))))
+
 (ws/deftest input->ast-test
   (let [env {:cells {;;simple num
                      :A1 {:input   "1"
@@ -118,7 +153,7 @@
                           :ast     1
                           :output  1}
                      ;; simple op
-                     :A2 {:input   "= add (1,2)"
+                     :A2 {:input   "=add(1,2)"
                           :raw-ast '(+ 1 2)
                           :ast     '(+ 1 2)
                           :output  3}
@@ -133,52 +168,41 @@
                           :ast     1
                           :output  1}
                      ;; op with ref
-                     :A5 {:input   "= add (A1,A2)"
+                     :A5 {:input   "=add(A1,A2)"
                           :raw-ast '(+ :A1 :A2)
                           :ast     '(+ 1 2)
                           :output  3}}}]
-
     (is (= 1 (input->raw-ast "1")))
     (is (= 1 (raw-ast->ast env 1)))
 
-    (is (= :A1 (input->raw-ast "= A1")))
+    (is (= :A1 (input->raw-ast "=A1")))
     (is (= 1 (raw-ast->ast env :A1)))
-
     (is (= "abc" (input->raw-ast "abc")))
     (is (= "abc" (raw-ast->ast env "abc")))
 
-
-    (is (= '(+ 1 2) (input->raw-ast "= add (1,2)")))
+    (is (= '(+ 1 2) (input->raw-ast "=add(1,2)")))
     (is (= '(+ 1 2) (raw-ast->ast env '(+ 1 2))))
 
-    (is (= '(+ :A1 :A2) (input->raw-ast "= add (A1,A2)")))
+    (is (= '(+ :A1 :A2) (input->raw-ast "=add(A1,A2)")))
     (is (= '(+ 1 3) (raw-ast->ast env '(+ :A1 :A2))))
-
     (is (= '(+ 1 2) (raw-ast->ast env '(+ :A1 2))))))
-
-(ws/deftest input-nested->ast-test
-  (let [env {:cells {:A1 {:input "= add (A3,= mul (2,A2))"}
-                     :A3 {:input "5"}
-                     :A2 {:input "6"}}}]
-    (is (= '() (str/split "= add (A3,= mul (2,A2))" #"=\s*(\w+)\s*((\((.*)\)))*" )))))
-
 
 (ws/deftest eval-sheets-raw-ast-test
   (let [env {:sci-ctx (init {})
-             :cells   {:A0 {:input        "= add (B0,B1)",
+             :cells   {:A0 {:input        "=add(B0,B1)",
                             :raw-ast      '(+ :B0 :B1),
                             :ast          '(+ nil nil),
                             :output       0,
                             :dependencies '(:B0 :B1)}
                        :B0 {:input "1"}
-                       :B2 {:input "= add (B0,B2)"}}}]
-    (is (= {:A0 {:input        "= add (B0,B1)",
+                       :B2 {:input "=add(B0,B2)"}}}]
+    (is (= {:A0 {:input        "=add(B0,B1)",
                  :raw-ast      '(+ :B0 :B1),
                  :ast          '(+ nil nil),
                  :output       0,
                  :dependencies '(:B0 :B1)}
             :B0 {:input "1" :raw-ast 1}
-            :B2 {:input        "= add (B0,B2)"
+            :B2 {:input        "=add(B0,B2)"
                  :raw-ast      '(+ :B0 :B2)
                  :dependencies '(:B0 :B2)}}
            (:cells (eval-sheets-raw-ast env))))))
@@ -187,30 +211,30 @@
   (let [env0            {:cells {:A0 {:dependencies [:A1]}
                                  :A1 {}}}
         env1            {:cells {:A0 {:dependencies [:A1]}
-:A1 {:dependencies [:A2]}
-                               :A2 {:dependencies []}}}
-      env2            {:cells {:A0 {:dependencies [:A1]}
-                               :A1 {:dependencies [:A2]}
-                               :A2 {:dependencies [:A3]}
-                               :A3 {:dependencies []}}}
-      env3            {:cells {:A0 {:dependencies [:A1]}
-                               :A1 {:dependencies [:A2]}
-                               :A2 {:dependencies [:A3]}
-                               :A3 {:dependencies [:A4]}
-                               :A4 {}}}
-      duplicated-deps {:cells {:A0 {:dependencies [:A1 :A2]}
-                               :A1 {:dependencies [:A2]}
-                               :A2 {}}}
-      nested-deps     {:cells {:A0 {:dependencies '(:B0 :B1)}
-                               :B0 {}
-                               :B1 {}
-                               :B2 {:dependencies '(:B0 :A0)}}}]
-  (is (= [:A1 :A0] (dependency-buildn env0 :A0)))
-  (is (= [:A2 :A1 :A0] (dependency-buildn env1 :A0)))
-  (is (= [:A3 :A2 :A1 :A0] (dependency-buildn env2 :A0)))
-  (is (= [:A4 :A3 :A2 :A1 :A0] (dependency-buildn env3 :A0)))
-  (is (= [:A2 :A1 :A0] (dependency-buildn duplicated-deps :A0)))
-  (is (= [:B0 :B1 :A0 :B2] (dependency-buildn nested-deps :B2)))))
+                                 :A1 {:dependencies [:A2]}
+                                 :A2 {:dependencies []}}}
+        env2            {:cells {:A0 {:dependencies [:A1]}
+                                 :A1 {:dependencies [:A2]}
+                                 :A2 {:dependencies [:A3]}
+                                 :A3 {:dependencies []}}}
+        env3            {:cells {:A0 {:dependencies [:A1]}
+                                 :A1 {:dependencies [:A2]}
+                                 :A2 {:dependencies [:A3]}
+                                 :A3 {:dependencies [:A4]}
+                                 :A4 {}}}
+        duplicated-deps {:cells {:A0 {:dependencies [:A1 :A2]}
+                                 :A1 {:dependencies [:A2]}
+                                 :A2 {}}}
+        nested-deps     {:cells {:A0 {:dependencies '(:B0 :B1)}
+                                 :B0 {}
+                                 :B1 {}
+                                 :B2 {:dependencies '(:B0 :A0)}}}]
+    (is (= [:A1 :A0] (dependency-buildn env0 :A0)))
+    (is (= [:A2 :A1 :A0] (dependency-buildn env1 :A0)))
+    (is (= [:A3 :A2 :A1 :A0] (dependency-buildn env2 :A0)))
+    (is (= [:A4 :A3 :A2 :A1 :A0] (dependency-buildn env3 :A0)))
+    (is (= [:A2 :A1 :A0] (dependency-buildn duplicated-deps :A0)))
+    (is (= [:B0 :B1 :A0 :B2] (dependency-buildn nested-deps :B2)))))
 
 (ws/deftest fix-loop-deps
   (let [looping-deps0 {:cells {:A0 {:dependencies [:A0]}}}
@@ -228,49 +252,49 @@
 
 (ws/deftest dependencies-builder-from-sheets
   (let [env {:sci-ctx (init {})
-             :cells   {:A0 {:input        "= add (B0,B1)",
+             :cells   {:A0 {:input        "=add(B0,B1)",
                             :raw-ast      '(+ :B0 :B1),
                             :ast          '(+ nil nil),
                             :output       0,
                             :dependencies '(:B0 :B1)}
                        :B0 {:input "1"}
-                       :B2 {:input "= add (B0,B2)"}}}]
+                       :B2 {:input "=add(B0,B2)"}}}]
     (is (= "duplicated keys: :B2"
            (ex-message (try (dependency-buildn (eval-sheets-raw-ast env) :B2)
                             (catch :default ex
                               ex)))))))
 
-(ws/deftest add-eval-tree-test
-  (let [env                       {:sci-ctx (init {})
-                                   :cells   {:A0 {:input "= add (B0,B1)",}
-                                             :B0 {:input "1"}
-                                             :B2 {:input "= add (B0,3)"}}                                                                                                                                                                                                                                                                                                                                                                                            }
-        {:keys [eval-tree cells]} (add-eval-tree (eval-sheets-raw-ast env) :B2)]
-    (is (= [:B0 :B2] eval-tree))
-    (is (= {:A0 {:input        "= add (B0,B1)",
-                 :raw-ast      '(+ :B0 :B1),
-                 :dependencies '(:B0 :B1)},
-            :B0 {:input "1", :raw-ast 1},
-            :B2 {:input "= add (B0,3)", :raw-ast '(+ :B0 3), :dependencies '(:B0)}} cells))))
+  (ws/deftest add-eval-tree-test
+    (let [env                       {:sci-ctx (init {})
+                                     :cells   {:A0 {:input "=add(B0,B1)",}
+                                               :B0 {:input "1"}
+                                               :B2 {:input "=add(B0,3)"}}                                                                                                                                                                                                                                                                                                                                                                                            }
+          {:keys [eval-tree cells]} (add-eval-tree (eval-sheets-raw-ast env) :B2)]
+      (is (= [:B0 :B2] eval-tree))
+      (is (= {:A0 {:input        "=add(B0,B1)",
+                   :raw-ast      '(+ :B0 :B1),
+                   :dependencies '(:B0 :B1)},
+              :B0 {:input "1", :raw-ast 1},
+              :B2 {:input "=add(B0,3)", :raw-ast '(+ :B0 3), :dependencies '(:B0)}} cells))))
 
-(ws/deftest eval-cell-test
-  (let [env-simple-subs       {:sci-ctx (init {})
-                               :cells   {:A0 {:input "= B0"}
-                                         :B0 {:input "1"}}}
-        evaluated-simple-subs (eval-cell env-simple-subs :A0)
-        env-simple-op         {:sci-ctx (init {})
-                               :cells   {:A0 {:input "= add (B0,B1)"}
-                                         :B0 {:input "1"}
-                                         :B1 {:input "10"}}}
-        env-mul               {:sci-ctx (init {})
-                               :cells   {:A0 {:input "= mul (B0,B1)"}
-                                         :B0 {:input "5"}
-                                         :B1 {:input "10"}}}
-        evaluated-simple-op   (eval-cell env-simple-op :A0)
-        env-composed          {:sci-ctx (init {})
-                               :cells   {:A1 {:input "= add (A3,= mul (2,A2))"}
-                                         :A3 {:input "5"}
-                                         :A2 {:input "6"}}}]
+  (ws/deftest eval-cell-test
+    (let [env-simple-subs       {:sci-ctx (init {})
+                                 :cells   {:A0 {:input "=B0"}
+                                           :B0 {:input "1"}}}
+          evaluated-simple-subs (eval-cell env-simple-subs :A0)
+          env-simple-op         {:sci-ctx (init {})
+                                 :cells   {:A0 {:input "=add(B0,B1)"}
+                                           :B0 {:input "1"}
+                                           :B1 {:input "10"}}}
+          env-mul               {:sci-ctx (init {})
+                                 :cells   {:A0 {:input "=mul(B0,B1)"}
+                                           :B0 {:input "5"}
+                                           :B1 {:input "10"}}}
+          evaluated-simple-op   (eval-cell env-simple-op :A0)
+          env-composed          {:sci-ctx (init {})
+                                 :cells   {:A1 {:input "=add(A3,mul(2,A2))"}
+                                           :A3 {:input "5"}
+                                           :A2 {:input "6"}}}]
     (is (= 1 (get-in evaluated-simple-subs [:cells :A0 :output])))
     (is (= 11 (get-in evaluated-simple-op [:cells :A0 :output])))
     (is (= 50 (get-in (eval-cell env-mul :A0) [:cells :A0 :output])))
