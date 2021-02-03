@@ -35,6 +35,12 @@
         (valid/numeric? (edn/read-string input)) (edn/read-string input)
         :else                                    input))
 
+(defn raw-ast->dependencies [raw-ast]
+  (cond
+    (coll? raw-ast)    (mapcat raw-ast->dependencies raw-ast)
+    (keyword? raw-ast) [raw-ast]
+    :else              nil))
+
 (defn raw-ast->ast [env r]
   (cond (seq? r)     (->> r
                           (map (fn [v]
@@ -43,12 +49,6 @@
                                    v))))
         (keyword? r) (get-in env [:cells r :output])
         :else        r))
-
-(defn raw-ast->dependencies [raw-ast]
-  (cond
-    (coll? raw-ast)    (mapcat raw-ast->dependencies raw-ast)
-    (keyword? raw-ast) [raw-ast]
-    :else              nil))
 (defn eval-sheets-raw-ast [{:keys [cells]
                             :as   env}]
   (reduce (fn [env cell-id]
@@ -83,17 +83,23 @@
 (defn add-eval-tree [env init-key]
   (merge env {:eval-tree (dependency-buildn (eval-sheets-raw-ast env) init-key)}))
 
-(defn eval-cell [{:keys [sci-ctx]
-                  :as   env} cell-id]
-  #_(let [raw-ast (input->raw-ast input)
-          ast     (raw-ast->ast env raw-ast)
-          output  (eval-form sci-ctx ast)]
-      (merge (assoc cell
-                    :raw-ast raw-ast
-                    :ast ast
-                    :output output)
-             (when-let [dependencies (not-empty (raw-ast->dependencies raw-ast))]
-               {:dependencies dependencies}))))
+(defn eval-cell [env cell-id]
+  (let [{:keys [sci-ctx eval-tree cells] :as env-new} (add-eval-tree (eval-sheets-raw-ast env) cell-id)]
+    (reduce (fn [env cell-id]
+              (merge env
+                     (let [raw-ast-data (get-in env [:cells cell-id :raw-ast])]
+                       (cond (keyword? raw-ast-data) (let [env-ast (assoc-in env [:cells cell-id :ast]
+                                                                             (get-in env [:cells raw-ast-data :output]))]
+                                                       (assoc-in env-ast [:cells cell-id :output]
+                                                                 (eval-form sci-ctx (get-in env-ast [:cells cell-id :ast]))))
+                             (seq? raw-ast-data)     raw-ast-data
+                             :else                   (let [env-ast (assoc-in env [:cells cell-id :ast] raw-ast-data)]
+                                                       (assoc-in
+                                                        env-ast
+                                                        [:cells cell-id :output]
+                                                        (eval-form sci-ctx (get-in env-ast [:cells cell-id :ast]))))))))
+            env-new
+            eval-tree)))
 
 (ws/deftest input->ast-test
   (let [env {:sci-ctx (init {})
@@ -224,8 +230,17 @@
                                    :cells   {:A0 {:input "= add (B0,B1)",}
                                              :B0 {:input "1"}
                                              :B2 {:input "= add (B0,3)"}}                                                                                                                                                                                                                                                                                                                                                                                            }
-        {:keys [eval-tree cells]} (add-eval-tree env :B2)]
+        {:keys [eval-tree cells]} (add-eval-tree (eval-sheets-raw-ast env) :B2)]
     (is (= [:B0 :B2] eval-tree))
-    (is (= {:A0 {:input "= add (B0,B1)"},
-            :B0 {:input "1"},
-            :B2 {:input "= add (B0,3)"}} cells))))
+    (is (= {:A0 {:input        "= add (B0,B1)",
+                 :raw-ast      '(+ :B0 :B1),
+                 :dependencies '(:B0 :B1)},
+            :B0 {:input "1", :raw-ast 1},
+            :B2 {:input "= add (B0,3)", :raw-ast '(+ :B0 3), :dependencies '(:B0)}} cells))))
+
+(ws/deftest eval-cell-test
+  (let [env-simple-subs       {:sci-ctx (init {})
+                               :cells   {:A0 {:input "= B0"}
+                                         :B0 {:input "1"}}                                                                                                                                                                                                                                                                                                                                                                                            }
+        evaluated-simple-subs (eval-cell env-simple-subs :A0)]
+    (is (= 1 (get-in evaluated-simple-subs [:cells :A0 :output])))))
