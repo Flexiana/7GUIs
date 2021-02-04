@@ -47,8 +47,9 @@ decimal = #'-?\\d+(\\.\\d*)?'
           v     (range valmin (inc valmax))]
       (keyword (str (char collv) v)))))
 (defn parse-input [input]
-  (when-not (nil? input)
-    (excel-like input)))
+  (cond (nil? input) ""
+        (str/blank? input) ""
+    :else (excel-like input)))
 
 (defn input->raw-ast [input]
   (let [[err parsed-input] (try
