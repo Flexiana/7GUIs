@@ -35,12 +35,20 @@ decimal = #'-?\\d+(\\.\\d*)?'
 ")
 
 (defn range-cells-get
-  [[fst snd]]
-  (let [[collmin min] (name fst)
-        [collmax max] (name snd)]
+  [[a b]]
+  (let [[colla vala]      (name a)
+        [collb valb]      (name b)
+        [valmin valmax]   (sort [(int vala) (int valb)])
+        [collmin collmax] (sort [colla collb])]
     (for [collv (range (.charCodeAt collmin) (inc (.charCodeAt collmax)))
-          v     (range (int min) (inc (int max)))]
-      (str (char collv) v))))
+          v     (range valmin (inc valmax))]
+      (keyword (str (char collv) v)))))
+
+(ws/deftest range-cells-get-test
+  (are [expected actual] (= expected (range-cells-get actual))
+    '(:A0 :A1)         [:A0 :A1]
+    '(:A0 :A1 :A2)     [:A0 :A2]
+    '(:A0 :A1 :B0 :B1) [:B0 :A1]))
 
 (defn parse-input [input]
   (excel-like input))
