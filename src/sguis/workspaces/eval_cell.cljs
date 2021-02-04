@@ -66,14 +66,6 @@ decimal = #'-?\\d+(\\.\\d*)?'
     (keyword? raw-ast) [raw-ast]
     :else              nil))
 
-(defn raw-ast->ast [env r]
-  (cond (seq? r)     (->> r
-                          (map (fn [v]
-                                 (if (keyword? v)
-                                   (get-in env [:cells v :output])
-                                   v))))
-        (keyword? r) (get-in env [:cells r :output])
-        :else        r))
 (defn eval-sheets-raw-ast [{:keys [cells]
                             :as   env}]
   (reduce (fn [env cell-id]
@@ -156,47 +148,6 @@ decimal = #'-?\\d+(\\.\\d*)?'
     (is (= '(+ :A3 (* 2 :A2)) (input->raw-ast exp6)))))
     (is (= '(+ :A3 (* 2 :A2)) (input->raw-ast exp6)))
     (is (= '(+ :A0 :A1 :A2 :A3) (input->raw-ast "=add(A0:A3)")))))
-
-(ws/deftest input->ast-test
-  (let [env {:cells {;;simple num
-                     :A1 {:input   "1"
-                          :raw-ast 1
-                          :ast     1
-                          :output  1}
-                     ;; simple op
-                     :A2 {:input   "=add(1,2)"
-                          :raw-ast '(+ 1 2)
-                          :ast     '(+ 1 2)
-                          :output  3}
-                     ;; simple text
-                     :A3 {:input   "abc"
-                          :raw-ast "abc"
-                          :ast     "abc"
-                          :output  "abc"}
-                     ;; simple ref
-                     :A4 {:input   "=A1"
-                          :raw-ast :A1
-                          :ast     1
-                          :output  1}
-                     ;; op with ref
-                     :A5 {:input   "=add(A1,A2)"
-                          :raw-ast '(+ :A1 :A2)
-                          :ast     '(+ 1 2)
-                          :output  3}}}]
-    (is (= 1 (input->raw-ast "1")))
-    (is (= 1 (raw-ast->ast env 1)))
-
-    (is (= :A1 (input->raw-ast "=A1")))
-    (is (= 1 (raw-ast->ast env :A1)))
-    (is (= "abc" (input->raw-ast "abc")))
-    (is (= "abc" (raw-ast->ast env "abc")))
-
-    (is (= '(+ 1 2) (input->raw-ast "=add(1,2)")))
-    (is (= '(+ 1 2) (raw-ast->ast env '(+ 1 2))))
-
-    (is (= '(+ :A1 :A2) (input->raw-ast "=add(A1,A2)")))
-    (is (= '(+ 1 3) (raw-ast->ast env '(+ :A1 :A2))))
-    (is (= '(+ 1 2) (raw-ast->ast env '(+ :A1 2))))))
 
 (ws/deftest eval-sheets-raw-ast-test
   (let [env {:sci-ctx (init {})
