@@ -1,14 +1,13 @@
 (ns sguis.workspaces.cells
   (:require
-    [clojure.string :as str]
-    [reagent.core :as r]
-    [sci.core :refer [eval-string]]
-    [sguis.workspaces.validator :as valid]))
+   [reagent.core :as r]
+   [sci.core :refer [init]]
+   [sguis.workspaces.eval-cell :as evaluator]))
 
 (def cells-start
   {:focused-cell nil
-   :edition      ""
    :cells        {}
+   :sci-ctx      (init {})
    :columns      10
    :rows         5})
 
@@ -25,93 +24,6 @@
   (set (for [s (az-range columns)
              n (table-lines rows)]
          (keyword (str s n)))))
-
-;; Parser Impl
-
-(def kw->op
-  {:add      `+
-   :subtract `-
-   :div      `/
-   :mul      `*
-   :mod      `mod
-   :sum      `+
-   :prod     `*})
-
-(defn can-parse-numeric?
-  [parsed-exp]
-  (and (string? parsed-exp)
-       (re-matches #"^[+-]?\d+(\.\d+)?$" parsed-exp)
-       (valid/numeric? (js/parseFloat parsed-exp))))
-
-(defn is-cell?
-  [env parsed-exp]
-  (when parsed-exp
-    (and (string? parsed-exp)
-         (= 2 (count parsed-exp))
-         (get (possible-cells env) (keyword (str/upper-case parsed-exp))))))
-
-(defn is-range-cells?
-  [env parsed-exp]
-  (and (= 5 (count parsed-exp))
-       (->> (str/split parsed-exp #":")
-            (map (comp boolean (possible-cells env) keyword str/upper-case))
-            (every? true?))))
-
-(defn range-cells-get
-  [[fst snd]]
-  (let [[collmin min] (name fst)
-        [collmax max] (name snd)]
-    (for [collv (range (.charCodeAt collmin) (inc (.charCodeAt collmax)))
-          v     (range (int min) (inc (int max)))]
-      (str (char collv) v))))
-
-(defn is-op?
-  [parsed-exp]
-  (contains? (set (keys kw->op)) (keyword parsed-exp)))
-
-(defn parse-float-if
-  [s]
-  (if (can-parse-numeric? s)
-    (js/parseFloat s)
-    s))
-
-(declare eval-cell)
-
-(defn parse-range-cells
-  [parsed-exp]
-  (-> parsed-exp
-      (str/upper-case)
-      (str/split #":")
-      range-cells-get))
-
-(def filling #{"of" "and"})
-
-(defn eval-cell
-  [{:keys [cells chain] :or {chain #{}} :as env} s]
-  (cond
-    (get chain s) "Circular dependency found!"
-    (nil? s) ""
-    (valid/numeric? s) s
-    (is-op? s) (get kw->op (keyword s))
-    (can-parse-numeric? s) (js/parseFloat s)
-    (is-cell? env s) (recur (assoc env :chain (conj chain s))
-                       (->> s
-                            str/upper-case
-                            keyword
-                            (#(get cells % 0))))
-    (is-range-cells? env s) (->> (parse-range-cells s)
-                                 (map (partial eval-cell env))
-                                 (map parse-float-if))
-    (and (string? s) (str/ends-with? s "=")) (let [result (->> (str/split s #" ")
-                                                               butlast
-                                                               (map str/lower-case)
-                                                               (map (partial eval-cell env))
-                                                               flatten
-                                                               (remove filling))]
-                                               (if (second result)
-                                                 (eval-string (str result))
-                                                 (parse-float-if (first result))))
-    :else s))
 
 ;; UI impl
 
@@ -134,25 +46,19 @@
   (swap! *state assoc :focused-cell cell-id))
 
 (defn submit-cell!
-  [*state {:keys [edition]}
-   cell-id
-   event]
+  [*state cell-id event]
   (.preventDefault event)
   (swap! *state
-    #(-> %
-         (assoc-in [:cells cell-id]
-           (if
-             (str/ends-with? edition "=")
-             (str/lower-case edition)
-             edition))
-         (dissoc :focused-cell :edition))))
+         #(-> %
+              (evaluator/eval-cell cell-id)
+              (dissoc :focused-cell))))
 
 (defn change-cell!
-  [*state event]
-  (swap! *state assoc :edition (.. event -target -value)))
+  [*state cell-id event]
+  (swap! *state assoc-in [:cells cell-id :input] (.. event -target -value)))
 
 (defn coll-fn
-  [{:keys [focused-cell cells] :as env}
+  [{:keys [focused-cell cells]}
    {:keys [focus-cell! submit-cell! change-cell!]} cell-width l  c]
   (let [cell-id (keyword (str c l))]
     ^{:key cell-id}
@@ -163,25 +69,24 @@
        [:form {:style       {:border "1px solid #ccc"}
                :id          cell-id
                :data-testid (str "form-" (name cell-id))
-               :on-submit   (partial submit-cell! env cell-id)}
+               :on-submit   (partial submit-cell! cell-id)}
         [:input {:style         (light-border-style cell-width)
                  :type          "text"
                  :data-testid   (str "input-" (name cell-id))
                  :auto-focus    true
-                 :default-value (get cells cell-id)
-                 :on-change     (partial change-cell!)}]]
-       (eval-cell env (get cells cell-id)))]))
+                 :default-value (get-in cells [cell-id :input])
+                 :on-change     (partial change-cell! cell-id)}]]
+       (get-in cells [cell-id :output]))]))
 
 #_:clj-kondo/ignore
-
 (defn row-fn
   [cells actions-map cell-width l]
   ^{:key l}
   [:tr
    (concat
-     [^{:key l}
-      [:td {:style (light-border-style 42)} l]
-      (map (partial coll-fn cells actions-map cell-width l) (az-range (:columns cells)))])])
+    [^{:key l}
+     [:td {:style (light-border-style 42)} l]
+     (map (partial coll-fn cells actions-map cell-width l) (az-range (:columns cells)))])])
 
 (defn change-width!
   [state]

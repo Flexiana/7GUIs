@@ -1,82 +1,21 @@
 (ns sguis.workspaces.cells-test
   (:require
-    [cljs.test :as t
-     :include-macros true
-     :refer [are is testing]]
-    [nubank.workspaces.core :as ws]
-    [sguis.workspaces.cells :refer [eval-cell
-                                    cells-ui]]
-    [sguis.workspaces.test-utils :as u]
-    [reagent.core :as r]
-    [clojure.string :as str]))
-
-(defn new-table
-  [cells]
-  {:rows    10
-   :columns 10
-   :cells   cells})
-
-(ws/deftest
-  eval-cell-test
-  (are [expected actual] (= expected actual)
-    "Monkey" (eval-cell (new-table {}) "Monkey")
-    `cljs.core/+ (eval-cell (new-table {}) "add")
-    0 (eval-cell (new-table {}) "0")
-    1 (eval-cell (new-table {:A1 "1"}) "A1")
-    2 (eval-cell (new-table {:A1 "2"}) "A1 =")
-    3 (eval-cell (new-table {:A1 "2"}) "Add A1 1 =")
-    4 (eval-cell (new-table {:A1 "2"
-                             :A2 "Add A1 2 ="}) "A2")
-    5 (eval-cell (new-table {:A1 "1"
-                             :A2 "Add A1 2 ="}) "add A2 A1 1 =")
-    9 (eval-cell (new-table {:A1 "1"
-                             :A2 "1"
-                             :A3 "1"
-                             :A4 "1"
-                             :A5 "1"
-                             :A6 "1"
-                             :A7 "1"
-                             :A8 "1"
-                             :A9 "1"}) "sum of A0:A9 =")
-    10 (eval-cell (new-table {:A0 "1"
-                              :A1 "A0"
-                              :A2 "A1"
-                              :A3 "A1"
-                              :A4 "A1"
-                              :A5 "A1"
-                              :A6 "A1"
-                              :A7 "A1"
-                              :A8 "A1"
-                              :A9 "A1"}) "sum of A0:A9 =")
-    "Circular dependency found!" (eval-cell (new-table {:A0 "A0"}) "A0")
-    10 (eval-cell (new-table {:A2 "2" :B8 "8"}) "Sum of A2:B8 =")
-    0 (eval-cell (new-table {}) "Sum of A2:B8 =")
-    24 (eval-cell (new-table {:A2 "2"
-                              :A3 "Sum of A4:B8 ="
-                              :B3 "2"
-                              :B8 "8"}) "Sum of 4 and A2:B8 =")
-    3 (eval-cell {} "Add 1 and 2 =")
-    true (.isNaN js/Number (eval-cell (new-table {}) "Div of B5 and C5 ="))
-    "a" (eval-cell {} "a")
-    "Elephant10" (eval-cell (new-table {:B1 "Elephant"
-                                        :B2 "10"}) "Sum of B1 and B2 =")
-    20 (eval-cell (new-table {:A7 "10"
-                              :G0 "10"}) "Add A7 and G0 =")
-    20 (eval-cell (new-table {:A1 "20"}) "A1 =")
-    "" (eval-cell {} nil))
-  (println (eval-cell (new-table {}) "Div of B5 and C5 =")))
+   [cljs.test :as t
+    :include-macros true
+    :refer [is testing]]
+   [nubank.workspaces.core :as ws]
+   [sguis.workspaces.cells :refer [cells-start
+                                   cells-ui]]
+   [sguis.workspaces.test-utils :as u]
+   [reagent.core :as r]
+   [clojure.string :as str]))
 
 (defn texts-on-field
   [field]
   (mapv #(.-innerText %) (.-children field)))
 
 (ws/deftest ui-tests
-  (let [*test-state (r/atom {:focused-cell nil
-                             :edition      ""
-                             :cells        {}
-                             :chain        #{}
-                             :columns      26
-                             :rows         100})]
+  (let [*test-state (r/atom cells-start)]
     (u/with-mounted-component
       [cells-ui *test-state]
       (fn [comp]
@@ -90,45 +29,52 @@
                        (u/input-element! (input comp id) value)
                        (u/submit! (form comp id)))]
           (testing "Initial render"
-            (is (= (flatten [[""] (map str (range 0 100)) "Add row"]) (mapv str/trim (texts-on-field (tbody comp)))))
-            (is (= (flatten [[""] (map char (range 65 91)) "Add column"]) (str/split (first (texts-on-field (thead comp))) #"\t"))))
+            (is (= (flatten [[""] (map str (range 0 5)) "Add row"]) (mapv str/trim (texts-on-field (tbody comp)))))
+            (is (= (flatten [[""] (map char (range 65 75)) "Add column"]) (str/split (first (texts-on-field (thead comp))) #"\t"))))
+
           (testing "Change value"
             (insert comp "A1" "Elephant")
             (is (= "Elephant" (.-innerText (cell comp "A1")))))
+
           (testing "Sum of 3 and 4 = 7"
-            (insert comp "B1" "3")
-            (insert comp "B2" "4")
-            (insert comp "B3" "Add B1 and B2 =")
-            (is (= "7" (.-innerText (cell comp "B3")))))
+            (insert comp "D1" "3")
+            (insert comp "D2" "4")
+            (insert comp "D3" "=add(D1,D2)")
+            (is (= "7" (.-innerText (cell comp "D3")))))
+
           (testing "Sum of Elephant and 10 is Elephant10"
             (insert comp "B1" "Elephant")
             (insert comp "B2" "10")
-            (insert comp "B3" "Add B1 and B2 =")
+            (insert comp "B3" "=add(B1,B2)")
             (is (= "Elephant10" (.-innerText (cell comp "B3")))))
+
           (testing "Cell update updates dependent cells"
             (insert comp "B1" "3")
             (insert comp "B2" "4")
-            (insert comp "B3" "Add B1 and B2 =")
-            (insert comp "B4" "Mul B1 and B2 =")
+            (insert comp "B3" "=add(B1,B2)")
+            (insert comp "B4" "=mul(B1,B2)")
             (is (= "7" (.-innerText (cell comp "B3"))))
             (is (= "12" (.-innerText (cell comp "B4"))))
             (insert comp "B1" "5")
             (is (= "9" (.-innerText (cell comp "B3"))))
             (is (= "20" (.-innerText (cell comp "B4")))))
+
           (testing "Cell update updates deep dependent cells"
             (insert comp "B1" "3")
-            (insert comp "B2" "B1")
-            (insert comp "B3" "Add B1 and B2 =")
-            (insert comp "B4" "Mul B1 and B2 =")
+            (insert comp "B2" "=B1")
+            (insert comp "B3" "=add(B1,B2)")
+            (insert comp "B4" "=mul(B1,B2)")
             (is (= "6" (.-innerText (cell comp "B3"))))
             (is (= "9" (.-innerText (cell comp "B4"))))
             (insert comp "B1" "5")
             (is (= "10" (.-innerText (cell comp "B3"))))
             (is (= "25" (.-innerText (cell comp "B4")))))
+
           (testing "Circular dependency"
-            (insert comp "B1" "B1")
-            (is (= "Circular dependency found!" (.-innerText (cell comp "B1")))))
+            (insert comp "B1" "=B1")
+            (is (= "duplicated keys: :B1" (.-innerText (cell comp "B1")))))
+
           (testing "Deep circular dependency"
-            (insert comp "B1" "A1")
-            (insert comp "A1" "B1")
-            (is (= "Circular dependency found!" (.-innerText (cell comp "B1"))))))))))
+            (insert comp "B1" "=C1")
+            (insert comp "C1" "=B1")
+            (is (= "" (.-innerText (cell comp "B1"))))))))))
