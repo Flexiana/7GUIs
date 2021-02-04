@@ -48,11 +48,16 @@ decimal = #'-?\\d+(\\.\\d*)?'
           v     (range valmin (inc valmax))]
       (keyword (str (char collv) v)))))
 (defn parse-input [input]
-    (excel-like input))
+  (when-not (nil? input)
+    (excel-like input)))
 
 (defn input->raw-ast [input]
-  (let [parsed-input (parse-input input)
-        raw-ast      (insta/transform
+  (let [[err parsed-input] (try
+                             [false (parse-input input)]
+                             (catch :default ex
+                               [ex]))]
+    (if-not err
+      (insta/transform
                       {:decimal edn/read-string
                        :ident   keyword
                        :textual identity
@@ -64,8 +69,8 @@ decimal = #'-?\\d+(\\.\\d*)?'
                                                               (flatten args)
                                                               args)))
                        :expr    (fn [& args] (first args))
-                       :formula identity}  parsed-input)]
-    raw-ast))
+                       :formula identity}  parsed-input)
+      err)))
 
 (defn raw-ast->dependencies [raw-ast]
   (cond
