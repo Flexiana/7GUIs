@@ -107,25 +107,28 @@ decimal = #'-?\\d+(\\.\\d*)?'
 (defn add-eval-tree [env init-key]
   (merge env {:eval-tree (dependency-buildn (eval-sheets-raw-ast env) init-key)}))
 
+(defn get-data-rec [cells raw-ast]
+  (letfn [(get-data-rec* [cells v]
+            (cond (keyword? v) (-> cells
+                                   (get v)
+                                   :raw-ast)
+                  (seq? v)     (map #(get-data-rec* cells %) v)
+                  :else        v))]
+    (map #(get-data-rec* cells %) raw-ast)))
+
 (defn ast-element-evaluator [sci-ctx env raw-ast cells cell-id]
-  (letfn [(get-data-rec [cells data]
-            (tap> data)
-            (cond (keyword? data) (-> cells (get data) :raw-ast)
-                  :else           data))]
-    (cond (keyword? raw-ast) (let [{:keys [output]} (get cells raw-ast)
-                                   env-after        (assoc-in env [:cells cell-id :ast] output)
-                                   current-output   (eval-form sci-ctx output)]
-                               (assoc-in env-after [:cells cell-id :output]
-                                         current-output))
-          (seq? raw-ast)     (let [form   (map (fn [data]
-                                                 (get-data-rec cells data))
-                                               raw-ast)
-                                   output (eval-form sci-ctx form)]
-                               (assoc-in env [:cells cell-id :output] output))
-          :else              (let [output (eval-form sci-ctx raw-ast)]
-                               (update-in env [:cells cell-id] assoc
-                                          :ast raw-ast
-                                          :output output)))))
+  (cond (keyword? raw-ast) (let [{:keys [output]} (get cells raw-ast)
+                                 env-after        (assoc-in env [:cells cell-id :ast] output)
+                                 current-output   (eval-form sci-ctx output)]
+                             (assoc-in env-after [:cells cell-id :output]
+                                       current-output))
+        (seq? raw-ast)     (let [form   (get-data-rec cells raw-ast)
+                                 output (eval-form sci-ctx form)]
+                             (assoc-in env [:cells cell-id :output] output))
+        :else              (let [output (eval-form sci-ctx raw-ast)]
+                             (update-in env [:cells cell-id] assoc
+                                        :ast raw-ast
+                                        :output output))))
 (defn eval-cell
   [env cell-id]
   (let [{:keys [sci-ctx eval-tree]
@@ -248,7 +251,7 @@ decimal = #'-?\\d+(\\.\\d*)?'
 
 (ws/deftest add-eval-tree-test
   (let [env                       {:sci-ctx (init {})
-                                   :cells   {:A0 {:input "=add(B0,B1)",}
+                                   :cells   {:A0 {:input "=add(B0,B1)"}
                                              :B0 {:input "1"}
                                              :B2 {:input "=add(B0,3)"}}                                                                                                                                                                                                                                                                                                                                                                                            }
         {:keys [eval-tree cells]} (add-eval-tree (eval-sheets-raw-ast env) :B2)]
@@ -281,6 +284,15 @@ decimal = #'-?\\d+(\\.\\d*)?'
     (is (= 11 (get-in (eval-cell env-simple-op :A0) [:cells :A0 :output])))
     (is (= 50 (get-in (eval-cell env-mul :A0) [:cells :A0 :output])))
     (is (= 80 (get-in (eval-cell env-ranged-op :A0) [:cells :A0 :output])))))
+
+(ws/deftest get-data-rec-test
+  (let [cells   {:A1 {:input        "=add(A3,mul(2,A2))",
+                      :raw-ast      '(+ :A3 (* 2 :A2)),
+                      :dependencies (:A3 :A2)},
+                 :A3 {:input "5", :raw-ast 5, :ast 5, :output 5},
+                 :A2 {:input "6", :raw-ast 6, :ast 6, :output 6}}
+        raw-ast '(+ :A3 (* 2 :A2))]
+    (is (= '(+ 5 (* 2 6)) (get-data-rec cells raw-ast)))))
 
 (ws/deftest nested-exp-eval-cell-test
   (let [env-composed {:sci-ctx (init {})
