@@ -112,9 +112,9 @@ decimal = #'-?\\d+(\\.\\d*)?'
   (let [[err result] (try
                        [false (dependency-buildn (eval-sheets-raw-ast env) init-key)]
                        (catch :default ex
-                       [ex]))]
+                         [ex]))]
     (if-not err
-      (merge env {:eval-tree (dependency-buildn (eval-sheets-raw-ast env) init-key)})
+      (merge env {:eval-tree result})
       (assoc-in env [:cells init-key :output] (ex-message err)))))
 
 (defn get-data-rec [cells raw-ast]

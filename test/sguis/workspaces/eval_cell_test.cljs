@@ -1,18 +1,17 @@
 (ns sguis.workspaces.eval-cell-test
   (:require
-    [cljs.test :as t
-     :include-macros true
-     :refer [are is testing]]
-    [nubank.workspaces.core :as ws]
-    [sci.core :refer [init]]
-    [sguis.workspaces.eval-cell :refer [range-cells-get
-                                        input->raw-ast
-                                        eval-sheets-raw-ast
-                                        dependency-buildn
-                                        add-eval-tree
-                                        eval-cell
-                                        get-data-rec]]
-    [clojure.string :as str]))
+   [cljs.test :as t
+    :include-macros true
+    :refer [are is]]
+   [nubank.workspaces.core :as ws]
+   [sci.core :refer [init]]
+   [sguis.workspaces.eval-cell :refer [range-cells-get
+                                       input->raw-ast
+                                       eval-sheets-raw-ast
+                                       dependency-buildn
+                                       add-eval-tree
+                                       eval-cell
+                                       get-data-rec]]))
 
 (ws/deftest range-cells-get-test
   (are [expected actual] (= expected (range-cells-get actual))
@@ -179,6 +178,4 @@
              :cells   {:B1 {:input "3"}
                        :B2 {:input "=B1"}
                        :B3 {:input "=add(B1,B2)"}}}]
-    (let [new-env (eval-cell env :B3)
-          _       (tap> new-env)]
-      (is (= 6 (get-in new-env [:cells :B3 :output]))))))
+    (is (= 6 (get-in (eval-cell env :B3) [:cells :B3 :output])))))

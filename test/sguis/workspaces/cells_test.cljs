@@ -1,14 +1,14 @@
 (ns sguis.workspaces.cells-test
   (:require
-    [cljs.test :as t
-     :include-macros true
-     :refer [are is testing]]
-    [nubank.workspaces.core :as ws]
-    [sguis.workspaces.cells :refer [cells-start
-                                    cells-ui]]
-    [sguis.workspaces.test-utils :as u]
-    [reagent.core :as r]
-    [clojure.string :as str]))
+   [cljs.test :as t
+    :include-macros true
+    :refer [is testing]]
+   [nubank.workspaces.core :as ws]
+   [sguis.workspaces.cells :refer [cells-start
+                                   cells-ui]]
+   [sguis.workspaces.test-utils :as u]
+   [reagent.core :as r]
+   [clojure.string :as str]))
 
 (defn texts-on-field
   [field]
