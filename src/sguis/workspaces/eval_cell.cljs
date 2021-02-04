@@ -80,7 +80,6 @@ decimal = #'-?\\d+(\\.\\d*)?'
 
 (defn eval-sheets-raw-ast [{:keys [cells]
                             :as   env}]
-  (tap> cells)
   (reduce (fn [env cell-id]
             (let [raw-ast (input->raw-ast (get-in cells [cell-id :input]))
                   deps    (not-empty (raw-ast->dependencies raw-ast))
@@ -117,23 +116,24 @@ decimal = #'-?\\d+(\\.\\d*)?'
   (merge env {:eval-tree (dependency-buildn (eval-sheets-raw-ast env) init-key)}))
 
 (defn ast-element-evaluator [sci-ctx env raw-ast cells cell-id]
-  (cond (keyword? raw-ast) (let [{:keys [output]} (get cells raw-ast)
-                                 env-after        (assoc-in env [:cells cell-id :ast] output)
-                                 current-output   (eval-form sci-ctx output)]
-                             (assoc-in env-after [:cells cell-id :output]
-                                       current-output))
-        (seq? raw-ast)     (let [form   (map (fn [data]
-                                               (if (keyword? data)
-                                                 (-> cells (get data) :output)
-                                                 data))
-                                             raw-ast)
-                                 output (eval-form sci-ctx form)]
-                             #_(tap> form)
-                             (assoc-in env [:cells cell-id :output] output))
-        :else              (let [output (eval-form sci-ctx raw-ast)]
-                             (update-in env [:cells cell-id] assoc
-                                        :ast raw-ast
-                                        :output output))))
+  (letfn [(get-data-rec [cells data]
+            (tap> data)
+            (cond (keyword? data) (-> cells (get data) :raw-ast)
+                  :else           data))]
+    (cond (keyword? raw-ast) (let [{:keys [output]} (get cells raw-ast)
+                                   env-after        (assoc-in env [:cells cell-id :ast] output)
+                                   current-output   (eval-form sci-ctx output)]
+                               (assoc-in env-after [:cells cell-id :output]
+                                         current-output))
+          (seq? raw-ast)     (let [form   (map (fn [data]
+                                                 (get-data-rec cells data))
+                                               raw-ast)
+                                   output (eval-form sci-ctx form)]
+                               (assoc-in env [:cells cell-id :output] output))
+          :else              (let [output (eval-form sci-ctx raw-ast)]
+                               (update-in env [:cells cell-id] assoc
+                                          :ast raw-ast
+                                          :output output)))))
 (defn eval-cell
   [env cell-id]
   (let [{:keys [sci-ctx eval-tree]
@@ -261,32 +261,35 @@ decimal = #'-?\\d+(\\.\\d*)?'
             :B2 {:input "=add(B0,3)", :raw-ast '(+ :B0 3), :dependencies '(:B0)}} cells))))
 
 (ws/deftest eval-cell-test
-  (let [env-simple-subs       {:sci-ctx (init {})
-                               :cells   {:A0 {:input "=B0"}
-                                         :B0 {:input "1"}}}
-        evaluated-simple-subs (eval-cell env-simple-subs :A0)
-        env-simple-op         {:sci-ctx (init {})
-                               :cells   {:A0 {:input "=add(B0,B1)"}
-                                         :B0 {:input "1"}
-                                         :B1 {:input "10"}}}
-        env-mul               {:sci-ctx (init {})
-                               :cells   {:A0 {:input "=mul(B0,B1)"}
-                                         :B0 {:input "5"}
-                                         :B1 {:input "10"}}}
-        evaluated-simple-op   (eval-cell env-simple-op :A0)
-        env-ranged-op         {:sci-ctx (init {})
-                               :cells   {:A0 {:input        "=mul(B0:B1)",
-                                              :raw-ast      '(* :B0 :B1),
-                                              :dependencies (:B0 :B1)},
-                                         :B0 {:input "8"},
-                                         :B1 {:input "10"},}}
-        env-composed          {:sci-ctx (init {})
-                               :cells   {:A1 {:input "=add(A3,mul(2,A2))"}
-                                         :A3 {:input "5"}
-                                         :A2 {:input "6"}}}]
-    #_(is (= 1 (get-in evaluated-simple-subs [:cells :A0 :output])))
-    #_(is (= 11 (get-in evaluated-simple-op [:cells :A0 :output])))
-    #_(is (= 50 (get-in (eval-cell env-mul :A0) [:cells :A0 :output])))
-    (tap> (eval-cell env-ranged-op :A0))
-    (is (= 80 (get-in (eval-cell env-ranged-op :A0) [:cells :A0 :output])))
-    #_(is (= 17 (get-in (eval-cell env-composed :A1) [:cells :A1 :output])))))
+  (let [env-simple-subs {:sci-ctx (init {})
+                         :cells   {:A0 {:input "=B0"}
+                                   :B0 {:input "1"}}}
+        env-simple-op   {:sci-ctx (init {})
+                         :cells   {:A0 {:input "=add(B0,B1)"}
+                                   :B0 {:input "1"}
+                                   :B1 {:input "10"}}}
+        env-mul         {:sci-ctx (init {})
+                         :cells   {:A0 {:input "=mul(B0,B1)"}
+                                   :B0 {:input "5"}
+                                   :B1 {:input "10"}}}
+        env-ranged-op   {:sci-ctx (init {})
+                         :cells   {:A0 {:input        "=mul(B0:B1)",
+                                        :raw-ast      '(* :B0 :B1),
+                                        :dependencies (:B0 :B1)},
+                                   :B0 {:input "8"},
+                                   :B1 {:input "10"},}}
+        env-composed    {:sci-ctx (init {})
+                         :cells   {:A1 {:input "=add(A3,mul(2,A2))"}
+                                   :A3 {:input "5"}
+                                   :A2 {:input "6"}}}]
+    (is (= 1 (get-in (eval-cell env-simple-subs :A0) [:cells :A0 :output])))
+    (is (= 11 (get-in (eval-cell env-simple-op :A0) [:cells :A0 :output])))
+    (is (= 50 (get-in (eval-cell env-mul :A0) [:cells :A0 :output])))
+    (is (= 80 (get-in (eval-cell env-ranged-op :A0) [:cells :A0 :output])))))
+
+(ws/deftest nested-exp-eval-cell-test
+  (let [env-composed {:sci-ctx (init {})
+                      :cells   {:A1 {:input "=add(A3,mul(2,A2))"}
+                                :A3 {:input "5"}
+                                :A2 {:input "6"}}}]
+    (is (= 17 (get-in (eval-cell env-composed :A1) [:cells :A1 :output])))))
