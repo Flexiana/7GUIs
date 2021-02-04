@@ -136,7 +136,6 @@ decimal = #'-?\\d+(\\.\\d*)?'
                                         :output output))))
 (defn eval-cell
   [env cell-id]
-  (tap> [:bbbbb (eval-sheets-raw-ast env)])
   (let [{:keys [sci-ctx eval-tree]
          :as   env-new} (-> env
                             eval-sheets-raw-ast
