@@ -180,9 +180,9 @@
   ^{:key l}
   [:tr
    (concat
-     [^{:key l}
-      [:td {:style (light-border-style 42)} l]
-      (map (partial coll-fn cells actions-map cell-width l) (az-range (:columns cells)))])])
+    [^{:key l}
+     [:td {:style (light-border-style 42)} l]
+     (map (partial coll-fn cells actions-map cell-width l) (az-range (:columns cells)))])])
 
 (defn change-width!
   [state]
