@@ -152,6 +152,18 @@
             (insert comp "B2" "10")
             (insert comp "B3" "= Add (B1,B2)")
             (is (= "Elephant10" (.-innerText (cell comp "B3")))))
+          (testing "Multiple multiplication with range"
+            (insert comp "B1" "2")
+            (insert comp "B2" "10")
+            (insert comp "B3" "3")
+            (insert comp "B4" "= Mul (B1:B3)")
+            (is (= "60" (.-innerText (cell comp "B4")))))
+          (testing "Multiple multiplication with series"
+            (insert comp "B1" "2")
+            (insert comp "B2" "10")
+            (insert comp "B3" "3")
+            (insert comp "B4" "= Mul (B1,B2,B3)")
+            (is (= "60" (.-innerText (cell comp "B4")))))
           (testing "Cell update updates dependent cells"
             (insert comp "B1" "3")
             (insert comp "B2" "4")
