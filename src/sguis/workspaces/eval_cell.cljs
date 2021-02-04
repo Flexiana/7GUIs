@@ -50,19 +50,21 @@ decimal = #'-?\\d+(\\.\\d*)?'
 (defn parse-input [input]
   (excel-like input))
 (defn input->raw-ast [input]
-  (insta/transform
-   {:decimal edn/read-string
-    :ident   keyword
-    :textual identity
-    :cell    keyword
-    :range   (fn [& args]
-               (range-cells-get args))
-    :app     (fn [kw & args]
-               (concat [(get kw->op kw)] (if (seq? (first args))
-                                           (flatten args)
-                                           args)))
-    :expr    (fn [& args] (first args))
-    :formula identity} (parse-input input)))
+  (let [parsed-input (parse-input input)
+        raw-ast      (insta/transform
+                      {:decimal edn/read-string
+                       :ident   keyword
+                       :textual identity
+                       :cell    keyword
+                       :range   (fn [& args]
+                                  (range-cells-get args))
+                       :app     (fn [kw & args]
+                                  (concat [(get kw->op kw)] (if (seq? (first args))
+                                                              (flatten args)
+                                                              args)))
+                       :expr    (fn [& args] (first args))
+                       :formula identity}  parsed-input)]
+    raw-ast))
 
 (defn raw-ast->dependencies [raw-ast]
   (cond
@@ -73,15 +75,18 @@ decimal = #'-?\\d+(\\.\\d*)?'
 (defn eval-sheets-raw-ast [{:keys [cells]
                             :as   env}]
   (reduce (fn [env cell-id]
-            (let [raw-ast (input->raw-ast (get-in cells [cell-id :input]))
-                  deps    (not-empty (raw-ast->dependencies raw-ast))
-                  env-new (assoc-in env
-                                    [:cells cell-id :raw-ast]
-                                    raw-ast)]
+
+            (if-let [input (get-in cells [cell-id :input])]
+              (let [raw-ast (input->raw-ast input)
+                    deps    (not-empty (raw-ast->dependencies raw-ast))
+                    env-new (assoc-in env
+                                      [:cells cell-id :raw-ast]
+                                      raw-ast)]
               (if deps
                 (assoc-in env-new [:cells cell-id :dependencies]
                           deps)
-                env-new)))
+                env-new))
+              env))
           env
           (keys cells)))
 
@@ -131,6 +136,7 @@ decimal = #'-?\\d+(\\.\\d*)?'
                                         :output output))))
 (defn eval-cell
   [env cell-id]
+  (tap> [:bbbbb (eval-sheets-raw-ast env)])
   (let [{:keys [sci-ctx eval-tree]
          :as   env-new} (-> env
                             eval-sheets-raw-ast
