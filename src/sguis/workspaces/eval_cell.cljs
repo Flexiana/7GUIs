@@ -46,26 +46,26 @@ decimal = #'-?\\d+(\\.\\d*)?'
 
 (ws/deftest range-cells-get-test
   (are [expected actual] (= expected (range-cells-get actual))
-    '(:A0 :A1)         [:A0 :A1]
-    '(:A0 :A1 :A2)     [:A0 :A2]
-    '(:A0 :A1 :B0 :B1) [:B0 :A1]))
+    '(:A0 :A1)                                      [:A0 :A1]
+    '(:A0 :A1 :A2)                                  [:A0 :A2]
+    '(:A0 :A1 :B0 :B1)                              [:B0 :A1]
+    '(:B0 :B1 :B2 :B3 :B4 :B5 :B6 :B7 :B8 :B9 :B10) [:B0 :B10]))
 
 (defn parse-input [input]
   (excel-like input))
-
 (defn input->raw-ast [input]
   (insta/transform
    {:decimal edn/read-string
     :ident   keyword
     :textual identity
     :cell    keyword
-    :range   (fn [& args]
-               (map keyword (range-cells-get args)))
+    :range  (fn [& args]
+              (range-cells-get args))
     :app     (fn [kw & args]
                (concat [(get kw->op kw)] (if (seq? (first args))
                                            (first args)
                                            args)))
-    :expr    identity
+    :expr    (fn [& args] (first args))
     :formula identity} (parse-input input)))
 
 (defn raw-ast->dependencies [raw-ast]
