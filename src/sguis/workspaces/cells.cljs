@@ -93,7 +93,7 @@
                 (multi-cell? input) :multi-cell
                 (operand? input) :operand
                 :else :string)]
-    (trampoline parse {:input input :id id :type typ :env env})))
+    #(parse {:input input :id id :type typ :env env})))
 
 (defmethod parse :cycle-error [{:keys [id] :as m}]
   (assoc m :error (str "Cyclic dependency found " id)))
@@ -148,7 +148,7 @@
 (defmethod parse :expression [{:keys [env input]}]
   (let [[ex op par] (first (re-seq xp-matcher input))
         op-cell     (keyword (gensym))
-        operand     (:output (reader (assoc-in env [:cells op-cell :input] op) op-cell))
+        operand     (:output (trampoline reader (assoc-in env [:cells op-cell :input] op) op-cell))
         parsed-pars (for [p (str/split par ",")
                           :let [tmp-cell (keyword (gensym))]]
                       (->render (assoc-in env [:cells tmp-cell :input] p) tmp-cell))
@@ -157,7 +157,7 @@
                                                           parsed-pars)])))
         next-call (str/replace input ex result)
         next-cell   (keyword (gensym))]
-    (reader (assoc-in env [:cells next-cell :input] next-call) next-cell)))
+    (trampoline reader (assoc-in env [:cells next-cell :input] next-call) next-cell)))
 
 (defn render
   [exp]
@@ -173,7 +173,7 @@
 
 (defn ->render
   [env id]
-  (render (reader env id)))
+  (render (trampoline reader env id)))
 
 ;; UI impl
 
