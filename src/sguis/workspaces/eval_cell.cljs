@@ -52,8 +52,9 @@ decimal = #'-?\\d+(\\.\\d*)?'
     :textual identity
     :cell    keyword
     :range   #(range-cells-get [%1 %2])
-    :app     (fn [kw & args]
-               (concat [(get kw->op kw)] args))
+    :app     (fn [kw args]
+               (tap> (concat [(get kw->op kw)] (map keyword args)))
+               (concat [(get kw->op kw)] (map keyword args)))
     :expr    identity
     :formula identity} (parse-input input)))
 
@@ -148,6 +149,8 @@ decimal = #'-?\\d+(\\.\\d*)?'
     (is (= '(+ 1 2) (input->raw-ast exp4)))
     (is (= '(+ :A1 :A2) (input->raw-ast exp5)))
     (is (= '(+ :A3 (* 2 :A2)) (input->raw-ast exp6)))))
+    (is (= '(+ :A3 (* 2 :A2)) (input->raw-ast exp6)))
+    (is (= '(+ :A0 :A1 :A2 :A3) (input->raw-ast "=add(A0:A3)")))))
 
 (ws/deftest input->ast-test
   (let [env {:cells {;;simple num
