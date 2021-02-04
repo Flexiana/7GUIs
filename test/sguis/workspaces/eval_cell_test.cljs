@@ -1,18 +1,18 @@
 (ns sguis.workspaces.eval-cell-test
   (:require
-   [cljs.test :as t
-    :include-macros true
-    :refer [are is testing]]
-   [nubank.workspaces.core :as ws]
-   [sci.core :refer [init]]
-   [sguis.workspaces.eval-cell :refer [range-cells-get
-                                       input->raw-ast
-                                       eval-sheets-raw-ast
-                                       dependency-buildn
-                                       add-eval-tree
-                                       eval-cell
-                                       get-data-rec]]
-   [clojure.string :as str]))
+    [cljs.test :as t
+     :include-macros true
+     :refer [are is testing]]
+    [nubank.workspaces.core :as ws]
+    [sci.core :refer [init]]
+    [sguis.workspaces.eval-cell :refer [range-cells-get
+                                        input->raw-ast
+                                        eval-sheets-raw-ast
+                                        dependency-buildn
+                                        add-eval-tree
+                                        eval-cell
+                                        get-data-rec]]
+    [clojure.string :as str]))
 
 (ws/deftest range-cells-get-test
   (are [expected actual] (= expected (range-cells-get actual))
@@ -89,13 +89,13 @@
                                :A1 {:dependencies [:A2 :A0]}
                                :A2 {:dependencies []}}}]
     (is (= "duplicated keys: :A0" (ex-message
-                                   (try (dependency-buildn looping-deps0 :A0)
-                                        (catch :default ex
-                                          ex)))))
+                                    (try (dependency-buildn looping-deps0 :A0)
+                                         (catch :default ex
+                                           ex)))))
     (is (= "duplicated keys: :A0" (ex-message
-                                   (try (dependency-buildn looping-deps1 :A0)
-                                        (catch :default ex
-                                          ex)))))))
+                                    (try (dependency-buildn looping-deps1 :A0)
+                                         (catch :default ex
+                                           ex)))))))
 
 (ws/deftest dependencies-builder-from-sheets
   (let [env         {:sci-ctx (init {})
@@ -126,7 +126,7 @@
   (let [env                       {:sci-ctx (init {})
                                    :cells   {:A0 {:input "=add(B0,B1)"}
                                              :B0 {:input "1"}
-                                             :B2 {:input "=add(B0,3)"}}                                                                                                                                                                                                                                                                                                                                                                                            }
+                                             :B2 {:input "=add(B0,3)"}}}
         {:keys [eval-tree cells]} (add-eval-tree (eval-sheets-raw-ast env) :B2)]
     (is (= [:B0 :B2] eval-tree))
     (is (= {:A0 {:input        "=add(B0,B1)",
