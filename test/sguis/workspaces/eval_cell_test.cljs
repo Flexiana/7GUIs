@@ -173,3 +173,12 @@
                                 :A3 {:input "5"}
                                 :A2 {:input "6"}}}]
     (is (= 17 (get-in (eval-cell env-composed :A1) [:cells :A1 :output])))))
+
+(ws/deftest  update-updates-deep-dependent-cells
+  (let [env {:sci-ctx (init {})
+             :cells   {:B1 {:input "3"}
+                       :B2 {:input "=B1"}
+                       :B3 {:input "=add(B1,B2)"}}}]
+    (let [new-env (eval-cell env :B3)
+          _       (tap> new-env)]
+      (is (= 6 (get-in new-env [:cells :B3 :output]))))))

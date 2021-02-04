@@ -18,7 +18,7 @@
    [sguis.workspaces.temperature-test]
    [sguis.workspaces.timer :refer [timer-ui]]
    [sguis.workspaces.timer-test]
-   [sguis.workspaces.eval-cell]))
+   [sguis.workspaces.eval-cell-test]))
 
 (defonce init (mount))
 
