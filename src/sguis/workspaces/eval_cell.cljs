@@ -47,14 +47,6 @@ decimal = #'-?\\d+(\\.\\d*)?'
     (for [collv (range (.charCodeAt collmin) (inc (.charCodeAt collmax)))
           v     (range valmin (inc valmax))]
       (keyword (str (char collv) v)))))
-
-(ws/deftest range-cells-get-test
-  (are [expected actual] (= expected (range-cells-get actual))
-    '(:A0 :A1)                                      [:A0 :A1]
-    '(:A0 :A1 :A2)                                  [:A0 :A2]
-    '(:A0 :A1 :B0 :B1)                              [:B0 :A1]
-    '(:B0 :B1 :B2 :B3 :B4 :B5 :B6 :B7 :B8 :B9 :B10) [:B0 :B10]))
-
 (defn parse-input [input]
   (excel-like input))
 (defn input->raw-ast [input]
@@ -145,6 +137,13 @@ decimal = #'-?\\d+(\\.\\d*)?'
                           (let [{:keys [raw-ast]} (get cells cell-id)]
                             (ast-element-evaluator sci-ctx env raw-ast cells cell-id)))]
     (reduce rf env-new eval-tree)))
+
+(ws/deftest range-cells-get-test
+  (are [expected actual] (= expected (range-cells-get actual))
+    '(:A0 :A1)                                      [:A0 :A1]
+    '(:A0 :A1 :A2)                                  [:A0 :A2]
+    '(:A0 :A1 :B0 :B1)                              [:B0 :A1]
+    '(:B0 :B1 :B2 :B3 :B4 :B5 :B6 :B7 :B8 :B9 :B10) [:B0 :B10]))
 
 (ws/deftest parse-input->raw-ast-test
   (are [expected actual] (= expected (input->raw-ast actual))
@@ -273,15 +272,11 @@ decimal = #'-?\\d+(\\.\\d*)?'
                                    :B0 {:input "5"}
                                    :B1 {:input "10"}}}
         env-ranged-op   {:sci-ctx (init {})
-                         :cells   {:A0 {:input        "=mul(B0:B1)",
-                                        :raw-ast      '(* :B0 :B1),
-                                        :dependencies (:B0 :B1)},
-                                   :B0 {:input "8"},
-                                   :B1 {:input "10"},}}
-        env-composed    {:sci-ctx (init {})
-                         :cells   {:A1 {:input "=add(A3,mul(2,A2))"}
-                                   :A3 {:input "5"}
-                                   :A2 {:input "6"}}}]
+                         :cells   {:A0 {:input        "=mul(B0:B1)"
+                                        :raw-ast      '(* :B0 :B1)
+                                        :dependencies (:B0 :B1)}
+                                   :B0 {:input "8"}
+                                   :B1 {:input "10"}}}]
     (is (= 1 (get-in (eval-cell env-simple-subs :A0) [:cells :A0 :output])))
     (is (= 11 (get-in (eval-cell env-simple-op :A0) [:cells :A0 :output])))
     (is (= 50 (get-in (eval-cell env-mul :A0) [:cells :A0 :output])))
