@@ -51,10 +51,12 @@ decimal = #'-?\\d+(\\.\\d*)?'
     :ident   keyword
     :textual identity
     :cell    keyword
-    :range   #(range-cells-get [%1 %2])
-    :app     (fn [kw args]
-               (tap> (concat [(get kw->op kw)] (map keyword args)))
-               (concat [(get kw->op kw)] (map keyword args)))
+    :range   (fn [& args]
+               (map keyword (range-cells-get args)))
+    :app     (fn [kw & args]
+               (concat [(get kw->op kw)] (if (seq? (first args))
+                                           (first args)
+                                           args)))
     :expr    identity
     :formula identity} (parse-input input)))
 
