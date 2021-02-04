@@ -48,7 +48,8 @@ decimal = #'-?\\d+(\\.\\d*)?'
           v     (range valmin (inc valmax))]
       (keyword (str (char collv) v)))))
 (defn parse-input [input]
-  (excel-like input))
+    (excel-like input))
+
 (defn input->raw-ast [input]
   (let [parsed-input (parse-input input)
         raw-ast      (insta/transform
@@ -75,7 +76,6 @@ decimal = #'-?\\d+(\\.\\d*)?'
 (defn eval-sheets-raw-ast [{:keys [cells]
                             :as   env}]
   (reduce (fn [env cell-id]
-
             (if-let [input (get-in cells [cell-id :input])]
               (let [raw-ast (input->raw-ast input)
                     deps    (not-empty (raw-ast->dependencies raw-ast))
@@ -110,7 +110,14 @@ decimal = #'-?\\d+(\\.\\d*)?'
       (concat (distinct (next-deps-impl #{} [init-key])) reverse-dependent))))
 
 (defn add-eval-tree [env init-key]
-  (merge env {:eval-tree (dependency-buildn (eval-sheets-raw-ast env) init-key)}))
+  (let [[err result] (try
+                       [false (dependency-buildn (eval-sheets-raw-ast env) init-key)]
+                       (catch :default ex
+                       [ex]))]
+
+    (if-not err
+      (merge env {:eval-tree (dependency-buildn (eval-sheets-raw-ast env) init-key)})
+      (assoc-in env [:cells init-key :output] (ex-message err)))))
 
 (defn get-data-rec [cells raw-ast]
   (letfn [(get-data-rec* [cells v]
