@@ -34,10 +34,14 @@ ident   = #'[a-zA-Z_]\\w*'
 decimal = #'-?\\d+(\\.\\d*)?'
 ")
 
+(defn exsplit [k]
+  (let [[_ k v] (re-matches #"([A-Z]+)([0-9]+)" (name k))]
+    [k
+     (edn/read-string v)]))
 (defn range-cells-get
   [[a b]]
-  (let [[colla vala]      (name a)
-        [collb valb]      (name b)
+  (let [[colla vala]      (exsplit a)
+        [collb valb]      (exsplit b)
         [valmin valmax]   (sort [(int vala) (int valb)])
         [collmin collmax] (sort [colla collb])]
     (for [collv (range (.charCodeAt collmin) (inc (.charCodeAt collmax)))
