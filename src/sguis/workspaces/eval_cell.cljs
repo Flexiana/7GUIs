@@ -114,7 +114,6 @@ decimal = #'-?\\d+(\\.\\d*)?'
                        [false (dependency-buildn (eval-sheets-raw-ast env) init-key)]
                        (catch :default ex
                        [ex]))]
-
     (if-not err
       (merge env {:eval-tree (dependency-buildn (eval-sheets-raw-ast env) init-key)})
       (assoc-in env [:cells init-key :output] (ex-message err)))))
