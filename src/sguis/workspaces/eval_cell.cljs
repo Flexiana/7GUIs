@@ -103,7 +103,10 @@ decimal = #'-?\\d+(\\.\\d*)?'
                                  (next-deps-impl seen-next next))
                               deps)
                       deps)))]
-    (distinct (next-deps-impl #{} [init-key]))))
+    (let [reverse-dependent (keep (fn [[k v]]
+                                    (when (some #(= init-key %) (:dependencies v))
+                                      k)) cells)]
+      (concat (distinct (next-deps-impl #{} [init-key])) reverse-dependent))))
 
 (defn add-eval-tree [env init-key]
   (merge env {:eval-tree (dependency-buildn (eval-sheets-raw-ast env) init-key)}))
@@ -269,13 +272,20 @@ decimal = #'-?\\d+(\\.\\d*)?'
                        :B2 {:input "=add(B0,B2)"}}}
         env1  {:cells   {:A1 {:input "=add(A3,mul(2,A2))"}
                          :A3 {:input "5"}
-                         :A2 {:input "6"}}}]
+                         :A2 {:input "6"}}}
+        env-reverse  {:cells {:A0 {:input "=mul(B0,B1)",
+                                   :raw-ast '(* :B0 :B1),
+                                   :dependencies (:B0 :B1)},
+                              :B0 {:input "8", :raw-ast 5},
+                              :B1 {:input "10", :raw-ast 10}}}]
     (is (= "duplicated keys: :B2"
            (ex-message (try (dependency-buildn (eval-sheets-raw-ast env) :B2)
                             (catch :default ex
                               ex)))))
     (is (= '(:A3 :A2 :A1)
-           (dependency-buildn (eval-sheets-raw-ast env1) :A1)))))
+           (dependency-buildn (eval-sheets-raw-ast env1) :A1)))
+    (is (= '(:A3 :A1) (dependency-buildn (eval-sheets-raw-ast env1) :A3)))
+    (is (= '(:B0 :A0) (dependency-buildn (eval-sheets-raw-ast env-reverse) :B0)))))
 
 (ws/deftest add-eval-tree-test
   (let [env                       {:sci-ctx (init {})
@@ -304,11 +314,16 @@ decimal = #'-?\\d+(\\.\\d*)?'
                                          :B0 {:input "5"}
                                          :B1 {:input "10"}}}
         evaluated-simple-op   (eval-cell env-simple-op :A0)
+        env-reverse  {:A0 {:input "=mul(B0,B1)",
+                           :raw-ast '(* :B0 :B1),
+                           :dependencies (:B0 :B1)},
+                      :B0 {:input "8", :raw-ast 5},
+                      :B1 {:input "10", :raw-ast 10},}
         env-composed          {:sci-ctx (init {})
                                :cells   {:A1 {:input "=add(A3,mul(2,A2))"}
                                          :A3 {:input "5"}
                                          :A2 {:input "6"}}}]
-    ;;(is (= 1 (get-in evaluated-simple-subs [:cells :A0 :output])))
-    ;;(is (= 11 (get-in evaluated-simple-op [:cells :A0 :output])))
-    ;;(is (= 50 (get-in (eval-cell env-mul :A0) [:cells :A0 :output])))
+    (is (= 1 (get-in evaluated-simple-subs [:cells :A0 :output])))
+    (is (= 11 (get-in evaluated-simple-op [:cells :A0 :output])))
+    (is (= 50 (get-in (eval-cell env-mul :A0) [:cells :A0 :output])))
     (is (= 17 (get-in (eval-cell env-composed :A1) [:cells :A1 :output])))))
