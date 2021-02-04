@@ -153,7 +153,7 @@
   (swap! *state assoc-in [:cells cell-id :input] (.. event -target -value)))
 
 (defn coll-fn
-  [{:keys [focused-cell cells] :as env}
+  [{:keys [focused-cell cells]}
    {:keys [focus-cell! submit-cell! change-cell!]} cell-width l  c]
   (let [cell-id (keyword (str c l))]
     ^{:key cell-id}
