@@ -1,16 +1,8 @@
 (ns sguis.workspaces.eval-cell
   (:require [clojure.string :as str]
-            [reagent.core :as r]
-            [sci.core :refer [eval-form
-                              init]]
-            [sguis.workspaces.validator :as valid]
-            [cljs.test :as t
-             :include-macros true
-             :refer [are is testing]]
-            [nubank.workspaces.core :as ws]
-            [clojure.string :as str]
+            [sci.core :refer [eval-form]]
             [clojure.edn :as edn]
-            [instaparse.core :as insta :refer-macros [defparser]]))
+            [instaparse.core :refer [transform] :refer-macros [defparser]]))
 
 (def kw->op
   {:add      '+
@@ -21,6 +13,7 @@
    :sum      '+
    :prod     '*})
 
+#_:clj-kondo/ignore
 (defparser excel-like
   "
 formula = decimal / textual / (<'='> expr)
@@ -47,29 +40,30 @@ decimal = #'-?\\d+(\\.\\d*)?'
           v     (range valmin (inc valmax))]
       (keyword (str (char collv) v)))))
 (defn parse-input [input]
-  (cond (nil? input) ""
+  (cond (nil? input)       ""
         (str/blank? input) ""
-    :else (excel-like input)))
+        :else              (excel-like input)))
 
+#_:clj-kondo/ignore
 (defn input->raw-ast [input]
   (let [[err parsed-input] (try
                              [false (parse-input input)]
                              (catch :default ex
                                [ex]))]
     (if-not err
-      (insta/transform
-                      {:decimal edn/read-string
-                       :ident   keyword
-                       :textual identity
-                       :cell    keyword
-                       :range   (fn [& args]
-                                  (range-cells-get args))
-                       :app     (fn [kw & args]
-                                  (concat [(get kw->op kw)] (if (seq? (first args))
-                                                              (flatten args)
-                                                              args)))
-                       :expr    (fn [& args] (first args))
-                       :formula identity}  parsed-input)
+      (transform
+       {:decimal edn/read-string
+        :ident   keyword
+        :textual identity
+        :cell    keyword
+        :range   (fn [& args]
+                   (range-cells-get args))
+        :app     (fn [kw & args]
+                   (concat [(get kw->op kw)] (if (seq? (first args))
+                                               (flatten args)
+                                               args)))
+        :expr    (fn [& args] (first args))
+        :formula identity}  parsed-input)
       err)))
 
 (defn raw-ast->dependencies [raw-ast]

@@ -174,7 +174,6 @@
        (get-in cells [cell-id :output]))]))
 
 #_:clj-kondo/ignore
-
 (defn row-fn
   [cells actions-map cell-width l]
   ^{:key l}
