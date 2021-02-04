@@ -34,7 +34,7 @@
 (defn can-parse-numeric?
   [parsed-exp]
   (and (string? parsed-exp)
-       (re-matches #"^[+-]?\d+(\.\d+)?$" parsed-exp)
+       (re-matches #"^\s*[+-]?\d+(\.\d+)?\s*$" parsed-exp)
        (valid/numeric? (js/parseFloat parsed-exp))))
 
 (defn parse-float-if
@@ -44,12 +44,12 @@
     s))
 
 (def xp-matcher
-  #"=\s*(\w+)\s*((\((.*)\)))*")
+  #"=\s*(\w+)\s*\(*([\w\d,\.\:]+){1}\)")
 
 (defn expression?
   [x]
   (and (string? x)
-       (re-matches xp-matcher x)))
+       (first (re-seq xp-matcher x))))
 
 (defn extract
   [input]
@@ -146,16 +146,18 @@
 (declare ->render)
 
 (defmethod parse :expression [{:keys [env input]}]
-  (let [[_ op _ _ par] (re-matches xp-matcher input)
-        op-cell    (keyword (gensym))
-        operand    (reader (assoc-in env [:cells op-cell :input] op) op-cell)
-        tmp-cell   (keyword (gensym))
-        parameters (str/replace par xp-matcher #(->render (assoc-in env [:cells tmp-cell :input] (first %1)) tmp-cell))]
-    (-> (for [p (str/split parameters ",")
-              :let [tmp-cell (keyword (gensym))]]
-          (reader (assoc-in env [:cells tmp-cell :input] p) tmp-cell))
-        (conj operand)
-        flatten)))
+  (let [[ex op par] (first (re-seq xp-matcher input))
+        op-cell     (keyword (gensym))
+        operand     (:output (reader (assoc-in env [:cells op-cell :input] op) op-cell))
+        parsed-pars (for [p (str/split par ",")
+                          :let [tmp-cell (keyword (gensym))]]
+                      (->render (assoc-in env [:cells tmp-cell :input] p) tmp-cell))
+        result      (eval-string (str (flatten [operand (if (every? string? parsed-pars)
+                                                          (map parse-float-if (str/split (first parsed-pars) ","))
+                                                          parsed-pars)])))
+        next-call (str/replace input ex result)
+        next-cell   (keyword (gensym))]
+    (reader (assoc-in env [:cells next-cell :input] next-call) next-cell)))
 
 (defn render
   [exp]

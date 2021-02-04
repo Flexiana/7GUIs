@@ -82,6 +82,29 @@
                   :cells {:A1 {:input "= Add (A3,= mul (2,= add (1,A2)))"}
                           :A3 {:input "5"}
                           :A2 {:input "6"}}} "A1")
+    21 (->render {:chain #{}
+                  :cells {:A1 {:input "= Add (A3,= mul (2,= add (A2,2)))"}
+                          :A3 {:input "5"}
+                          :A2 {:input "6"}}} "A1")
+    16 (->render {:chain #{}
+                  :cells {:A1 {:input "= Add (= add (A0,A3),= add (A3,A2))"}
+                          :A3 {:input "5"}
+                          :A2 {:input "6"}}} "A1")
+    (* 2 5 (+ 2 5) (+ 5 6)) (->render {:chain #{}
+                                       :cells {:A1 {:input "= mul (2,A3,= add (A0,A3),= add (A3,A2))"}
+                                               :A3 {:input "5"}
+                                               :A2 {:input "6"}
+                                               :A0 {:input "2"}}} "A1")
+    (* 2 5 (+ (* 2 2) 5) (+ 5 6)) (->render {:chain #{}
+                                             :cells {:A1 {:input "= mul (2,A3,= add (=mul(A0,2),A3),= add (A3,A2))"}
+                                                     :A3 {:input "5"}
+                                                     :A2 {:input "6"}
+                                                     :A0 {:input "2"}}} "A1")
+    (* (+ (* (+ 2 6) 2) 5) 2) (->render {:chain #{}
+                                         :cells {:A1 {:input "=mul (= add (= mul (= add (A0,A2),2),A3),2)"}
+                                                 :A3 {:input "5"}
+                                                 :A2 {:input "6"}
+                                                 :A0 {:input "2"}}} "A1")
     "6, 5" (->render {:chain #{}
                       :cells {:A1 {:input "A3:A2"}
                               :A3 {:input "5"}
