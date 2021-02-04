@@ -134,20 +134,14 @@ decimal = #'-?\\d+(\\.\\d*)?'
     (reduce rf env-new eval-tree)))
 
 (ws/deftest parse-input->raw-ast-test
-  (let [exp1 "1"
-        exp2 "=A1"
-        exp3 "abc"
-        exp4 "=add(1,2)"
-        exp5 "=add(A1,A2)"
-        exp6 "=add(A3,mul(2,A2))"]
-    (is (= 1 (input->raw-ast exp1)))
-    (is (= :A1 (input->raw-ast exp2)))
-    (is (= "abc" (input->raw-ast exp3)))
-    (is (= '(+ 1 2) (input->raw-ast exp4)))
-    (is (= '(+ :A1 :A2) (input->raw-ast exp5)))
-    (is (= '(+ :A3 (* 2 :A2)) (input->raw-ast exp6)))))
-    (is (= '(+ :A3 (* 2 :A2)) (input->raw-ast exp6)))
-    (is (= '(+ :A0 :A1 :A2 :A3) (input->raw-ast "=add(A0:A3)")))))
+  (are [expected actual] (= expected (input->raw-ast actual))
+    1                    "1"
+    :A1                  "=A1"
+    "abc"                "abc"
+    '(+ 1 2)             "=add(1,2)"
+    '(+ :A1 :A2)         "=add(A1,A2)"
+    '(+ :A3 (* 2 :A2))   "=add(A3,mul(2,A2))"
+    '(+ :A0 :A1 :A2 :A3) "=add(A0:A3)"))
 
 (ws/deftest eval-sheets-raw-ast-test
   (let [env {:sci-ctx (init {})
