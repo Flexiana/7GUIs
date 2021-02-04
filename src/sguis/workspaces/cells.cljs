@@ -1,11 +1,8 @@
 (ns sguis.workspaces.cells
   (:require
-   [clojure.string :as str]
    [reagent.core :as r]
-   [sci.core :refer [eval-string
-                     init]]
-   [sguis.workspaces.eval-cell :as evaluator]
-   [sguis.workspaces.validator :as valid]))
+   [sci.core :refer [init]]
+   [sguis.workspaces.eval-cell :as evaluator]))
 
 (def cells-start
   {:focused-cell nil
