@@ -126,7 +126,7 @@ decimal = #'-?\\d+(\\.\\d*)?'
   (letfn [(get-data-rec* [cells v]
             (cond (keyword? v) (-> cells
                                    (get v)
-                                   :raw-ast)
+                                   :output)
                   (seq? v)     (map #(get-data-rec* cells %) v)
                   :else        v))]
     (map #(get-data-rec* cells %) raw-ast)))
