@@ -1,17 +1,18 @@
 (ns sguis.workspaces.eval-cell-test
   (:require
-    [cljs.test :as t
-     :include-macros true
-     :refer [are is]]
-    [nubank.workspaces.core :as ws]
-    [sci.core :refer [init]]
-    [sguis.workspaces.eval-cell :refer [range-cells-get
-                                        input->raw-ast
-                                        eval-sheets-raw-ast
-                                        dependency-buildn
-                                        add-eval-tree
-                                        eval-cell
-                                        get-data-rec]]))
+   [cljs.test :as t
+    :include-macros true
+    :refer [are is]]
+   [nubank.workspaces.core :as ws]
+   [sci.core :refer [init]]
+   [sguis.workspaces.eval-cell :refer [range-cells-get
+                                       input->raw-ast
+                                       eval-sheets-raw-ast
+                                       dependency-buildn
+                                       dependency-buildn2
+                                       add-eval-tree
+                                       eval-cell
+                                       get-data-rec]]))
 
 (ws/deftest range-cells-get-test
   (are [expected actual] (= expected (range-cells-get actual))
@@ -95,6 +96,16 @@
                                    (try (dependency-buildn looping-deps1 :A0)
                                         (catch :default ex
                                           ex)))))))
+(ws/deftest not-looping-dependency
+  (let [env {:sci-ctx (init {})
+             :cells   {:A0 {:input "1", :raw-ast 1}
+                       :A1 {:input "=A0", :raw-ast :A0, :dependencies '[:A0]}
+                       :A2 {:input "=A1", :raw-ast :A1, :dependencies '[:A1]}
+                       :B0 {:input        "=sum(A0:A9)",
+                            :raw-ast      '(+ :A0 :A1 :A2),
+                            :dependencies '(:A0 :A1 :A2)}}}]
+    (is (= '(:A0 :A1 :A2 :B0) (dependency-buildn2 env :B0)))))
+
 (ws/deftest dependencies-builder-from-sheets
   (let [env         {:sci-ctx (init {})
                      :cells   {:A0 {:input        "=add(B0,B1)",
@@ -119,23 +130,6 @@
     (is (= '(:A3 :A2 :A1) (dependency-buildn (eval-sheets-raw-ast env1) :A1)))
     (is (= '(:A3 :A1) (dependency-buildn (eval-sheets-raw-ast env1) :A3)))
     (is (= '(:B0 :A0) (dependency-buildn (eval-sheets-raw-ast env-reverse) :B0)))))
-
-(ws/deftest not-looping-dependency
-  (let [env {:sci-ctx (init {})
-             :cells   {:A0 {:input "1", :raw-ast 1}
-                       :A1 {:input "=A0", :raw-ast :A0, :dependencies '[:A0]}
-                       :A2 {:input "=A1", :raw-ast :A1, :dependencies '[:A1]}
-                       :A3 {:input "=A1", :raw-ast :A1, :dependencies '[:A1]}
-                       :A4 {:input "=A1", :raw-ast :A1, :dependencies '[:A1]}
-                       :A5 {:input "=A1", :raw-ast :A1, :dependencies '[:A1]}
-                       :A6 {:input "=A1", :raw-ast :A1, :dependencies '[:A1]}
-                       :A7 {:input "=A1", :raw-ast :A1, :dependencies '[:A1]}
-                       :A8 {:input "=A1", :raw-ast :A1, :dependencies '[:A1]}
-                       :A9 {:input "=A1", :raw-ast :A1, :dependencies '[:A1]}
-                       :B0 {:input        "=sum(A0:A9)",
-                            :raw-ast      '(+ :A0 :A1 :A2 :A3 :A4 :A5 :A6 :A7 :A8 :A9),
-                            :dependencies '(:A0 :A1 :A2 :A3 :A4 :A5 :A6 :A7 :A8 :A9)}}}]
-    (is (= '(:A0 :A1 :A2 :A3 :A4 :A5 :A6 :A7 :A8 :A9) (dependency-buildn env :B0)))))
 
 (ws/deftest add-eval-tree-test
   (let [env                       {:sci-ctx (init {})
@@ -214,17 +208,10 @@
                                                          :A3 "5"
                                                          :A2 "6"
                                                          :A0 "2"}) :A1)
-      10                            (assert-cell (table {:A0 "1"
+      3                             (assert-cell (table {:A0 "1"
                                                          :A1 "=A0"
                                                          :A2 "=A1"
-                                                         :A3 "=A1"
-                                                         :A4 "=A1"
-                                                         :A5 "=A1"
-                                                         :A6 "=A1"
-                                                         :A7 "=A1"
-                                                         :A8 "=A1"
-                                                         :A9 "=A1"
-                                                         :B0 "=sum(A0:A9)"}) :B0)
+                                                         :B0 "=sum(A0:A2)"}) :B0)
       16                            (assert-cell (table {:A1 "=add(add(A0,A3),add(A3,A2))"
                                                          :A3 "5"
                                                          :A2 "6"}) :A1)

@@ -1,8 +1,9 @@
 (ns sguis.workspaces.eval-cell
-  (:require [clojure.string :as str]
-            [sci.core :refer [eval-form]]
-            [clojure.edn :as edn]
-            [instaparse.core :refer [transform] :refer-macros [defparser]]))
+  (:require
+   [clojure.edn :as edn]
+   [clojure.string :as str]
+   [instaparse.core :refer [transform] :refer-macros [defparser]]
+   [sci.core :refer [eval-form]]))
 
 (def kw->op
   {:add      '+
@@ -81,10 +82,10 @@ decimal = #'-?\\d+(\\.\\d*)?'
                     env-new (assoc-in env
                                       [:cells cell-id :raw-ast]
                                       raw-ast)]
-              (if deps
-                (assoc-in env-new [:cells cell-id :dependencies]
-                          deps)
-                env-new))
+                (if deps
+                  (assoc-in env-new [:cells cell-id :dependencies]
+                            deps)
+                  env-new))
               env))
           env
           (keys cells)))
@@ -108,9 +109,29 @@ decimal = #'-?\\d+(\\.\\d*)?'
                                       k)) cells)]
       (concat (distinct (next-deps-impl #{} [init-key])) reverse-dependent))))
 
+(defn dep-builder
+  ([env key]
+   (dep-builder env key #{}))
+  ([{:keys [cells] :as env} key path]
+   (let [dependencies (cond (contains? path key) (-> (str "duplicated keys: " key)
+                                                     (ex-info {:cognitect.anomalies/category :cognitect.anomalies/conflict
+                                                               :dupe                         key
+                                                               :seen                         path})
+                                                     (throw))
+                            (nil? (get-in cells [key :dependencies])) (conj path key)
+                            :else (let [result (for [d (get-in cells [key :dependencies])]
+                                                 (dep-builder env d (conj path key)))]
+                                    (mapcat identity result)))]
+     (distinct (vec dependencies)))))
+
+(defn dependency-buildn2
+  [env key]
+  (concat (remove #(= key %)
+                  (dep-builder env key #{})) [key]))
+
 (defn add-eval-tree [env init-key]
   (let [[err result] (try
-                       [false (dependency-buildn (eval-sheets-raw-ast env) init-key)]
+                       [false (dependency-buildn2 (eval-sheets-raw-ast env) init-key)]
                        (catch :default ex
                          [ex]))]
     (if-not err
@@ -139,6 +160,7 @@ decimal = #'-?\\d+(\\.\\d*)?'
                              (update-in env [:cells cell-id] assoc
                                         :ast raw-ast
                                         :output output))))
+
 (defn eval-cell
   [env cell-id]
   (let [{:keys [sci-ctx eval-tree]
