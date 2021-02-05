@@ -1,8 +1,8 @@
 (ns sguis.workspaces.cells
   (:require
-   [reagent.core :as r]
-   [sci.core :refer [init]]
-   [sguis.workspaces.eval-cell :as evaluator]))
+    [reagent.core :as r]
+    [sci.core :refer [init]]
+    [sguis.workspaces.eval-cell :as evaluator]))
 
 (def cells-start
   {:focused-cell nil
@@ -49,9 +49,9 @@
   [*state cell-id event]
   (.preventDefault event)
   (swap! *state
-         #(-> %
-              (evaluator/eval-cell cell-id)
-              (dissoc :focused-cell))))
+    #(-> %
+         (evaluator/eval-cell cell-id)
+         (dissoc :focused-cell))))
 
 (defn change-cell!
   [*state cell-id event]
@@ -79,14 +79,15 @@
        (get-in cells [cell-id :output]))]))
 
 #_:clj-kondo/ignore
+
 (defn row-fn
   [cells actions-map cell-width l]
   ^{:key l}
   [:tr
    (concat
-    [^{:key l}
-     [:td {:style (light-border-style 42)} l]
-     (map (partial coll-fn cells actions-map cell-width l) (az-range (:columns cells)))])])
+     [^{:key l}
+      [:td {:style (light-border-style 42)} l]
+      (map (partial coll-fn cells actions-map cell-width l) (az-range (:columns cells)))])])
 
 (defn change-width!
   [state]

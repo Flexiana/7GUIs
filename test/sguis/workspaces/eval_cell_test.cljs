@@ -1,18 +1,18 @@
 (ns sguis.workspaces.eval-cell-test
   (:require
-   [cljs.test :as t
-    :include-macros true
-    :refer [are is]]
-   [nubank.workspaces.core :as ws]
-   [sci.core :refer [init]]
-   [sguis.workspaces.eval-cell :refer [range-cells-get
-                                       input->raw-ast
-                                       eval-sheets-raw-ast
-                                       dependency-buildn
-                                       dependency-buildn2
-                                       add-eval-tree
-                                       eval-cell
-                                       get-data-rec]]))
+    [cljs.test :as t
+     :include-macros true
+     :refer [are is]]
+    [nubank.workspaces.core :as ws]
+    [sci.core :refer [init]]
+    [sguis.workspaces.eval-cell :refer [range-cells-get
+                                        input->raw-ast
+                                        eval-sheets-raw-ast
+                                        dependency-buildn
+                                        dependency-buildn2
+                                        add-eval-tree
+                                        eval-cell
+                                        get-data-rec]]))
 
 (ws/deftest range-cells-get-test
   (are [expected actual] (= expected (range-cells-get actual))
@@ -89,13 +89,14 @@
                                :A1 {:dependencies [:A2 :A0]}
                                :A2 {:dependencies []}}}]
     (is (= "duplicated keys: :A0" (ex-message
-                                   (try (dependency-buildn looping-deps0 :A0)
-                                        (catch :default ex
-                                          ex)))))
+                                    (try (dependency-buildn looping-deps0 :A0)
+                                         (catch :default ex
+                                           ex)))))
     (is (= "duplicated keys: :A0" (ex-message
-                                   (try (dependency-buildn looping-deps1 :A0)
-                                        (catch :default ex
-                                          ex)))))))
+                                    (try (dependency-buildn looping-deps1 :A0)
+                                         (catch :default ex
+                                           ex)))))))
+
 (ws/deftest not-looping-dependency
   (let [env {:cells {:A0 {:input "1", :raw-ast 1}
                      :A1 {:input "=A0", :raw-ast :A0, :dependencies '[:A0]}
