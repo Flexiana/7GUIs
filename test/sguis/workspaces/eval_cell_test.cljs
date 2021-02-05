@@ -210,6 +210,10 @@
                                                          :A2 "6"}) :A1)
       5                             (assert-cell (table {:A1 "=add(A2,3)"
                                                          :A2 "2"}) :A1)
+      (* 2 5 (+ 2 5) (+ 5 6))       (assert-cell (table {:A1 "=mul(2,A3,add(A0,A3),add(A3,A2))"
+                                                         :A3 "5"
+                                                         :A2 "6"
+                                                         :A0 "2"}) :A1)
       10                            (assert-cell (table {:A0 "1"
                                                          :A1 "=A0"
                                                          :A2 "=A1"
@@ -224,10 +228,6 @@
       16                            (assert-cell (table {:A1 "=add(add(A0,A3),add(A3,A2))"
                                                          :A3 "5"
                                                          :A2 "6"}) :A1)
-      (* 2 5 (+ 2 5) (+ 5 6))       (assert-cell (table {:A1 "=mul(2,A3,add(A0,A3),add(A3,A2))"
-                                                         :A3 "5"
-                                                         :A2 "6"
-                                                         :A0 "2"}) :A1)
       (* 2 5 (+ (* 2 2) 5) (+ 5 6)) (assert-cell (table {:A1 "=mul(2,A3,add(mul(A0,2),A3),add(A3,A2))"
                                                          :A3 "5"
                                                          :A2 "6"
