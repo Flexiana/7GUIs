@@ -88,14 +88,13 @@
                                :A1 {:dependencies [:A2 :A0]}
                                :A2 {:dependencies []}}}]
     (is (= "duplicated keys: :A0" (ex-message
-                                    (try (dependency-buildn looping-deps0 :A0)
-                                         (catch :default ex
-                                           ex)))))
+                                   (try (dependency-buildn looping-deps0 :A0)
+                                        (catch :default ex
+                                          ex)))))
     (is (= "duplicated keys: :A0" (ex-message
-                                    (try (dependency-buildn looping-deps1 :A0)
-                                         (catch :default ex
-                                           ex)))))))
-
+                                   (try (dependency-buildn looping-deps1 :A0)
+                                        (catch :default ex
+                                          ex)))))))
 (ws/deftest dependencies-builder-from-sheets
   (let [env         {:sci-ctx (init {})
                      :cells   {:A0 {:input        "=add(B0,B1)",
