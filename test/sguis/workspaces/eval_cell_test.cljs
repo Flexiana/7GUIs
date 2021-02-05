@@ -120,11 +120,28 @@
     (is (= '(:A3 :A1) (dependency-buildn (eval-sheets-raw-ast env1) :A3)))
     (is (= '(:B0 :A0) (dependency-buildn (eval-sheets-raw-ast env-reverse) :B0)))))
 
-(ws/deftest add-eval-tree-test
+(ws/deftest not-looping-dependency
   (let [env {:sci-ctx (init {})
-             :cells   {:A0 {:input "=add(B0,B1)"}
-                       :B0 {:input "1"}
-                       :B2 {:input "=add(B0,3)"}}}
+             :cells   {:A0 {:input "1", :raw-ast 1}
+                       :A1 {:input "=A0", :raw-ast :A0, :dependencies '[:A0]}
+                       :A2 {:input "=A1", :raw-ast :A1, :dependencies '[:A1]}
+                       :A3 {:input "=A1", :raw-ast :A1, :dependencies '[:A1]}
+                       :A4 {:input "=A1", :raw-ast :A1, :dependencies '[:A1]}
+                       :A5 {:input "=A1", :raw-ast :A1, :dependencies '[:A1]}
+                       :A6 {:input "=A1", :raw-ast :A1, :dependencies '[:A1]}
+                       :A7 {:input "=A1", :raw-ast :A1, :dependencies '[:A1]}
+                       :A8 {:input "=A1", :raw-ast :A1, :dependencies '[:A1]}
+                       :A9 {:input "=A1", :raw-ast :A1, :dependencies '[:A1]}
+                       :B0 {:input        "=sum(A0:A9)",
+                            :raw-ast      '(+ :A0 :A1 :A2 :A3 :A4 :A5 :A6 :A7 :A8 :A9),
+                            :dependencies '(:A0 :A1 :A2 :A3 :A4 :A5 :A6 :A7 :A8 :A9)}}}]
+    (is (= '(:A0 :A1 :A2 :A3 :A4 :A5 :A6 :A7 :A8 :A9) (dependency-buildn env :B0)))))
+
+(ws/deftest add-eval-tree-test
+  (let [env                       {:sci-ctx (init {})
+                                   :cells   {:A0 {:input "=add(B0,B1)"}
+                                             :B0 {:input "1"}
+                                             :B2 {:input "=add(B0,3)"}}}
         {:keys [eval-tree cells]} (add-eval-tree (eval-sheets-raw-ast env) :B2)]
     (is (= [:B0 :B2] eval-tree))
     (is (= {:A0 {:input        "=add(B0,B1)",
