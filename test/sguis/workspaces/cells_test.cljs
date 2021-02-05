@@ -52,14 +52,14 @@
             (insert comp "B1" "2")
             (insert comp "B2" "10")
             (insert comp "B3" "3")
-            (insert comp "B4" "= Mul (B1:B3)")
+            (insert comp "B4" "=mul(B1:B3)")
             (is (= "60" (.-innerText (cell comp "B4")))))
 
           (testing "Multiple multiplication with series"
             (insert comp "B1" "2")
             (insert comp "B2" "10")
             (insert comp "B3" "3")
-            (insert comp "B4" "= Mul (B1,B2,B3)")
+            (insert comp "B4" "=mul(B1,B2,B3)")
             (is (= "60" (.-innerText (cell comp "B4")))))
 
           (testing "Cell update updates dependent cells"
