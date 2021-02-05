@@ -17,7 +17,8 @@
 #_:clj-kondo/ignore
 (defparser excel-like
   "
-formula = decimal / textual / (<'='> expr)
+formula = decimal / textual / eval
+eval    = (<'='> expr)
 expr    = range / cell / decimal / app
 app     = ident <'('> (expr <','>)* expr <')'>
 range   = cell <':'> cell
@@ -54,16 +55,20 @@ decimal = #'-?\\d+(\\.\\d*)?'
     (if-not err
       (transform
        {:decimal edn/read-string
-        :ident   keyword
+        :ident   identity
         :textual identity
         :cell    keyword
         :range   (fn [& args]
                    (range-cells-get args))
-        :app     (fn [kw & args]
-                   (concat [(get kw->op kw)] (if (seq? (first args))
-                                               (flatten args)
-                                               args)))
+        :app     (fn [id & args]
+                   (concat [(get kw->op (keyword id))] (if (and (seq? (first args)))
+                                                         (let [res (flatten args)]
+                                                           (if-not (symbol? (first res))
+                                                             res
+                                                             args))
+                                                         args)))
         :expr    (fn [& args] (first args))
+        :eval identity
         :formula identity}  parsed-input)
       err)))
 
@@ -167,6 +172,7 @@ decimal = #'-?\\d+(\\.\\d*)?'
          :as   env-new} (-> env
                             eval-sheets-raw-ast
                             (add-eval-tree cell-id))
+        _               (tap> (:raw-ast (:A1 (:cells env-new))))
         rf              (fn [{:keys [cells]
                              :as   env} cell-id]
                           (let [{:keys [raw-ast]} (get cells cell-id)]
