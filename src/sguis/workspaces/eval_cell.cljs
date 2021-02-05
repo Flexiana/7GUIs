@@ -137,12 +137,16 @@ decimal = #'-?\\d+(\\.\\d*)?'
                             :else (let [result (for [d (get-in cells [key :dependencies])]
                                                  (dep-builder env d (conj path key)))]
                                     (mapcat identity result)))]
-     (distinct (vec dependencies)))))
+     (concat (distinct (vec dependencies))))))
 
 (defn dependency-buildn2
-  [env key]
-  (concat (remove #(= key %)
-                  (dep-builder env key #{})) [key]))
+  [{:keys [cells]
+    :as env} key]
+  (let  [reverse-dependent (keep (fn [[k v]]
+                                   (when (some #(= key %) (:dependencies v))
+                                     k)) cells)]
+    (concat (remove #(= key %)
+                    (dep-builder env key #{})) [key] reverse-dependent)))
 
 (defn add-eval-tree
   [env init-key]
@@ -186,9 +190,8 @@ decimal = #'-?\\d+(\\.\\d*)?'
          :as   env-new} (-> env
                             eval-sheets-raw-ast
                             (add-eval-tree cell-id))
-        _               (tap> (:raw-ast (:A1 (:cells env-new))))
         rf              (fn [{:keys [cells]
-                              :as   env} cell-id]
+                             :as   env} cell-id]
                           (let [{:keys [raw-ast]} (get cells cell-id)]
                             (ast-element-evaluator sci-ctx env raw-ast cells cell-id)))]
     (reduce rf env-new eval-tree)))
