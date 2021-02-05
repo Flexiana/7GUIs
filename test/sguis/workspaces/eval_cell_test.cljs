@@ -97,14 +97,24 @@
                                         (catch :default ex
                                           ex)))))))
 (ws/deftest not-looping-dependency
-  (let [env {:sci-ctx (init {})
-             :cells   {:A0 {:input "1", :raw-ast 1}
-                       :A1 {:input "=A0", :raw-ast :A0, :dependencies '[:A0]}
-                       :A2 {:input "=A1", :raw-ast :A1, :dependencies '[:A1]}
-                       :B0 {:input        "=sum(A0:A9)",
-                            :raw-ast      '(+ :A0 :A1 :A2),
-                            :dependencies '(:A0 :A1 :A2)}}}]
-    (is (= '(:A0 :A1 :A2 :B0) (dependency-buildn2 env :B0)))))
+  (let [env {:cells {:A0 {:input "1", :raw-ast 1}
+                     :A1 {:input "=A0", :raw-ast :A0, :dependencies '[:A0]}
+                     :A2 {:input "=A1", :raw-ast :A1, :dependencies '[:A1]}
+                     :B0 {:input        "=sum(A0:A9)",
+                          :raw-ast      '(+ :A0 :A1 :A2),
+                          :dependencies '(:A0 :A1 :A2)}}}
+        s1  {:cells {:A0 {}
+                     :B0 {:dependencies [:A0]}}}
+        s2  {:cells {:A0 {}
+                     :A1 {}
+                     :B0 {:dependencies [:A0 :A1]}}}
+        s3  {:cells {:A0 {}
+                     :A1 {:dependencies [:A0]}
+                     :B0 {:dependencies [:A0 :A1]}}}]
+    (is (= '(:A0 :A1 :A2 :B0) (dependency-buildn2 env :B0)))
+    (is (= '(:A0 :B0) (dependency-buildn2 s1 :B0)))
+    (is (= '(:A0 :A1 :B0) (dependency-buildn2 s2 :B0)))
+    (is (= '(:A0 :A1 :B0) (dependency-buildn2 s3 :B0)))))
 
 (ws/deftest dependencies-builder-from-sheets
   (let [env         {:sci-ctx (init {})
