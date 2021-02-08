@@ -36,8 +36,12 @@ jobs:
         run:
           clojure -M:lint
       
-      - name: Tests
+      - name: Build Tests
+        run: |
+            npx shadow-cljs compile ci
+            
+      - name: Run Tests
         env: 
           CHROME_BIN: '/usr/bin/chromium'
-        run:
-         npm run tests
+        run: |
+          npx karma start --single-run 
