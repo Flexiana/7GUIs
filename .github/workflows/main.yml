@@ -15,9 +15,12 @@ jobs:
       image: timbru31/java-node
     
     steps:
+      - name: setup-chromedriver
+        uses: nanasess/setup-chromedriver@v1.0.1
+        
       - name: Install dependencies
         run: |
-          apt install -y curl google-chrome-stable
+          apt install -y curl
           curl -O https://download.clojure.org/install/linux-install-1.10.2.774.sh
           chmod +x linux-install-1.10.2.774.sh && ./linux-install-1.10.2.774.sh
           npm install
