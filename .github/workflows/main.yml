@@ -18,7 +18,7 @@ jobs:
       - name: Install dependencies
         run: |
           apt-get update -y
-          apt-get install -y curl chromium-chromedriver 
+          apt-get install -y curl chromium-browser
           curl -O https://download.clojure.org/install/linux-install-1.10.2.774.sh
           chmod +x linux-install-1.10.2.774.sh && ./linux-install-1.10.2.774.sh
           
