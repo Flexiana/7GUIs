@@ -1,9 +1,11 @@
 (ns sguis.workspaces.alternate-cells
+  "7GUIs cells UI"
   (:require
     [sguis.workspaces.alternate-eval-cell :refer [eval-cell]]
     [reagent.core :as r]))
 
 (def cells-start
+  "Initial state"
   {:focused-cell nil
    :edition      ""
    :cells        {}
@@ -11,10 +13,12 @@
    :rows         5})
 
 (defn az-range
+  "Columns from A-Z (or less)"
   [columns]
   (map char (take columns (range 65 91))))
 
 (defn table-lines
+  "Rows from 0-100 (or less)"
   [rows]
   (take rows (range 0 100)))
 
@@ -36,10 +40,12 @@
   [:td {:style (light-border-style width)} chars])
 
 (defn focus-cell!
+  "Change focus"
   [*state cell-id _]
   (swap! *state assoc :focused-cell cell-id))
 
 (defn submit-cell!
+  "Store cells input"
   [*state {:keys [edition]}
    cell-id
    event]
@@ -51,10 +57,12 @@
          (dissoc :focused-cell :edition))))
 
 (defn change-cell!
+  "Update input on change"
   [*state event]
   (swap! *state assoc :edition (.. event -target -value)))
 
-(defn coll-fn
+(defn cell-fn
+  "UI representation of a cell"
   [{:keys [focused-cell cells] :as env}
    {:keys [focus-cell! submit-cell! change-cell!]} cell-width l c]
   (let [cell-id (keyword (str c l))]
@@ -76,25 +84,27 @@
        (eval-cell env cell-id))]))
 
 (defn row-fn
+  "UI representation of a row of cells"
   [cells actions-map cell-width l]
   ^{:key l}
   [:tr
    (concat
      [^{:key l}
       [:td {:style (light-border-style 42)} l]
-      (map (partial coll-fn cells actions-map cell-width l) (az-range (:columns cells)))])])
+      (map (partial cell-fn cells actions-map cell-width l) (az-range (:columns cells)))])])
 
 (defn change-width!
+  "Set table width to the 90% of the window"
   [state]
-  (.addEventListener
-    js/window "resize"
-    (swap! state assoc :window-width (* 0.9 (.-innerWidth js/window)))))
+  (swap! state assoc :window-width (* 0.9 (.-innerWidth js/window))))
 
 (defn add-row!
+  "Extend the table with one row"
   [*cells]
   (swap! *cells update :rows #(min (inc %) 100)))
 
 (defn row-btn
+  "Button for add row"
   [add-row!]
   [^{:key "btn-row"}
    [:tr
@@ -104,10 +114,12 @@
       "Add row"]]]])
 
 (defn add-col!
+  "Extend table with one column"
   [*cells]
   (swap! *cells update :columns #(min (inc %) 26)))
 
 (defn coll-btn
+  "button for adding column"
   [add-col!]
   [^{:key "btn-col"}
    [:th
@@ -116,6 +128,7 @@
      "Add column"]]])
 
 (defn table-head
+  "Head of the table, with add column button"
   [cells
    cell-width
    add-col!]
@@ -136,10 +149,12 @@
            (row-btn add-row!))])
 
 (defn cells-ui
+  "Main UI of cells"
   ([]
    (r/with-let [*cells (r/atom cells-start)]
      [cells-ui *cells]))
   ([*cells]
+   (.addEventListener js/window "resize" (partial change-width! *cells))
    (change-width! *cells)
    (let [width      (:window-width @*cells)
          columns    (:columns @*cells)
