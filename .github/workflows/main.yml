@@ -10,14 +10,16 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-lts
+    runs-on: ubuntu-latest
     container: 
       image: timbru31/java-node
     
     steps:
       - name: Install dependencies
         run: |
-          apt install -y curl chromium-browser
+          apt install -y curl 
+          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          apt install -y ./google-chrome-stable_current_amd64.deb
           curl -O https://download.clojure.org/install/linux-install-1.10.2.774.sh
           chmod +x linux-install-1.10.2.774.sh && ./linux-install-1.10.2.774.sh
           npm install
