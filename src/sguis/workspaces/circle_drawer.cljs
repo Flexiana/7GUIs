@@ -1,8 +1,10 @@
 (ns sguis.workspaces.circle-drawer
+  "7GUIs circle drawer"
   (:require
     [reagent.core :as r]))
 
 (def circles-start
+  "init state"
   {:slider-opened? nil
    :current-id     0
    :circles        []
@@ -24,6 +26,7 @@
    :background-color "#eee"})
 
 (defn undo-on-click!
+  "Undo action"
   [*state circles _]
   (when-not (empty? circles)
     (swap! *state #(-> %
@@ -32,11 +35,13 @@
                        (update :history conj (last circles))))))
 
 (defn undo-button
+  "Undo button"
   [{:keys [circles]} undo-on-click!]
   [:div.panel-block.is-block
    [:button.button.is-primary {:on-click (partial undo-on-click! circles)} "Undo"]])
 
 (defn redo-on-click!
+  "Redo action"
   [*state history _]
   (when-not (empty? history)
     (swap! *state #(-> %
@@ -45,6 +50,7 @@
                        (update :history pop)))))
 
 (defn redo-button
+  "Redo button"
   [{:keys [history]} redo-on-click!]
   [:div.panel-block.is-block
    [:button.button.is-primary {:on-click (partial redo-on-click! history)} "Redo"]])
@@ -62,6 +68,7 @@
    :background-color "rgba(255,255,255,0.5)"})
 
 (defn update-radius!
+  "Update action"
   [*state selection event]
   (when selection
     (swap! *state
@@ -71,6 +78,7 @@
                                -valueAsNumber)))))
 
 (defn radius-slider
+  "Update slider"
   [{:keys [x y] :as selected?} update-radius!]
   [:label (str "Changing circle at "
                "(" x ", " y ")")
@@ -90,6 +98,7 @@
        vals))
 
 (defn select-fill
+  "Coloring by selection"
   [{selected-x :x
     selected-y :y}
    {:keys [x y]}]
@@ -99,6 +108,7 @@
     "white"))
 
 (defn circle-draw!
+  "Visual representation of a circle"
   [*state selected? {:keys [id x y r] :as selection}]
   ^{:key id}
   [:circle {:data-testid  (str "circle-" id)
@@ -113,6 +123,7 @@
                             (swap! *state assoc :selection selection))}])
 
 (defn open-slider!
+  "Show or hide change diameter dialog"
   [*state selected? slider-opened? event]
   (if-not (and slider-opened? (not-empty selected?))
     (swap! *state assoc :slider-opened? true)
@@ -121,6 +132,7 @@
     (.preventDefault event)))
 
 (defn get-circle-dim
+  "Compute activated circle dimensions"
   [event]
   (let [dim   (-> ^js event
                   .-target
@@ -131,6 +143,7 @@
      :y (- y-rel (.-top dim))}))
 
 (defn insert-circle!
+  "Create a new circle"
   [*state current-id event]
   (let [circle-pos (-> event
                        get-circle-dim
@@ -144,7 +157,8 @@
 #_:clj-kondo/ignore
 
 (defn svg-draw
-  [{:keys [circles selection slider-opened? current-id slider-opened?]}
+  "Draw circles onto canvas"
+  [{:keys [circles selection current-id slider-opened?]}
    open-slider!
    insert-circle!
    circle-draw!
@@ -162,6 +176,7 @@
       [radius-slider selection update-radius!]])])
 
 (defn circles-ui
+  "Main UI of circles"
   ([]
    (r/with-let [*circles (r/atom circles-start)]
      [circles-ui *circles]))
