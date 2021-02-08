@@ -19,9 +19,6 @@ jobs:
       - uses: nanasess/setup-chromedriver@master
       - name: Install dependencies
         run: |
-          add-apt-repository ppa:canonical-chromium-builds/stage
-          apt update -y
-          apt install -y curl chromium-browser 
           curl -O https://download.clojure.org/install/linux-install-1.10.2.774.sh
           chmod +x linux-install-1.10.2.774.sh && ./linux-install-1.10.2.774.sh
           npm install
