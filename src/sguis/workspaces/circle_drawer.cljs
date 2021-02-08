@@ -91,6 +91,7 @@
      :on-change   (partial update-radius! selected?)}]])
 
 (defn last-circles-by-id
+  "Get recently added circles"
   [circles]
   (->> circles
        (map (juxt :id identity))
@@ -168,9 +169,8 @@
           :style           svg-style
           :on-context-menu (partial open-slider! selection slider-opened?)
           :on-click        (partial insert-circle! current-id)}
-    (->> circles
-         last-circles-by-id
-         (map (partial circle-draw! selection)))]
+    (for [circle (last-circles-by-id circles)]
+      (circle-draw! selection circle))]
    (when (and slider-opened? (not-empty circles))
      [:div {:style radius-box-style}
       [radius-slider selection update-radius!]])])
