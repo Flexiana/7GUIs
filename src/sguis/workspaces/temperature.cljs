@@ -1,4 +1,5 @@
 (ns sguis.workspaces.temperature
+  "7GUIs temperature converter"
   (:require
     [clojure.string :as string]
     [reagent.core :as r]
@@ -6,45 +7,46 @@
     [sguis.workspaces.validator :as valid]))
 
 (def temperature-start
+  "init values"
   {:celsius    {:value nil}
    :fahrenheit {:value nil}})
 
 (def other
+  "Conversion matrix"
   {:celsius    :fahrenheit
    :fahrenheit :celsius})
 
 (defmulti convert (fn [from to _] [from to]))
 
 (defmethod convert [:celsius :fahrenheit] [_ _ degrees]
+  ;;convert celsius to fahrenheit
   (-> degrees (* 9.0) (/ 5.0) (+ 32.0) js/Math.round))
 
 (defmethod convert [:fahrenheit :celsius] [_ _ degrees]
+  ;;convert fahrenheit to celsius
   (-> degrees (- 32.0) (* 5.0) (/ 9.0) js/Math.round))
 
-(defn change-temperature
+(defn apply-temperature-change
+  "Apply changes based on user input"
   [state from data]
   (let [to     (other from)
         state' (assoc state from {:value data})]
-    (if (valid/float? data)
-      (assoc state' to {:value (convert from to data)})
-      (-> state'
-          (assoc-in [from :invalid?] true)
-          (assoc-in [to :unsynced?] true)))))
-
-(defn apply-temperature-change
-  [state from data]
-  (if (string/blank? data)
-    temperature-start
-    (change-temperature state from data)))
+    (cond (string/blank? data) (reset! state temperature-start)
+          (valid/float? data) (assoc state' to {:value (convert from to data)})
+          :else (-> state'
+                    (assoc-in [from :invalid?] true)
+                    (assoc-in [to :unsynced?] true)))))
 
 (defn change-state!
+  "Change value action for input fields"
   [state field-key field]
   (let [data (-> field .-target .-value)]
     (swap! state apply-temperature-change field-key data)))
 
 (defn degree-input
+  "Input fields"
   [{:keys [label on-change state]}]
-  (let [field-id                           (gensym)
+  (let [field-id (gensym)
         {:keys [value invalid? unsynced?]} state]
     [:div.field.is-horizontal {:style {:margin-top "0.5em"}}
      [:div.field-label.is-normal
@@ -64,6 +66,7 @@
          :value     value}]]]]))
 
 (defn temperature-ui
+  "Temperature converter main UI"
   ([]
    (r/with-let [state (r/atom temperature-start)]
      [temperature-ui state]))

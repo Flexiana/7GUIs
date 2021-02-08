@@ -1,8 +1,10 @@
 (ns sguis.workspaces.counter
+  "7GUIs counter."
   (:require
     [reagent.core :as r]))
 
 (defn counter-ui
+  "Creates a text field with \"0\" and a button to increment that"
   []
   (r/with-let [*counter-state (r/atom 0)]
     [:div.panel.is-primary
