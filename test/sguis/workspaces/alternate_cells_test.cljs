@@ -4,8 +4,8 @@
      :include-macros true
      :refer [are is testing]]
     [nubank.workspaces.core :as ws]
-    [sguis.workspaces.cells :refer [eval-cell
-                                    cells-ui]]
+    [sguis.workspaces.cells :refer [cells-ui]]
+    [sguis.workspaces.eval-cell :refer [eval-cell]]
     [sguis.workspaces.test-utils :as u]
     [reagent.core :as r]
     [clojure.string :as str]))
