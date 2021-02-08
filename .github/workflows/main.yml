@@ -24,7 +24,9 @@ jobs:
           
       - uses: actions/checkout@v2      
       - name: Install dependencies on folder
-        run: npm install
+        run: |
+            export 
+            npm install
         
       - name: Style Check
         run: |
@@ -35,5 +37,7 @@ jobs:
           clojure -M:lint
       
       - name: Tests
+        env: 
+          CHROME_BIN: '/usr/bin/chromium'
         run:
          npm run tests
