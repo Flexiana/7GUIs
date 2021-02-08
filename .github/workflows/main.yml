@@ -23,11 +23,8 @@ jobs:
           chmod +x linux-install-1.10.2.774.sh && ./linux-install-1.10.2.774.sh
           npm install
           
-
-      - uses: actions/checkout@v2
-      - uses: nanasess/setup-chromedriver@master
-      
-      # Runs a set of commands using the runners shell
+      - uses: actions/checkout@v2      
+        
       - name: Style Check
         run: |
           clojure -M:style check
