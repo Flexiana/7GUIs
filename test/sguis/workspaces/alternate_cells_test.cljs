@@ -139,6 +139,7 @@
           (testing "Initial render"
             (is (= (flatten [[""] (map str (range 0 100)) "Add row"]) (mapv str/trim (texts-on-field (tbody comp)))))
             (is (= (flatten [[""] (map char (range 65 91)) "Add column"]) (str/split (first (texts-on-field (thead comp))) #"\t"))))
+          (swap! *test-state assoc :columns 10 :rows 10)
           (testing "Change value"
             (insert comp "A1" "Elephant")
             (is (= "Elephant" (.-innerText (cell comp "A1")))))
