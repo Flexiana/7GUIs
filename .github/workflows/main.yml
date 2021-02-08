@@ -16,7 +16,7 @@ jobs:
     
     steps:
       - uses: actions/checkout@v2
-        
+      - uses: nanasess/setup-chromedriver@master
       - name: Install dependencies
         run: |
           add-apt-repository ppa:canonical-chromium-builds/stage
