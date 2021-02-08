@@ -15,14 +15,17 @@ jobs:
       image: timbru31/java-node
     
     steps:
-      - uses: actions/checkout@v2
-      - uses: nanasess/setup-chromedriver@master
       - name: Install dependencies
         run: |
+          apt install -y curl sudo
           curl -O https://download.clojure.org/install/linux-install-1.10.2.774.sh
           chmod +x linux-install-1.10.2.774.sh && ./linux-install-1.10.2.774.sh
           npm install
+          
 
+      - uses: actions/checkout@v2
+      - uses: nanasess/setup-chromedriver@master
+      
       # Runs a set of commands using the runners shell
       - name: Style Check
         run: |
