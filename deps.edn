@@ -6,7 +6,9 @@
          binaryage/devtools           {:mvn/version "1.0.2"}
          borkdude/sci                 {:mvn/version "0.2.1-alpha.1"}
          thheller/shadow-cljs         {:mvn/version "2.11.15"}
-         org.slf4j/slf4j-simple       {:mvn/version "1.7.30"}}
+         org.slf4j/slf4j-simple       {:mvn/version "1.7.30"}
+         instaparse/instaparse        {:mvn/version "1.4.10"}}
+
 
  :aliases {:style      {:extra-deps {mvxcvi/cljstyle {:mvn/version "0.14.0"}}
                         :main-opts  ["-m" "cljstyle.main" "fix"]}

@@ -5,7 +5,8 @@
     [nubank.workspaces.model :as wsm]
     [reagent.core :as r]
     [sguis.workspaces.cells :refer [cells-ui]]
-    ;[sguis.workspaces.cells-test]
+    [sguis.workspaces.cells-test]
+    [sguis.workspaces.alternate-cells :as alt-cells]
     [sguis.workspaces.alternate-cells-test]
     [sguis.workspaces.circle-drawer :refer [circles-ui]]
     [sguis.workspaces.circle-drawer-test]
@@ -18,7 +19,8 @@
     [sguis.workspaces.temperature :refer [temperature-ui]]
     [sguis.workspaces.temperature-test]
     [sguis.workspaces.timer :refer [timer-ui]]
-    [sguis.workspaces.timer-test]))
+    [sguis.workspaces.timer-test]
+    [sguis.workspaces.eval-cell-test]))
 
 (defonce init (mount))
 
@@ -54,3 +56,8 @@
   {::wsm/align       {:justify-content "left"}}
   (react-card
     (r/as-element [cells-ui])))
+
+(defcard alt-cells
+  {::wsm/align       {:justify-content "left"}}
+  (react-card
+    (r/as-element [alt-cells/cells-ui])))

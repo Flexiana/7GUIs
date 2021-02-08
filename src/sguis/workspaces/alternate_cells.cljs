@@ -1,13 +1,12 @@
-(ns sguis.workspaces.cells
+(ns sguis.workspaces.alternate-cells
   (:require
-    [reagent.core :as r]
-    [sci.core :refer [init]]
-    [sguis.workspaces.eval-cell :as evaluator]))
+    [sguis.workspaces.alternate-eval-cell :refer [eval-cell]]
+    [reagent.core :as r]))
 
 (def cells-start
   {:focused-cell nil
+   :edition      ""
    :cells        {}
-   :sci-ctx      (init {})
    :columns      10
    :rows         5})
 
@@ -19,11 +18,6 @@
   [rows]
   (take rows (range 0 100)))
 
-(defn possible-cells
-  [{:keys [rows columns]}]
-  (set (for [s (az-range columns)
-             n (table-lines rows)]
-         (keyword (str s n)))))
 
 ;; UI impl
 
@@ -46,20 +40,23 @@
   (swap! *state assoc :focused-cell cell-id))
 
 (defn submit-cell!
-  [*state cell-id event]
+  [*state {:keys [edition]}
+   cell-id
+   event]
   (.preventDefault event)
   (swap! *state
     #(-> %
-         (evaluator/eval-cell cell-id)
-         (dissoc :focused-cell))))
+         (assoc-in [:cells cell-id :input]
+           edition)
+         (dissoc :focused-cell :edition))))
 
 (defn change-cell!
-  [*state cell-id event]
-  (swap! *state assoc-in [:cells cell-id :input] (.. event -target -value)))
+  [*state event]
+  (swap! *state assoc :edition (.. event -target -value)))
 
 (defn coll-fn
-  [{:keys [focused-cell cells]}
-   {:keys [focus-cell! submit-cell! change-cell!]} cell-width l  c]
+  [{:keys [focused-cell cells] :as env}
+   {:keys [focus-cell! submit-cell! change-cell!]} cell-width l c]
   (let [cell-id (keyword (str c l))]
     ^{:key cell-id}
     [:td {:style           (light-border-style cell-width)
@@ -69,16 +66,14 @@
        [:form {:style       {:border "1px solid #ccc"}
                :id          cell-id
                :data-testid (str "form-" (name cell-id))
-               :on-submit   (partial submit-cell! cell-id)}
+               :on-submit   (partial submit-cell! env cell-id)}
         [:input {:style         (light-border-style cell-width)
                  :type          "text"
                  :data-testid   (str "input-" (name cell-id))
                  :auto-focus    true
-                 :default-value (get-in cells [cell-id :input])
-                 :on-change     (partial change-cell! cell-id)}]]
-       (get-in cells [cell-id :output]))]))
-
-#_:clj-kondo/ignore
+                 :default-value (get cells cell-id)
+                 :on-change     (partial change-cell!)}]]
+       (eval-cell env cell-id))]))
 
 (defn row-fn
   [cells actions-map cell-width l]

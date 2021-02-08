@@ -4,7 +4,7 @@
      :include-macros true
      :refer [are is testing]]
     [nubank.workspaces.core :as ws]
-    [sguis.workspaces.cells :refer [cells-ui]]
+    [sguis.workspaces.alternate-cells :refer [cells-ui]]
     [sguis.workspaces.alternate-eval-cell :refer [eval-cell]]
     [sguis.workspaces.test-utils :as u]
     [reagent.core :as r]
