@@ -77,9 +77,9 @@
   [input]
   (every? single-cell? (str/split input ",")))
 
-(defmulti parse :type)
+(defmulti evaluate :type)
 
-(defn reader
+(defn switch
   [{:keys [cells chain] :or {chain #{}} :as env} id]
   (let [input (get-in cells [(keyword id) :input])
         typ   (cond
@@ -93,23 +93,23 @@
                 (multi-cell? input) :multi-cell
                 (operand? input) :operand
                 :else :string)]
-    #(parse {:input input :id id :type typ :env env})))
+    #(evaluate {:input input :id id :type typ :env env})))
 
-(defmethod parse :cycle-error [{:keys [id] :as m}]
+(defmethod evaluate :cycle-error [{:keys [id] :as m}]
   (assoc m :error (str "Cyclic dependency found " id)))
 
-(defmethod parse :float [{:keys [input] :as m}]
+(defmethod evaluate :float [{:keys [input] :as m}]
   (assoc m :output input))
 
-(defmethod parse :nil [x]
+(defmethod evaluate :nil [x]
   (assoc x :output ""))
 
-(defmethod parse :parsable-float [{:keys [input] :as m}]
+(defmethod evaluate :parsable-float [{:keys [input] :as m}]
   (assoc m :output (js/parseFloat input)))
 
-(defmethod parse :cell [{:keys [env input id]}]
+(defmethod evaluate :cell [{:keys [env input id]}]
   (let [chain (get env :chain #{})]
-    #(reader (assoc env :chain (conj chain id)) input)))
+    #(switch (assoc env :chain (conj chain id)) input)))
 
 (defn ->range
   [x y]
@@ -127,37 +127,37 @@
 (defn parse-multiple
   [env cells]
   (for [cell cells]
-    (trampoline parse (assoc env :type :cell :input cell))))
+    (trampoline evaluate (assoc env :type :cell :input cell))))
 
-(defmethod parse :multi-cell [{:keys [input] :as m}]
+(defmethod evaluate :multi-cell [{:keys [input] :as m}]
   (let [cell-range (multi->cells input)]
     (parse-multiple m cell-range)))
 
-(defmethod parse :seq-cell [{:keys [input] :as m}]
+(defmethod evaluate :seq-cell [{:keys [input] :as m}]
   (let [cell-range (str/split input ",")]
     (parse-multiple m cell-range)))
 
-(defmethod parse :string [{:keys [input] :as m}]
+(defmethod evaluate :string [{:keys [input] :as m}]
   (assoc m :output input))
 
-(defmethod parse :operand [{:keys [input] :as m}]
+(defmethod evaluate :operand [{:keys [input] :as m}]
   (assoc m :output (get kw->op (keyword (str/lower-case input)))))
 
-(declare ->render)
+(declare eval-cell)
 
-(defmethod parse :expression [{:keys [env input]}]
+(defmethod evaluate :expression [{:keys [env input]}]
   (let [[ex op par] (first (re-seq xp-matcher input))
         op-cell     (keyword (gensym))
-        operand     (:output (trampoline reader (assoc-in env [:cells op-cell :input] op) op-cell))
+        operand     (:output (trampoline switch (assoc-in env [:cells op-cell :input] op) op-cell))
         parsed-pars (for [p (str/split par ",")
                           :let [tmp-cell (keyword (gensym))]]
-                      (->render (assoc-in env [:cells tmp-cell :input] p) tmp-cell))
+                      (eval-cell (assoc-in env [:cells tmp-cell :input] p) tmp-cell))
         result      (eval-string (str (flatten [operand (if (every? string? parsed-pars)
                                                           (map parse-float-if (str/split (first parsed-pars) ","))
                                                           parsed-pars)])))
         next-call (str/replace input ex result)
         next-cell   (keyword (gensym))]
-    (trampoline reader (assoc-in env [:cells next-cell :input] next-call) next-cell)))
+    (trampoline switch (assoc-in env [:cells next-cell :input] next-call) next-cell)))
 
 (defn render
   [exp]
@@ -171,9 +171,9 @@
     (seq? exp) (str/join ", " (mapv :output exp))
     :else (:output exp)))
 
-(defn ->render
+(defn eval-cell
   [env id]
-  (render (trampoline reader env id)))
+  (render (trampoline switch env id)))
 
 ;; UI impl
 
@@ -229,9 +229,7 @@
                  :auto-focus    true
                  :default-value (get cells cell-id)
                  :on-change     (partial change-cell!)}]]
-       (->render env cell-id))]))
-
-#_:clj-kondo/ignore
+       (eval-cell env cell-id))]))
 
 (defn row-fn
   [cells actions-map cell-width l]
