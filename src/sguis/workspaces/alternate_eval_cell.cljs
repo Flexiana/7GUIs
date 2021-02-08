@@ -1,4 +1,4 @@
-(ns sguis.workspaces.eval-cell
+(ns sguis.workspaces.alternate-eval-cell
   "Sipmle and easy cell evaluation"
   (:require [clojure.string :as str]
             [sci.core :refer [eval-string]]

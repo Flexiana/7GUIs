@@ -1,6 +1,6 @@
 (ns sguis.workspaces.cells
   (:require
-    [sguis.workspaces.eval-cell :refer [eval-cell]]
+    [sguis.workspaces.alternate-eval-cell :refer [eval-cell]]
     [reagent.core :as r]))
 
 (def cells-start
