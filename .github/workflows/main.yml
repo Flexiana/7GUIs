@@ -21,11 +21,10 @@ jobs:
           apt-get install -y curl chromium-chromedriver 
           curl -O https://download.clojure.org/install/linux-install-1.10.2.774.sh
           chmod +x linux-install-1.10.2.774.sh && ./linux-install-1.10.2.774.sh
-          npm install -g shadow-cljs
-          npm install
-          ls node_modules
           
       - uses: actions/checkout@v2      
+      - name: Install dependencies on folder
+        run: npm install
         
       - name: Style Check
         run: |
