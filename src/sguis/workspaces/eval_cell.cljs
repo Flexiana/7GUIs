@@ -191,7 +191,7 @@ decimal = #'-?\\d+(\\.\\d*)?'
                             eval-sheets-raw-ast
                             (add-eval-tree cell-id))
         rf              (fn [{:keys [cells]
-                             :as   env} cell-id]
+                              :as   env} cell-id]
                           (let [{:keys [raw-ast]} (get cells cell-id)]
                             (ast-element-evaluator sci-ctx env raw-ast cells cell-id)))]
     (reduce rf env-new eval-tree)))

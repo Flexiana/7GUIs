@@ -1,4 +1,5 @@
 (ns sguis.workspaces.timer
+  "7GUIs timer implementation"
   (:require
     [reagent.core :as r]))
 
@@ -7,6 +8,7 @@
 (def max-duration 60)
 
 (def timer-start
+  "Initial state"
   {:elapsed-time 0
    :duration     (/ max-duration 2)})
 
@@ -15,6 +17,7 @@
   (min elapsed-time duration))
 
 (defn progress-bar
+  "Progress bar UI"
   [{:keys [duration] :as timer-state}]
   [:div.field
    [:progress.progress.is-full-width.is-primary
@@ -23,6 +26,7 @@
      :max         duration}]])
 
 (defn countdown-component
+  "Visual representation of elapsed time"
   [timer-state]
   [:div.field
    [:label.label
@@ -30,10 +34,12 @@
     (str (capped-value timer-state) "s")]])
 
 (defn change-duration!
+  "Update duration on user input"
   [timer-state e]
   (swap! timer-state assoc :duration (.. e -target -valueAsNumber)))
 
 (defn duration-change
+  "Duration slider"
   [timer-state]
   (let [duration (:duration @timer-state)
         field-id (gensym)]
@@ -50,17 +56,20 @@
        :on-input    (partial change-duration! timer-state)}]]))
 
 (defn reset-button-ui
+  "Reset elapsed time"
   [timer-state]
   [:button.button.is-primary
    {:on-click #(swap! timer-state assoc :elapsed-time 0)}
    "Reset"])
 
 (defn update-elapsed-time!
+  "Updates elapsed time counter, while it's less than duration"
   [*timer-state]
   (when (< (:elapsed-time @*timer-state) (:duration @*timer-state))
     (swap! *timer-state update :elapsed-time inc)))
 
 (defn timer-ui
+  "Main timer UI"
   ([]
    (r/with-let [*timer-state (r/atom timer-start)]
      [timer-ui *timer-state]))
