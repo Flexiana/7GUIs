@@ -9,7 +9,7 @@ module.exports = function (config) {
         plugins: ['karma-cljs-test', 'karma-chrome-launcher'],
         colors: true,
         logLevel: config.LOG_INFO,
-        browserSocketTimeout: 10000,
+        browserSocketTimeout: 120000,
         client: {
             args: ["shadow.test.karma.init"],
             singleRun: true

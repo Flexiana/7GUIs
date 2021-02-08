@@ -1,6 +1,6 @@
 name: CI
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
@@ -11,9 +11,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: 
+    container:
       image: timbru31/java-node
-    
+
     steps:
       - name: Install dependencies
         run: |
@@ -21,27 +21,28 @@ jobs:
           apt-get install -y curl chromium-browser
           curl -O https://download.clojure.org/install/linux-install-1.10.2.774.sh
           chmod +x linux-install-1.10.2.774.sh && ./linux-install-1.10.2.774.sh
-          
-      - uses: actions/checkout@v2      
+
+      - uses: actions/checkout@v2
       - name: Install dependencies on folder
         run: |
-            export 
+            export
             npm install
-        
+
       - name: Style Check
         run: |
           clojure -M:style check
-          
+
       - name: Lint
         run:
           clojure -M:lint
-      
+
       - name: Build Tests
         run: |
-            npx shadow-cljs compile ci
-            
+          npx shadow-cljs compile ci
+
       - name: Run Tests
-        env: 
+        env:
           CHROME_BIN: '/usr/bin/chromium'
         run: |
-          npx karma start --single-run 
+          /usr/bin/chromium --help
+          # npx karma start --single-run
