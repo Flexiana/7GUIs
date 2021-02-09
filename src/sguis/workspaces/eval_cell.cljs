@@ -6,6 +6,7 @@
     [sci.core :refer [eval-form]]))
 
 (def kw->op
+  "Supported operations map."
   {:add      '+
    :subtract '-
    :div      '/
@@ -15,7 +16,7 @@
    :prod     '*})
 
 #_:clj-kondo/ignore
-
+;; defining a syntax to the parser
 (defparser excel-like
   "
 formula = decimal / textual / eval
@@ -30,12 +31,14 @@ decimal = #'-?\\d+(\\.\\d*)?'
 ")
 
 (defn exsplit
+  "Splitting keyword."
   [k]
   (let [[_ k v] (re-matches #"([A-Z]+)([0-9]+)" (name k))]
     [k
      (edn/read-string v)]))
 
 (defn range-cells-get
+  "Get cells in a range."
   [[a b]]
   (let [[colla vala]      (exsplit a)
         [collb valb]      (exsplit b)
@@ -46,6 +49,7 @@ decimal = #'-?\\d+(\\.\\d*)?'
       (keyword (str (char collv) v)))))
 
 (defn parse-input
+  "Conditional to not try to parse empty or nil text."
   [input]
   (cond (nil? input)       ""
         (str/blank? input) ""
@@ -54,6 +58,7 @@ decimal = #'-?\\d+(\\.\\d*)?'
 #_:clj-kondo/ignore
 
 (defn input->raw-ast
+  "Transform the parsed input into raw-ast using instaparse transform."
   [input]
   (let [[err parsed-input] (try
                              [false (parse-input input)]
@@ -80,6 +85,7 @@ decimal = #'-?\\d+(\\.\\d*)?'
       err)))
 
 (defn raw-ast->dependencies
+  "Pick a raw-ast and make depencies vector from it."
   [raw-ast]
   (cond
     (coll? raw-ast)    (mapcat raw-ast->dependencies raw-ast)
@@ -87,6 +93,7 @@ decimal = #'-?\\d+(\\.\\d*)?'
     :else              nil))
 
 (defn eval-sheets-raw-ast
+  "Transform the sheets env to have raw-ast to every cell."
   [{:keys [cells]
     :as   env}]
   (reduce (fn [env cell-id]
@@ -104,6 +111,7 @@ decimal = #'-?\\d+(\\.\\d*)?'
     (keys cells)))
 
 (defn dep-builder
+  "Build dependency tree for evaluation of a cell only entry way."
   ([env key]
    (dep-builder env key #{}))
   ([{:keys [cells] :as env} key path]
@@ -119,6 +127,7 @@ decimal = #'-?\\d+(\\.\\d*)?'
      (concat (distinct (vec dependencies))))))
 
 (defn dependency-buildn2
+  "Build entry and out dependencies for evaluation of a cell."
   [{:keys [cells]
     :as env} key]
   (let  [reverse-dependent (keep (fn [[k v]]
@@ -128,6 +137,7 @@ decimal = #'-?\\d+(\\.\\d*)?'
                     (dep-builder env key #{})) [key] reverse-dependent)))
 
 (defn add-eval-tree
+  "Add the evaluation tree onto cells env."
   [env init-key]
   (let [[err result] (try
                        [false (dependency-buildn2 env init-key)]
@@ -138,6 +148,7 @@ decimal = #'-?\\d+(\\.\\d*)?'
       (assoc-in env [:cells init-key :output] (ex-message err)))))
 
 (defn get-data-rec
+  "Recursive get-data from a cell that is evaluating."
   [cells raw-ast]
   (letfn [(get-data-rec*
             [cells v]
@@ -149,6 +160,7 @@ decimal = #'-?\\d+(\\.\\d*)?'
     (map #(get-data-rec* cells %) raw-ast)))
 
 (defn ast-element-evaluator
+  "Eval of every element of a raw-ast, making a ast and evaluting the ast onto sci."
   [sci-ctx env raw-ast cells cell-id]
   (cond (keyword? raw-ast) (let [{:keys [output]} (get cells raw-ast)
                                  env-after        (assoc-in env [:cells cell-id :ast] output)
@@ -163,24 +175,10 @@ decimal = #'-?\\d+(\\.\\d*)?'
                                :ast raw-ast
                                :output output))))
 
-(defn update-broken-deps
-  [{:keys [cells] :as env}]
-  (letfn [(update-deps
-            [acc cell]
-            (if (keyword (:dependencies cell))
-              (conj acc (dep-builder env cell))
-              (conj acc cell)))]
-
-    (assoc env :cells (into {} (reduce update-deps [] cells)))))
-
 (defn eval-cell
   [env cell-id]
-  (tap> env)
-  (tap> "up:")
-  (tap> (update-broken-deps env))
   (let [{:keys [sci-ctx eval-tree]
          :as   env-new} (-> env
-                            update-broken-deps
                             eval-sheets-raw-ast
                             (add-eval-tree cell-id))
         rf              (fn [{:keys [cells]
