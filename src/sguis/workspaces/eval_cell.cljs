@@ -92,37 +92,16 @@ decimal = #'-?\\d+(\\.\\d*)?'
   (reduce (fn [env cell-id]
             (if-let [input (get-in cells [cell-id :input])]
               (let [raw-ast (input->raw-ast input)
-                    deps    (not-empty (raw-ast->dependencies raw-ast))
-                    env-new (assoc-in env
-                              [:cells cell-id :raw-ast]
-                              raw-ast)]
-                (if deps
-                  (assoc-in env-new [:cells cell-id :dependencies]
-                    deps)
-                  env-new))
+                    deps    (raw-ast->dependencies raw-ast)
+                    env-new (-> (assoc-in env
+                                  [:cells cell-id :raw-ast]
+                                  raw-ast)
+                                (assoc-in [:cells cell-id :dependencies]
+                                  deps))]
+                env-new)
               env))
     env
     (keys cells)))
-
-(defn dependency-buildn
-  [{:keys [cells]} init-key]
-  (letfn [(next-deps-impl
-            [seen deps]
-            (let [seen-next (into seen deps)]
-              (concat (mapcat #(let [next (get-in cells [% :dependencies])]
-                                 (when-let [dupe (some seen next)]
-                                   (-> (str "duplicated keys: " dupe)
-                                       (ex-info {:cognitect.anomalies/category :cognitect.anomalies/conflict
-                                                 :dupe                         dupe
-                                                 :seen                         seen})
-                                       (throw)))
-                                 (next-deps-impl seen-next next))
-                              deps)
-                      deps)))]
-    (let [reverse-dependent (keep (fn [[k v]]
-                                    (when (some #(= init-key %) (:dependencies v))
-                                      k)) cells)]
-      (concat (distinct (next-deps-impl #{} [init-key])) reverse-dependent))))
 
 (defn dep-builder
   ([env key]
@@ -151,7 +130,7 @@ decimal = #'-?\\d+(\\.\\d*)?'
 (defn add-eval-tree
   [env init-key]
   (let [[err result] (try
-                       [false (dependency-buildn2 (eval-sheets-raw-ast env) init-key)]
+                       [false (dependency-buildn2 env init-key)]
                        (catch :default ex
                          [ex]))]
     (if-not err
@@ -184,10 +163,24 @@ decimal = #'-?\\d+(\\.\\d*)?'
                                :ast raw-ast
                                :output output))))
 
+(defn update-broken-deps
+  [{:keys [cells] :as env}]
+  (letfn [(update-deps
+            [acc cell]
+            (if (keyword (:dependencies cell))
+              (conj acc (dep-builder env cell))
+              (conj acc cell)))]
+
+    (assoc env :cells (into {} (reduce update-deps [] cells)))))
+
 (defn eval-cell
   [env cell-id]
+  (tap> env)
+  (tap> "up:")
+  (tap> (update-broken-deps env))
   (let [{:keys [sci-ctx eval-tree]
          :as   env-new} (-> env
+                            update-broken-deps
                             eval-sheets-raw-ast
                             (add-eval-tree cell-id))
         rf              (fn [{:keys [cells]

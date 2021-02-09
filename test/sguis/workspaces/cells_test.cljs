@@ -91,4 +91,11 @@
           (testing "Deep circular dependency"
             (insert comp "B1" "=C1")
             (insert comp "C1" "=B1")
-            (is (= "" (.-innerText (cell comp "B1"))))))))))
+            (is (= "" (.-innerText (cell comp "B1")))))
+
+          (testing "Update circular dependency"
+            (insert comp "C1" "=C1")
+            (insert comp "C2" "=C1")
+            (is (= "duplicated keys: :C1" (.-innerText (cell comp "C2"))))
+            (insert comp "C1" "100")
+            (is (= "100" (.-innerText (cell comp "C2"))))))))))
