@@ -1,7 +1,12 @@
 module.exports = function (config) {
     config.set({
-        browsers: ['ChromeHeadless'],
-        
+        browsers : ['ChromeHeadlessCustom'],
+        customLaunchers: {
+            ChromeHeadlessCustom: {
+                base: 'ChromeHeadless',
+                flags: ['--no-sandbox']
+            }
+        },
         // The directory where the output file lives
         basePath: 'target',
         // The file itself
@@ -10,7 +15,6 @@ module.exports = function (config) {
         plugins: ['karma-cljs-test', 'karma-chrome-launcher'],
         colors: true,
         logLevel: config.LOG_INFO,
-        browserSocketTimeout: 120000,
         client: {
             args: ["shadow.test.karma.init"],
             singleRun: true

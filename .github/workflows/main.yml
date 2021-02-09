@@ -1,0 +1,64 @@
+name: CI
+
+# Controls when the action will run.
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: timbru31/java-node
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          apt-get update -y
+          apt-get install -y curl chromium-browser
+          curl -O https://download.clojure.org/install/linux-install-1.10.2.774.sh
+          chmod +x linux-install-1.10.2.774.sh && ./linux-install-1.10.2.774.sh
+
+      - name: Cache maven
+        uses: actions/cache@v1
+        with:
+          path: ~/.m2
+          key: m2-${{ hashFiles('deps.edn') }}
+          restore-keys: |
+            m2-
+
+      - name: Cache node_modules
+        uses: actions/cache@v1
+        with:
+          path: node_modules
+          key: node_modules-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            node_modules-
+
+      - name: Install dependencies on folder
+        run: |
+            npm install
+            npm i -D puppeteer karma-chrome-launcher
+
+      - name: Style Check
+        run: |
+          clojure -M:style check
+
+      - name: Lint
+        run: |
+          clojure -M:lint
+
+      - name: Build Tests
+        run: |
+          npx shadow-cljs compile ci
+
+
+      - name: Run Tests
+        env:
+          CHROME_BIN: '/usr/bin/chromium-browser'
+        run: |
+          npx karma start --single-run
