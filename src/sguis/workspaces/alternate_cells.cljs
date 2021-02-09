@@ -79,7 +79,7 @@
                  :type          "text"
                  :data-testid   (str "input-" (name cell-id))
                  :auto-focus    true
-                 :default-value (get cells cell-id)
+                 :default-value (get-in cells [cell-id :input])
                  :on-change     (partial change-cell!)}]]
        (eval-cell env cell-id))]))
 
