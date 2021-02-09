@@ -8,7 +8,6 @@
     [sguis.workspaces.eval-cell :refer [range-cells-get
                                         input->raw-ast
                                         eval-sheets-raw-ast
-                                        dependency-buildn
                                         dependency-buildn2
                                         add-eval-tree
                                         eval-cell
@@ -48,40 +47,11 @@
                  :ast          '(+ nil nil),
                  :output       0,
                  :dependencies '(:B0 :B1)}
-            :B0 {:input "1" :raw-ast 1}
+            :B0 {:input "1" :raw-ast 1 :dependencies nil}
             :B2 {:input        "=add(B0:B1)"
                  :raw-ast      '(+ :B0 :B1)
                  :dependencies '(:B0 :B1)}}
            (:cells (eval-sheets-raw-ast env))))))
-
-(ws/deftest dependencies-builder
-  (let [env0            {:cells {:A0 {:dependencies [:A1]}
-                                 :A1 {}}}
-        env1            {:cells {:A0 {:dependencies [:A1]}
-                                 :A1 {:dependencies [:A2]}
-                                 :A2 {:dependencies []}}}
-        env2            {:cells {:A0 {:dependencies [:A1]}
-                                 :A1 {:dependencies [:A2]}
-                                 :A2 {:dependencies [:A3]}
-                                 :A3 {:dependencies []}}}
-        env3            {:cells {:A0 {:dependencies [:A1]}
-                                 :A1 {:dependencies [:A2]}
-                                 :A2 {:dependencies [:A3]}
-                                 :A3 {:dependencies [:A4]}
-                                 :A4 {}}}
-        duplicated-deps {:cells {:A0 {:dependencies [:A1 :A2]}
-                                 :A1 {:dependencies [:A2]}
-                                 :A2 {}}}
-        nested-deps     {:cells {:A0 {:dependencies '(:B0 :B1)}
-                                 :B0 {}
-                                 :B1 {}
-                                 :B2 {:dependencies '(:B0 :A0)}}}]
-    (is (= [:A1 :A0] (dependency-buildn env0 :A0)))
-    (is (= [:A2 :A1 :A0] (dependency-buildn env1 :A0)))
-    (is (= [:A3 :A2 :A1 :A0] (dependency-buildn env2 :A0)))
-    (is (= [:A4 :A3 :A2 :A1 :A0] (dependency-buildn env3 :A0)))
-    (is (= [:A2 :A1 :A0] (dependency-buildn duplicated-deps :A0)))
-    (is (= [:B0 :B1 :A0 :B2] (dependency-buildn nested-deps :B2)))))
 
 (ws/deftest fix-loop-deps
   (let [looping-deps0 {:cells {:A0 {:dependencies [:A0]}}}
@@ -89,11 +59,11 @@
                                :A1 {:dependencies [:A2 :A0]}
                                :A2 {:dependencies []}}}]
     (is (= "duplicated keys: :A0" (ex-message
-                                    (try (dependency-buildn looping-deps0 :A0)
+                                    (try (dependency-buildn2 looping-deps0 :A0)
                                          (catch :default ex
                                            ex)))))
     (is (= "duplicated keys: :A0" (ex-message
-                                    (try (dependency-buildn looping-deps1 :A0)
+                                    (try (dependency-buildn2 looping-deps1 :A0)
                                          (catch :default ex
                                            ex)))))))
 
@@ -135,12 +105,12 @@
                              :B0 {:input "8", :raw-ast 5},
                              :B1 {:input "10", :raw-ast 10}}}]
     (is (= "duplicated keys: :B2"
-           (ex-message (try (dependency-buildn (eval-sheets-raw-ast env) :B2)
+           (ex-message (try (dependency-buildn2 (eval-sheets-raw-ast env) :B2)
                             (catch :default ex
                               ex)))))
-    (is (= '(:A3 :A2 :A1) (dependency-buildn (eval-sheets-raw-ast env1) :A1)))
-    (is (= '(:A3 :A1) (dependency-buildn (eval-sheets-raw-ast env1) :A3)))
-    (is (= '(:B0 :A0) (dependency-buildn (eval-sheets-raw-ast env-reverse) :B0)))))
+    (is (= '(:A3 :A2 :A1) (dependency-buildn2 (eval-sheets-raw-ast env1) :A1)))
+    (is (= '(:A3 :A1) (dependency-buildn2 (eval-sheets-raw-ast env1) :A3)))
+    (is (= '(:B0 :A0) (dependency-buildn2 (eval-sheets-raw-ast env-reverse) :B0)))))
 
 (ws/deftest add-eval-tree-test
   (let [env                       {:sci-ctx (init {})
@@ -152,7 +122,7 @@
     (is (= {:A0 {:input        "=add(B0,B1)",
                  :raw-ast      '(+ :B0 :B1),
                  :dependencies '(:B0 :B1)},
-            :B0 {:input "1", :raw-ast 1},
+            :B0 {:input "1", :raw-ast 1 :dependencies nil},
             :B2 {:input "=add(B0,3)", :raw-ast '(+ :B0 3), :dependencies '(:B0)}} cells))))
 
 (defn assert-cell
@@ -257,3 +227,21 @@
                        :B2 {:input "=B1"}
                        :B3 {:input "=add(B1,B2)"}}}]
     (is (= 6 (get-in (eval-cell env :B3) [:cells :B3 :output])))))
+
+(ws/deftest update-after-circular-dependency
+  (let [env {:sci-ctx (init {})
+             :cells {:C1 {:input "100",
+                          :raw-ast :C1,
+                          :dependencies [:C1],
+                          :output "duplicated keys: :C1"},
+                     :C2 {:input "=C1", :raw-ast :C1, :dependencies [:C1]}}}]
+    (is (= {:C1 {:input "100",
+                 :raw-ast 100,
+                 :dependencies nil,
+                 :output 100,
+                 :ast 100},
+            :C2 {:input "=C1",
+                 :raw-ast :C1,
+                 :dependencies [:C1],
+                 :ast 100,
+                 :output 100}} (-> env (eval-cell :C1) :cells)))))
