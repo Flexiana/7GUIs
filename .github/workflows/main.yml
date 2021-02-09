@@ -19,7 +19,7 @@ jobs:
       - name: Install dependencies
         run: |
           apt-get update -y
-          apt-get install -y curl google-chrome
+          apt-get install -y curl chromium-browser
           curl -O https://download.clojure.org/install/linux-install-1.10.2.774.sh
           chmod +x linux-install-1.10.2.774.sh && ./linux-install-1.10.2.774.sh
 
@@ -42,6 +42,7 @@ jobs:
       - name: Install dependencies on folder
         run: |
             npm install
+            npm i -D puppeteer karma-chrome-launcher
 
       - name: Style Check
         run: |
@@ -57,6 +58,6 @@ jobs:
 
       - name: Run Tests
         env:
-          CHROME_BIN: '/usr/bin/google-chrome'
+          CHROME_BIN: '/usr/bin/chromium-browser'
         run: |
           npx karma start --single-run
