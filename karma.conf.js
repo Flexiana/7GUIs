@@ -1,6 +1,7 @@
 module.exports = function (config) {
     config.set({
         browsers: ['ChromeHeadless'],
+
         // The directory where the output file lives
         basePath: 'target',
         // The file itself
