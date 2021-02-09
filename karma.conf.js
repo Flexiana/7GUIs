@@ -1,6 +1,10 @@
 module.exports = function (config) {
     config.set({
-        browsers: ['ChromeHeadless'],
+        browsers: ['ChromeNoSandbox'],
+        customLaunchers: {
+            ChromeNoSandbox: {
+                base: 'Chrome',
+                flags: ['--no-sandbox','--headless']}},
         // The directory where the output file lives
         basePath: 'target',
         // The file itself

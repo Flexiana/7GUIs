@@ -23,17 +23,32 @@ jobs:
           curl -O https://download.clojure.org/install/linux-install-1.10.2.774.sh
           chmod +x linux-install-1.10.2.774.sh && ./linux-install-1.10.2.774.sh
 
+      - name: Cache maven
+        uses: actions/cache@v1
+        with:
+          path: ~/.m2
+          key: m2-${{ hashFiles('deps.edn') }}
+          restore-keys: |
+            m2-
+
+      - name: Cache node_modules
+        uses: actions/cache@v1
+        with:
+          path: node_modules
+          key: node_modules-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            node_modules-
 
       - name: Install dependencies on folder
         run: |
-            export
             npm install
+
 
       - name: Style Check
         run: |
           clojure -M:style check
 
-      - name: Lint
+          - name: Lint
         run:
           clojure -M:lint
 
