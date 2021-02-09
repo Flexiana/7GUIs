@@ -185,10 +185,24 @@ decimal = #'-?\\d+(\\.\\d*)?'
                                :ast raw-ast
                                :output output))))
 
+(defn update-broken-deps
+  [{:keys [cells] :as env}]
+  (letfn [(update-deps
+            [acc cell]
+            (if (keyword (:dependencies cell))
+              (conj acc (dep-builder env cell))
+              (conj acc cell)))]
+
+    (assoc env :cells (into {} (reduce update-deps [] cells)))))
+
 (defn eval-cell
   [env cell-id]
+  (tap> env)
+  (tap> "up:")
+  (tap> (update-broken-deps env))
   (let [{:keys [sci-ctx eval-tree]
          :as   env-new} (-> env
+                            update-broken-deps
                             eval-sheets-raw-ast
                             (add-eval-tree cell-id))
         rf              (fn [{:keys [cells]
