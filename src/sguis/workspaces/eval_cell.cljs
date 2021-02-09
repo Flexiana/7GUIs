@@ -156,7 +156,8 @@ decimal = #'-?\\d+(\\.\\d*)?'
                          [ex]))]
     (if-not err
       (merge env {:eval-tree result})
-      (assoc-in env [:cells init-key :output] (ex-message err)))))
+      (-> (assoc-in env [:cells init-key :output] (ex-message err))
+          (assoc-in [:cells init-key :dependencies] :broken)))))
 
 (defn get-data-rec
   [cells raw-ast]
