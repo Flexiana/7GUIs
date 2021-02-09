@@ -47,10 +47,10 @@ jobs:
       - name: Style Check
         run: |
           clojure -M:style check
-
-          - name: Lint
-        run:
-          clojure -M:lint
+          
+      - name: Lint
+      - run:
+            clojure -M:lint
 
       - name: Build Tests
         run: |
