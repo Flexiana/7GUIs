@@ -42,7 +42,9 @@
 (defn focus-cell!
   "Change focus"
   [*state cell-id _]
-  (swap! *state assoc :focused-cell cell-id))
+  (swap! *state assoc
+    :focused-cell cell-id
+    :edition (get-in @*state [:cells cell-id :input])))
 
 (defn submit-cell!
   "Store cells input"
@@ -63,7 +65,7 @@
 
 (defn cell-fn
   "UI representation of a cell"
-  [{:keys [focused-cell cells] :as env}
+  [{:keys [focused-cell edition] :as env}
    {:keys [focus-cell! submit-cell! change-cell!]} cell-width l c]
   (let [cell-id (keyword (str c l))]
     ^{:key cell-id}
@@ -79,7 +81,7 @@
                  :type          "text"
                  :data-testid   (str "input-" (name cell-id))
                  :auto-focus    true
-                 :default-value (get cells cell-id)
+                 :default-value edition
                  :on-change     (partial change-cell!)}]]
        (eval-cell env cell-id))]))
 
