@@ -49,8 +49,8 @@ jobs:
           clojure -M:style check
           
       - name: Lint
-      - run:
-            clojure -M:lint
+        run: |
+          clojure -M:lint
 
       - name: Build Tests
         run: |
