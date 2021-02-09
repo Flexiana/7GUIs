@@ -19,7 +19,7 @@ jobs:
       - name: Install dependencies
         run: |
           apt-get update -y
-          apt-get install -y curl chromium-chromedriver
+          apt-get install -y curl google-chrome
           curl -O https://download.clojure.org/install/linux-install-1.10.2.774.sh
           chmod +x linux-install-1.10.2.774.sh && ./linux-install-1.10.2.774.sh
 
@@ -58,6 +58,6 @@ jobs:
 
       - name: Run Tests
         env:
-          CHROME_BIN: '/usr/bin/chromedriver'
+          CHROME_BIN: '/usr/bin/google-chrome'
         run: |
           npx karma start --single-run
