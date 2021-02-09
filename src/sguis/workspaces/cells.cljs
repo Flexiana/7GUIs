@@ -51,7 +51,7 @@
   (swap! *state assoc :focused-cell cell-id))
 
 (defn submit-cell!
-  "Store cells input"
+  "Store cells input, and evaluate dependent cells"
   [*state cell-id event]
   (.preventDefault event)
   (swap! *state
