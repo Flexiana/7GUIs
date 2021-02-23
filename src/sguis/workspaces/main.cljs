@@ -6,7 +6,7 @@
     [reagent.core :as r]
     [sguis.workspaces.cells :refer [cells-ui]]
     [sguis.workspaces.cells-test]
-    [sguis.workspaces.alternate-cells :as alt-cells]
+    [sguis.workspaces.alternate-cells :refer [alt-cells-ui]]
     [sguis.workspaces.alternate-cells-test]
     [sguis.workspaces.circle-drawer :refer [circles-ui]]
     [sguis.workspaces.circle-drawer-test]
@@ -60,4 +60,4 @@
 (defcard alt-cells
   {::wsm/align       {:justify-content "left"}}
   (react-card
-    (r/as-element [alt-cells/cells-ui])))
+    (r/as-element [alt-cells-ui])))

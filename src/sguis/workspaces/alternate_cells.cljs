@@ -150,11 +150,11 @@
                 (table-lines rows))
            (row-btn add-row!))])
 
-(defn cells-ui
+(defn alt-cells-ui
   "Main UI of cells"
   ([]
    (r/with-let [*cells (r/atom cells-start)]
-     [cells-ui *cells]))
+     [alt-cells-ui *cells]))
   ([*cells]
    (.addEventListener js/window "resize" (partial change-width! *cells))
    (change-width! *cells)
@@ -164,7 +164,7 @@
      [:div.panel.is-primary
       {:style {:margin "auto"
                :width  width}}
-      [:div.panel-heading {:style {:width width}} "Spreadsheets"]
+      [:div.panel-heading {:style {:width width}} "Alternative Spreadsheets"]
       [:div {:style {:width    width
                      :height   (* 0.5 (.-innerHeight js/window))
                      :overflow :scroll}}

@@ -4,7 +4,7 @@
      :include-macros true
      :refer [are is testing]]
     [nubank.workspaces.core :as ws]
-    [sguis.workspaces.alternate-cells :refer [cells-ui]]
+    [sguis.workspaces.alternate-cells :refer [alt-cells-ui]]
     [sguis.workspaces.alternate-eval-cell :refer [eval-cell]]
     [sguis.workspaces.test-utils :as u]
     [reagent.core :as r]
@@ -125,7 +125,7 @@
                              :columns      26
                              :rows         100})]
     (u/with-mounted-component
-      [cells-ui *test-state]
+      [alt-cells-ui *test-state]
       (fn [comp]
         (let [tbody  #(.getByTestId % "tbody")
               thead  #(.getByTestId % "thead")

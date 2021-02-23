@@ -7,6 +7,7 @@
     [sguis.workspaces.crud :refer [crud-ui]]
     [sguis.workspaces.circle-drawer :refer [circles-ui]]
     [sguis.workspaces.cells :refer [cells-ui]]
+    [sguis.workspaces.alternate-cells :refer [alt-cells-ui]]
     [reagent.dom :as dom]))
 
 (defn main-component
@@ -32,7 +33,10 @@
      [circles-ui]]]
    [:div.panel-block.is-block
     [:div.container
-     [cells-ui]]]])
+     [cells-ui]]]
+   [:div.panel-block.is-block
+    [:div.container
+     [alt-cells-ui]]]])
 
 (defn run
   []
