@@ -163,15 +163,11 @@
   ([*cells]
    (.addEventListener js/window "resize" (partial change-width! *cells))
    (change-width! *cells)
-   #_(let [width      (:window-width @*cells)
-           columns    (:columns @*cells)
-           cell-width (/ width columns)])
    [:div.panel.is-primary
     {:style {:margin "auto"
              :width  "100%"}}
-    [:div.panel-heading #_{:style {:width width}} "Spreadsheets"]
-    [:div {:style {#_#_:width    width
-                   :height   (* 0.5 (.-innerHeight js/window))
+    [:div.panel-heading "Spreadsheets"]
+    [:div {:style {:height   (* 0.5 (.-innerHeight js/window))
                              :overflow "scroll"}}
      [:table {:id          "table"
               :data-testid "table"
