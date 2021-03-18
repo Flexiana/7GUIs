@@ -54,9 +54,9 @@
   (.preventDefault event)
   (swap! *state
     #(-> %
-         (assoc-in [:cells cell-id :input]
-           edition)
-         (dissoc :focused-cell :edition))))
+       (assoc-in [:cells cell-id :input]
+         edition)
+       (dissoc :focused-cell :edition))))
 
 (defn change-cell!
   "Update input on change"
@@ -77,7 +77,9 @@
                :id          cell-id
                :data-testid (str "form-" (name cell-id))
                :on-submit   (partial submit-cell! env cell-id)}
-        [:input {:style         (light-border-style cell-width)
+        [:input {:style         {:margin "0px"
+                                 :padding "0px"
+                                 :width "100%"}
                  :type          "text"
                  :data-testid   (str "input-" (name cell-id))
                  :auto-focus    true
@@ -89,7 +91,7 @@
   "UI representation of a row of cells"
   [cells actions-map cell-width l]
   ^{:key l}
-  [:tr
+  [:tr {:style {:display "table-row"}}
    (concat
      [^{:key l}
       [:td {:style (light-border-style 42)} l]
@@ -136,19 +138,19 @@
    add-col!]
   [:thead {:style       overflow-style
            :data-testid "thead"}
-   [:tr {:style (light-border-style cell-width)}
-    (concat [^{:key :n} [:th]]
-            (map (partial header-fn cell-width) (az-range (:columns cells)))
-            (coll-btn add-col!))]])
+   [:tr {:style (:style       {:display "table-header-group"})}
+    (concat [^{:key :n} [:th {:style (light-border-style cell-width)}]]
+      (map (partial header-fn cell-width) (az-range (:columns cells)))
+      (coll-btn add-col!))]])
 
 (defn table-body
   [{:keys [rows] :as cells} cell-width actions-map add-row!]
-  [:tbody {:style       overflow-style
+  [:tbody {:style       {:display "table-row-group"}
            :data-testid "tbody"}
    (concat [^{:key :n} [:tr (merge (light-border-style cell-width) overflow-style)]]
-           (map (partial row-fn cells actions-map cell-width)
-                (table-lines rows))
-           (row-btn add-row!))])
+     (map (partial row-fn cells actions-map cell-width)
+       (table-lines rows))
+     (row-btn add-row!))])
 
 (defn alt-cells-ui
   "Main UI of cells"
@@ -158,20 +160,19 @@
   ([*cells]
    (.addEventListener js/window "resize" (partial change-width! *cells))
    (change-width! *cells)
-   (let [width      (:window-width @*cells)
-         columns    (:columns @*cells)
-         cell-width (/ width columns)]
-     [:div.panel.is-primary
-      {:style {:margin "auto"
-               :width  width}}
-      [:div.panel-heading {:style {:width width}} "Alternative Spreadsheets"]
-      [:div {:style {:width    width
-                     :height   (* 0.5 (.-innerHeight js/window))
-                     :overflow :scroll}}
-       [:table {:id          "table"
-                :data-testid "table"}
-        [table-head @*cells cell-width (partial add-col! *cells)]
-        [table-body @*cells cell-width {:focus-cell!  (partial focus-cell! *cells)
-                                        :submit-cell! (partial submit-cell! *cells)
-                                        :change-cell! (partial change-cell! *cells)}
-         (partial add-row! *cells)]]]])))
+   [:div.panel.is-primary
+    {:style {:margin "auto"
+             :width  "100%"}}
+    [:div.panel-heading "Alternative Spreadsheets"]
+    [:div {:style {:height   (* 0.5 (.-innerHeight js/window))
+                   :overflow "scroll"}}
+     [:table {:id          "table"
+              :data-testid "table"
+              :style       {:width        "100%"
+                            :table-layout "fixed"
+                            :max-width    "80vw"}}
+      [table-head @*cells "10rem" (partial add-col! *cells)]
+      [table-body @*cells "10rem" {:focus-cell!  (partial focus-cell! *cells)
+                                   :submit-cell! (partial submit-cell! *cells)
+                                   :change-cell! (partial change-cell! *cells)}
+       (partial add-row! *cells)]]]]))

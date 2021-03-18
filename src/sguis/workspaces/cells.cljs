@@ -168,13 +168,12 @@
              :width  "100%"}}
     [:div.panel-heading "Spreadsheets"]
     [:div {:style {:height   (* 0.5 (.-innerHeight js/window))
-                             :overflow "scroll"}}
+                   :overflow "scroll"}}
      [:table {:id          "table"
               :data-testid "table"
               :style       {:width "100%"
                             :table-layout "fixed"
-                            :max-width "80vw"
-                            #_#_:overflow "scroll"}}
+                            :max-width "80vw"}}
       [table-head @*cells "10rem" (partial add-col! *cells)]
       [table-body @*cells "10rem" {:focus-cell!  (partial focus-cell! *cells)
                                    :submit-cell! (partial submit-cell! *cells)
